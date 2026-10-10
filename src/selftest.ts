@@ -132,7 +132,7 @@ const SCRIPT = String.raw`(async () => {
     if (k) events = JSON.parse(localStorage.getItem(k)) || [];
   } catch {}
   const quizEv = events.find((e) => e.type === "quiz");
-  check("quiz event recorded in buffer with contract fields", quizEv && quizEv.v === 1 && typeof quizEv.t === "string" && quizEv.correct === true && Array.isArray(quizEv.chosen) && Array.isArray(quizEv.answer));
+  check("quiz event recorded in buffer with contract fields", quizEv && quizEv.v === 1 && typeof quizEv.t === "string" && quizEv.correct === true && Array.isArray(quizEv.chosen) && Array.isArray(quizEv.answer) && Array.isArray(quizEv.chosenText) && Array.isArray(quizEv.answerText));
   const predEv = events.find((e) => e.type === "predict");
   check("predict event recorded in buffer with contract fields", predEv && predEv.v === 1 && typeof predEv.t === "string" && predEv.rating === "right" && typeof predEv.output === "string");
   const completeEv = events.find((e) => e.type === "complete");

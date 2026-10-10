@@ -12,7 +12,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.6.0**. Author: **DuongNAD**.
+Current version: **0.6.1**. Author: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -27,11 +27,12 @@ flowchart LR
     C --> A["Aurora<br>decks, preview"]
     A --> L["Learner"]
     L --> PR["progress.jsonl"]
-    PR --> P2["Polaris<br>error log, spaced review, next lesson"]
+    P2["Polaris<br>error log, spaced review, next lesson"]
+    PR --> P2
 ```
 
-- **Live progress recording**: while studying under `aurora_preview`, quiz answers, predict ratings, and memory palace recall ratings automatically append to `<course folder>/progress.jsonl`.
-- **Progress summary** (`aurora_progress`): summarizes quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
+- **Live progress recording**: while studying under `aurora_preview`, quiz answers (with chosen and correct option texts and explanation), predict ratings, and memory palace recall ratings automatically append to `<course folder>/progress.jsonl`.
+- **Progress summary** (`aurora_progress`): summarizes quiz accuracy (with chosen and correct texts for wrong answers), right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
 - **Export control**: "Xuất tiến độ" / "Export progress" button in the help panel (`?`) and on the course page downloads `aurora-progress-<slug>.jsonl`.
 
 ## Highlights
@@ -267,6 +268,8 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.6.1** (2026-10-11):
+  - Self-explanatory quiz progress events: add optional `chosenText` and `answerText` (option plain text arrays, capped at 160 chars per item) and `explanation` (capped at 300 chars) to `quiz` events so Polaris error log and `aurora_progress` show the chosen and correct option texts for wrong answers.
 - **0.6.0** (2026-10-10):
   - Close the learning loop with sister project [Polaris](https://github.com/DuongNAD/polaris-mcp): runtime emits learning events (`quiz`, `predict`, `recall`, `complete`) into a localStorage ring buffer and live preview server writes `<course folder>/progress.jsonl`.
   - New MCP tool `aurora_progress`: compact per-lesson summary with quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, 3, 7, 16, 35 days).

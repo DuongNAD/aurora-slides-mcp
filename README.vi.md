@@ -12,7 +12,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.6.0**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.6.1**. Tác giả: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -27,11 +27,12 @@ flowchart LR
     C --> A["Aurora<br>slide, xem trước"]
     A --> L["Người học"]
     L --> PR["progress.jsonl"]
-    PR --> P2["Polaris<br>sổ lỗi, ôn ngắt quãng, bài tiếp theo"]
+    P2["Polaris<br>sổ lỗi, ôn ngắt quãng, bài tiếp theo"]
+    PR --> P2
 ```
 
-- **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz, tự chấm predict và đánh giá cung điện ký ức tự động ghi nối vào `<thư mục khoá học>/progress.jsonl`.
-- **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz, dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
+- **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz (kèm văn bản phương án đã chọn, đáp án đúng và giải thích), tự chấm predict và đánh giá cung điện ký ức tự động ghi nối vào `<thư mục khoá học>/progress.jsonl`.
+- **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz (kèm phương án đã chọn và đáp án đúng cho các câu sai), dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
 - **Nút xuất tiến độ**: nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp (`?`) và trên trang chủ khoá học cho phép tải file `aurora-progress-<slug>.jsonl`.
 
 ## Điểm nổi bật
@@ -261,6 +262,8 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.6.1** (11/10/2026):
+  - Sự kiện tiến độ quiz tự diễn giải: bổ sung các trường tuỳ chọn `chosenText` và `answerText` (mảng văn bản thuần của các phương án, tối đa 160 ký tự mỗi mục) cùng `explanation` (tối đa 300 ký tự) vào sự kiện `quiz` giúp Sổ lỗi Polaris và `aurora_progress` hiển thị trực tiếp phương án đã chọn và đáp án đúng cho các câu sai.
 - **0.6.0** (10/10/2026):
   - Khép kín vòng lặp học tập với dự án song hành [Polaris](https://github.com/DuongNAD/polaris-mcp): runtime phát sự kiện học tập (`quiz`, `predict`, `recall`, `complete`) vào bộ đệm localStorage và preview server ghi file `progress.jsonl` trong thư mục khoá học.
   - MCP tool mới `aurora_progress`: tóm tắt tiến độ từng bài với độ chính xác quiz, dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, 3, 7, 16, 35 ngày).

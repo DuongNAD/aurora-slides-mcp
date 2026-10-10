@@ -101,7 +101,21 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
     // Keep only contract fields, with bounded lengths.
     const cap = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : v);
-    for (const [k, n] of [["question", 200], ["prediction", 2000], ["output", 300], ["title", 200], ["place", 200], ["item", 200], ["palace", 100], ["deck", 200], ["lesson", 200], ["course", 200], ["slideId", 100], ["t", 40], ["quiz", 20], ["predictions", 20], ["rating", 20]] as const) obj[k] = cap(obj[k], n);
+    for (const [k, n] of [["question", 200], ["explanation", 300], ["prediction", 2000], ["output", 300], ["title", 200], ["place", 200], ["item", 200], ["palace", 100], ["deck", 200], ["lesson", 200], ["course", 200], ["slideId", 100], ["t", 40], ["quiz", 20], ["predictions", 20], ["rating", 20]] as const) {
+      if (obj[k] !== undefined) obj[k] = cap(obj[k], n);
+    }
+    const capArr = (v: unknown, maxItems: number, maxLen: number) =>
+      Array.isArray(v) ? v.slice(0, maxItems).map((s) => (typeof s === "string" ? s.slice(0, maxLen) : String(s ?? "").slice(0, maxLen))) : undefined;
+    if (obj.chosenText !== undefined) {
+      const ct = capArr(obj.chosenText, 6, 160);
+      if (ct) obj.chosenText = ct;
+      else delete obj.chosenText;
+    }
+    if (obj.answerText !== undefined) {
+      const at = capArr(obj.answerText, 6, 160);
+      if (at) obj.answerText = at;
+      else delete obj.answerText;
+    }
     const parentCourseJson = join(dirname(entry.dir), "course.json");
     const targetDir = existsSync(parentCourseJson) ? dirname(entry.dir) : entry.dir;
     const progressFile = join(targetDir, "progress.jsonl");

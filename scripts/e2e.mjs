@@ -371,7 +371,10 @@ try {
       type: "quiz",
       question: "1 + 1 = ?",
       chosen: [0],
+      chosenText: ["1"],
       answer: [1],
+      answerText: ["2"],
+      explanation: "1 cộng 1 bằng 2.",
       correct: false,
     };
     const ev2 = {
@@ -447,6 +450,8 @@ try {
       !r.isError &&
         progSummary.includes("01-bai-1") &&
         progSummary.includes("0/1 (0%)") &&
+        progSummary.includes("chosen \"1\"") &&
+        progSummary.includes("correct \"2\"") &&
         progSummary.includes("0 right, 1 different") &&
         progSummary.includes("Tôi nghĩ nó in 42") &&
         progSummary.includes("Cửa chính -> Chìa khoá vàng") &&

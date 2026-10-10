@@ -18,7 +18,10 @@ export interface ProgressEvent {
   // quiz
   question?: string;
   chosen?: number[];
+  chosenText?: string[];
   answer?: number[];
+  answerText?: string[];
+  explanation?: string;
   correct?: boolean;
   // predict
   title?: string;
@@ -104,6 +107,15 @@ export async function loadProgressEvents(dir: string, file?: string): Promise<Pr
   return events;
 }
 
+export interface WrongQuiz {
+  question: string;
+  chosen?: number[];
+  chosenText?: string[];
+  answer?: number[];
+  answerText?: string[];
+  explanation?: string;
+}
+
 export interface LessonSummary {
   lesson: string;
   deck: string;
@@ -111,6 +123,7 @@ export interface LessonSummary {
   totalEvents: number;
   quizTotal: number;
   quizCorrect: number;
+  wrongQuizzes: WrongQuiz[];
   predictRight: number;
   predictDifferent: number;
   differentPredictions: Array<{ title: string; snippet: string }>;
@@ -144,6 +157,7 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
 
     let quizTotal = 0;
     let quizCorrect = 0;
+    const wrongQuizzes: WrongQuiz[] = [];
     let predictRight = 0;
     let predictDifferent = 0;
     const diffPreds: Array<{ title: string; snippet: string }> = [];
@@ -154,7 +168,18 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
     for (const ev of list) {
       if (ev.type === "quiz") {
         quizTotal++;
-        if (ev.correct) quizCorrect++;
+        if (ev.correct) {
+          quizCorrect++;
+        } else {
+          wrongQuizzes.push({
+            question: ev.question || "Quiz",
+            chosen: ev.chosen,
+            chosenText: ev.chosenText,
+            answer: ev.answer,
+            answerText: ev.answerText,
+            explanation: ev.explanation,
+          });
+        }
       } else if (ev.type === "predict") {
         if (ev.rating === "right") {
           predictRight++;
@@ -192,6 +217,7 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
       totalEvents: list.length,
       quizTotal,
       quizCorrect,
+      wrongQuizzes,
       predictRight,
       predictDifferent,
       differentPredictions: diffPreds,
@@ -212,6 +238,25 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
     if (s.quizTotal > 0) {
       const pct = Math.round((s.quizCorrect / s.quizTotal) * 100);
       lines.push(`- Quiz accuracy: ${s.quizCorrect}/${s.quizTotal} (${pct}%)`);
+      if (s.wrongQuizzes.length > 0) {
+        s.wrongQuizzes.forEach((w) => {
+          const ch = w.chosenText?.length
+            ? w.chosenText.map((t) => `"${t}"`).join(", ")
+            : w.chosen?.length
+              ? `[${w.chosen.join(", ")}]`
+              : "";
+          const ans = w.answerText?.length
+            ? w.answerText.map((t) => `"${t}"`).join(", ")
+            : w.answer?.length
+              ? `[${w.answer.join(", ")}]`
+              : "";
+          const parts: string[] = [];
+          if (ch) parts.push(`chosen ${ch}`);
+          if (ans) parts.push(`correct ${ans}`);
+          const detail = parts.join(", ");
+          lines.push(`  • ${w.question}${detail ? `: ${detail}` : ""}`);
+        });
+      }
     }
 
     if (s.predictRight > 0 || s.predictDifferent > 0) {

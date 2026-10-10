@@ -319,7 +319,7 @@ Before you report a deck as done:
 
 ## progress
 Aurora records interactive learning events during self-study:
-- `quiz`: submitted answer with question (plain text, max 200 chars), chosen option indices, correct answer indices, and boolean `correct`.
+- `quiz`: submitted answer with question (plain text, max 200 chars), chosen option indices (`chosen`), chosen option texts (`chosenText`, string array, max 160 chars each, optional), correct answer indices (`answer`), correct answer texts (`answerText`, string array, max 160 chars each, optional), explanation (`explanation`, plain text, max 300 chars, optional), and boolean `correct`.
 - `predict`: prediction title, learner's typed prediction text (max 2000 chars), self-rating ("right" or "different"), and real terminal output snippet (max 300 chars).
 - `recall`: memory palace id, station index, place, item, and rating ("got" or "missed").
 - `complete`: total slide count, quiz accuracy (`x/y` or null), prediction accuracy (`x/y` or null) — sent once per visit on the last slide.
@@ -332,7 +332,7 @@ Aurora records interactive learning events during self-study:
 ### Progress summary (`aurora_progress`)
 Call `aurora_progress {"dir": "<course or deck folder>", "file"?: "<optional exported .jsonl>"}`:
 - Last activity timestamp per lesson.
-- Quiz accuracy percentage.
+- Quiz accuracy percentage and wrong answers with chosen vs correct texts.
 - Predictions (counts of right vs different, listing different predictions with snippets).
 - Missed memory palace stations (`place -> item`).
 - Completed lessons with completion dates and spaced reviews due (+1, +3, +7, +16, +35 days).

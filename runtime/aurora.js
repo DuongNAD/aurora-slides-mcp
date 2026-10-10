@@ -1455,13 +1455,28 @@
       const qEl = quiz.querySelector(".qz-q");
       const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
       const chosenIndices = chosen.map((o) => +o.dataset.k);
-      const correctIndices = Array.from(quiz.querySelectorAll('.qz-opt[data-ok="1"]')).map((o) => +o.dataset.k);
-      emitEvent("quiz", {
+      const chosenText = chosen.map((o) => {
+        const tEl = o.querySelector(".qz-text") || o;
+        return (tEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 160);
+      });
+      const correctOpts = Array.from(quiz.querySelectorAll('.qz-opt[data-ok="1"]'));
+      const correctIndices = correctOpts.map((o) => +o.dataset.k);
+      const answerText = correctOpts.map((o) => {
+        const tEl = o.querySelector(".qz-text") || o;
+        return (tEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 160);
+      });
+      const explEl = quiz.querySelector(".qz-expl");
+      const explText = explEl ? (explEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300) : "";
+      const quizPayload = {
         question: qText,
         chosen: chosenIndices,
+        chosenText: chosenText,
         answer: correctIndices,
+        answerText: answerText,
         correct: right,
-      });
+      };
+      if (explText) quizPayload.explanation = explText;
+      emitEvent("quiz", quizPayload);
     }
   }
   function answerKey(k) {
