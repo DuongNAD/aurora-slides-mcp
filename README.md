@@ -1,106 +1,111 @@
 # Aurora Slides MCP
 
-MCP server để các AI coding agent (Google Antigravity, Claude Code, Cursor…) soạn **slide tự học đẹp như Apple Keynote**:
-chữ lớn, kính mờ, nền cực quang trôi chậm, hiệu ứng lò xo, Magic Move, **exploded view kiểu trang giới thiệu Mac**
-(vật thể nguyên vẹn → zoom vào → linh kiện tách lớp khi cuộn chuột), cùng các khối học tương tác: quiz, lật thẻ,
-điền khuyết, **trang ghi vào vở**, **bài tập có bấm giờ** và **neo trí nhớ** (cung điện ký ức, neo hình ảnh, phép so sánh, mẹo nhớ).
-Mỗi bài là **một file HTML tự chứa**: mở bằng trình duyệt là học được.
+**English** · [Tiếng Việt](README.vi.md)
 
-Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào vở → thực hành → ôn lại**, và theo **khoá học chia nhỏ**:
-một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
-theo dõi tiến độ.
+An MCP server that lets AI coding agents (Google Antigravity, Claude Code, Cursor…) build **self-study slides as beautiful as an
+Apple Keynote**: big type, frosted glass, slowly drifting aurora backgrounds, spring animations, Magic Move, an **exploded view like
+the old Mac product pages** (the whole object → zoom in → its parts separate as you scroll), and interactive learning blocks:
+quizzes, flip cards, cloze, **notebook pages**, **timed exercises** and **memory anchors** (memory palace, picture anchors,
+analogies, mnemonics). Every lesson is **one self-contained HTML file**: open it in a browser and start learning.
 
-Phiên bản hiện tại: **0.4.0**. Tác giả: **DuongNAD**.
+It is built around one way of studying, **theory → memory anchors → copy into a notebook → practice → review**, and around
+**courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
+plus a course home page that tracks progress.
 
-## Điểm nổi bật
+Current version: **0.4.0**. Author: **DuongNAD**.
 
-- **Agent tự vẽ ảnh, không tốn API key**: ảnh minh hoạ do chính agent tạo (Antigravity có công cụ tạo ảnh riêng) rồi nạp vào
-  bài. Slide chỉ cần ghi `"image": {"generate": "<mô tả>"}`; lúc build Aurora **không gọi API nào**, mà trả về danh sách
-  "ảnh cần tạo" để agent vẽ và nạp lại. Key OpenAI/Gemini có trong máy cũng bị bỏ qua, trừ khi bạn tự bật (xem bên dưới).
-- **Đúng ngôn ngữ của bạn**: hướng dẫn gửi cho agent (system prompt của MCP, hai prompt `lesson`/`course`, `aurora_guide`) viết
-  bằng tiếng Anh cho agent hiểu chính xác, nhưng bắt buộc nội dung bài học và câu trả lời của agent dùng ngôn ngữ bạn viết yêu cầu
-  (hỏi bằng tiếng Việt thì ra slide tiếng Việt, `lang: "vi"`). Prompt tạo ảnh, id và từ khoá Mermaid vẫn giữ tiếng Anh.
-- **34 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
+## Highlights
+
+- **The agent makes the pictures, no API keys spent**: illustrations are made by the agent itself (Antigravity has its own image
+  tool) and imported into the lesson. A slide only needs `"image": {"generate": "<description>"}`; at build time Aurora **calls no
+  API** and returns a list of "pictures to make" for the agent to draw and import. OpenAI/Gemini keys on the machine are ignored
+  unless you opt in (see below).
+- **Your language**: the instructions sent to the agent (the MCP server instructions, the `lesson`/`course` prompts, `aurora_guide`)
+  are written in English so agents follow them precisely, but they require the lesson content and the agent's replies to use the
+  language you wrote the request in (ask in Vietnamese and you get Vietnamese slides with `lang: "vi"`). Image prompts, ids and
+  Mermaid keywords stay in English.
+- **34 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
   code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, quiz, flashcards,
   cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
-- **Neo trí nhớ**: `palace` là cung điện ký ức. Camera đi dọc lộ trình trong một nơi quen thuộc (căn nhà của bạn, đường tới
-  trường), mỗi trạm cất một ý kèm một cảnh để hình dung, có đường nối từ điểm neo tới thẻ; cuộn chuột để "đi". Có thể dùng
-  sơ đồ tự vẽ hoặc ảnh căn nhà. Cuối bài có vòng ôn: các ý bị che, đến mỗi trạm tự nhớ rồi chấm Nhớ / Chưa nhớ.
-  Ngoài ra: `anchors` (mỗi khái niệm một hình ảnh), `analogy` (neo vào điều đã biết, kèm chỗ không giống),
-  `mnemonic` (câu thần chú kiểu "Sin đi học, Cos không hư…"), dòng `@ ` trên trang vở để ghi móc nhớ.
-- **Sơ đồ bằng Mermaid** (`diagram`): agent viết code [Mermaid](https://mermaid.js.org) cho lưu đồ, bản đồ tư duy, sơ đồ tuần tự,
-  trạng thái, lớp, ER, dòng thời gian, gantt, sankey, biểu đồ cột/tròn… Aurora vẽ sẵn thành SVG lúc build bằng Chrome/Edge,
-  tô màu theo theme của bài, nên bài học vẫn nhẹ và mở offline được. Khi trình chiếu, các hộp hiện dần, mũi tên tự vẽ nối
-  giữa chúng; `steps` cho hiện từng hộp mỗi lần nhấn →; `look: "handDrawn"` cho nét vẽ tay. Viết sai cú pháp thì slide báo
-  lỗi kèm dòng sai để agent sửa.
-- **9 theme**: aurora, midnight, daylight, titanium, ocean, sunset, forest, paper, liquid (Liquid Glass).
-- **Khoá học**: `course.json` + trang chủ khoá học (thẻ bài mang màu theme của từng bài, vòng tiến độ, nút "Học tiếp");
-  trong mỗi bài có đường dẫn về khoá học và nút "Bài tiếp theo". Trang khoá học nhắc **lịch ôn ngắt quãng**: bài đã học
-  hiện "Đến hạn ôn" sau 1, 3, 7, 16, 35 ngày.
-- **Agent tự kiểm tra**: chụp ảnh slide (contact sheet, từng slide, từng nấc hiệu ứng), audit bố cục, gợi ý sư phạm,
-  lỗi JSON kèm gợi ý sửa ("ý bạn là…").
-- Công thức toán (KaTeX) và hoá học `\ce{...}`; code highlight kiểu Xcode; xem trước có live reload; xuất PDF;
-  font **Be Vietnam Pro** nhúng sẵn, không lỗi dấu tiếng Việt.
+- **Memory anchors**: `palace` is a memory palace. The camera walks a route through a place you know (your home, the way to
+  school); each stop holds one idea with a scene to picture, linked to its card by a leader line; scroll to walk. Use a drawn map
+  or a photo of the place. At the end comes a recall walk: the ideas are hidden, you recall each stop and rate it Got it / Missed.
+  Also: `anchors` (one picture per concept), `analogy` (anchored to something you already know, with where it breaks),
+  `mnemonic` (acrostics and rhymes), and `@ ` lines on notebook pages for writing down the hook.
+- **Mermaid diagrams** (`diagram`): the agent writes [Mermaid](https://mermaid.js.org) code for flowcharts, mind maps, sequence,
+  state, class and ER diagrams, timelines, Gantt, Sankey, bar and pie charts… Aurora renders them to SVG at build time in
+  Chrome/Edge, colored by the lesson's theme, so lessons stay light and work offline. When presenting, boxes fade in and arrows
+  draw themselves between them; `steps` reveals one box per → press; `look: "handDrawn"` gives a sketchy style. A syntax error
+  shows on the slide with the failing line so the agent can fix it.
+- **9 themes**: aurora, midnight, daylight, titanium, ocean, sunset, forest, paper, liquid (Liquid Glass).
+- **Courses**: `course.json` + a course home page (lesson cards in each lesson's theme colors, a progress ring, a "Continue"
+  button); every lesson links back to the course and has a "Next lesson" button. The course page drives **spaced review**:
+  finished lessons show "Due for review" after 1, 3, 7, 16 and 35 days.
+- **Agents check their own work**: slide screenshots (contact sheet, single slides, single animation steps), a layout audit,
+  teaching suggestions, and JSON errors with "did you mean…" fixes.
+- Math (KaTeX) and chemistry `\ce{...}`; Xcode-style code highlighting; live-reload preview; PDF export; **Be Vietnam Pro**
+  embedded so Vietnamese diacritics never break.
 
-## Ảnh: agent tự tạo là ưu tiên số 1
+## Pictures: the agent makes them first
 
-Thứ tự Aurora khuyên agent dùng (ghi trong hướng dẫn và mô tả tool, nên agent tự làm theo):
+The order Aurora recommends to agents (it is written in the guide and in the tool descriptions, so agents follow it on their own):
 
-1. **Agent tự tạo ảnh** bằng công cụ của nó (Antigravity: tạo ảnh ngay trong cuộc trò chuyện). Có hai cách nối vào bài:
-   - Tạo ảnh trước, rồi `aurora_add_image {"dir": …, "path": "<file ảnh>"}` để chép vào thư mục `images/` của bài.
-   - Hoặc ghi `"image": {"generate": "<prompt>"}` ngay trong slide. Build xong, kết quả có mục
-     **"Pictures for you to make"**: mỗi ảnh có mã (id), số slide, khung hình (ngang 16:9, dọc 3:4, vuông 1:1) và prompt.
-     Agent tạo từng ảnh rồi gọi `aurora_add_image {"dir": …, "path": "<file ảnh>", "for": "<id>"}`: ảnh được lưu thành
-     `images/gen-<id>.png` và bài tự build lại. Khi ảnh chưa có, slide hiện một ô kính mờ ghi prompt thay cho ảnh.
-     Cách này giữ prompt trong `deck.json`, nên lần sau làm lại bài vẫn ra cùng một phong cách.
-2. **Ảnh thật trên mạng**: `{"query": "chloroplast microscope"}` hoặc `aurora_search_images` (Openverse, Wikimedia miễn phí;
-   Unsplash/Pexels nếu có key).
-3. **Agent tự vẽ SVG** (`{"svg": "<svg …>"}`) cho hình đơn giản: trục toạ độ, mạch điện, tế bào, quả cầu Bloch.
-4. **Dự phòng** cho agent không tạo được ảnh: `aurora_generate_image` dùng Pollinations (miễn phí, không cần key, chất lượng
-   thấp hơn).
+1. **The agent makes the picture** with its own tool (Antigravity generates images right in the conversation). Two ways to wire
+   it in:
+   - Make the picture first, then `aurora_add_image {"dir": …, "path": "<image file>"}` copies it into the lesson's `images/` folder.
+   - Or write `"image": {"generate": "<prompt>"}` in the slide. The build result then has a **"Pictures for you to make"** list:
+     each picture has an id, slide number, shape (landscape 16:9, portrait 3:4, square 1:1) and prompt. The agent makes each one
+     and calls `aurora_add_image {"dir": …, "path": "<image file>", "for": "<id>"}`: the picture is saved as
+     `images/gen-<id>.png` and the lesson rebuilds itself. Until then the slide shows a frosted-glass placeholder with the prompt.
+     The prompts stay in `deck.json`, so a remake of the lesson keeps the same style.
+2. **Real photos from the web**: `{"query": "chloroplast microscope"}` or `aurora_search_images` (Openverse and Wikimedia for
+   free; Unsplash/Pexels with a key).
+3. **The agent draws SVG** (`{"svg": "<svg …>"}`) for simple figures: axes, circuits, cells, Bloch spheres.
+4. **Fallback** for agents that cannot make images: `aurora_generate_image` uses Pollinations (free, no key, lower quality).
 
-Muốn Aurora tự gọi OpenAI/Gemini lúc build (tốn tiền), đặt biến `AURORA_IMAGE_PROVIDER`:
+To let Aurora call OpenAI/Gemini at build time (this costs money), set `AURORA_IMAGE_PROVIDER`:
 
-| Giá trị | Ý nghĩa |
+| Value | Meaning |
 |---|---|
-| `agent` (mặc định) | Không gọi API ảnh nào khi build; prompt thành danh sách ảnh để agent tạo. Key trong máy bị bỏ qua |
-| `pollinations` | Tạo lúc build bằng Pollinations (miễn phí, có watermark nhỏ) |
-| `openai` / `gemini` | Tạo lúc build bằng OpenAI gpt-image / Gemini (cần `OPENAI_API_KEY` / `GEMINI_API_KEY`, tốn tiền) |
-| `auto` | Cách cũ: OpenAI, rồi Gemini (nếu có key), rồi Pollinations |
+| `agent` (default) | No image API is called at build time; prompts become a list of pictures for the agent. Keys on the machine are ignored |
+| `pollinations` | Generated at build time with Pollinations (free, small watermark) |
+| `openai` / `gemini` | Generated at build time with OpenAI gpt-image / Gemini (needs `OPENAI_API_KEY` / `GEMINI_API_KEY`, costs money) |
+| `auto` | The old behavior: OpenAI, then Gemini (when keys are set), then Pollinations |
 
-Ảnh đã có trong `images/gen-<id>.*` của bài luôn được dùng lại ở mọi chế độ, nên không bao giờ phải trả tiền hai lần.
+A picture already in the lesson's `images/gen-<id>.*` is always reused in every mode, so you never pay twice.
 
-## Cài đặt
+## Install
 
-Yêu cầu: Node.js 22.4+ và Google Chrome hoặc Microsoft Edge (để vẽ sơ đồ, chụp ảnh, audit, xuất PDF).
+Requirements: Node.js 22.4+ and Google Chrome or Microsoft Edge (for diagrams, screenshots, audits and PDF export).
 
-`dist/aurora.mjs` đã được build sẵn trong repo: clone về là chạy được, không cần cài gì thêm.
+`dist/aurora.mjs` is prebuilt in the repo: clone it and it runs, nothing else to install.
 
 ```bash
 git clone https://github.com/DuongNAD/aurora-slides-mcp.git
 ```
 
-Khi sửa mã nguồn (`src/`, `runtime/`, `guide/`) thì build lại:
+After changing the source (`src/`, `runtime/`, `guide/`), rebuild:
 
 ```bash
 node scripts/build.mjs --install --check
 ```
 
-Lệnh trên cài toolchain (TypeScript, esbuild, MCP SDK, KaTeX, Shiki…) vào `%LOCALAPPDATA%\aurora-slides\toolchain`
-(Linux/macOS: `~/.cache/aurora-slides/toolchain`) rồi build ra `dist/aurora.mjs`. Lần đầu nó cũng tải gói Mermaid từ npm nhưng
-chỉ lấy đúng một file `assets/mermaid.min.js` (khoảng 5 MB, chỉ dùng lúc build, không nhúng vào bài).
-Những lần sau chỉ cần `node scripts/build.mjs --check`.
+This installs the toolchain (TypeScript, esbuild, MCP SDK, KaTeX, Shiki…) into `%LOCALAPPDATA%\aurora-slides\toolchain`
+(Linux/macOS: `~/.cache/aurora-slides/toolchain`) and builds `dist/aurora.mjs`. The first run also downloads the Mermaid package
+from npm but keeps only one file, `assets/mermaid.min.js` (about 5 MB, used at build time only, never embedded in lessons).
+After that, `node scripts/build.mjs --check` is enough.
 
-> **Đừng chạy `npm install` trong thư mục dự án.** Dự án cố ý không có `node_modules`: mọi dependency nằm ở toolchain bên ngoài,
-> repo chỉ giữ một file bundle. Nhờ vậy có thể đặt dự án trên ổ exFAT hay USB (cluster lớn) mà không sinh hàng nghìn file nhỏ.
+> **Do not run `npm install` in the project folder.** The project has no `node_modules` on purpose: every dependency lives in the
+> external toolchain and the repo keeps a single bundle. That way the project can sit on an exFAT drive or a USB stick (large
+> clusters) without thousands of tiny files.
 
-## Kết nối với agent
+## Connect your agent
 
-Đăng ký Aurora với tên `aurora-slides`, rồi tải lại danh sách MCP (hoặc mở lại Antigravity / Claude Code) để agent nhìn thấy
-các tool. Thay `C:/path/to/aurora-slides-mcp` bằng thư mục bạn đã clone.
+Register Aurora as `aurora-slides`, then reload the MCP servers (or restart Antigravity / Claude Code) so the agent sees the tools.
+Replace `C:/path/to/aurora-slides-mcp` with the folder you cloned.
 
-**Google Antigravity**: thêm vào `mcpServers` trong `%USERPROFILE%\.gemini\antigravity\mcp_config.json`
-(Cursor dùng cùng định dạng trong `.cursor/mcp.json`):
+**Google Antigravity**: add it to `mcpServers` in `%USERPROFILE%\.gemini\antigravity\mcp_config.json`
+(Cursor uses the same format in `.cursor/mcp.json`):
 
 ```json
 {
@@ -119,127 +124,132 @@ các tool. Thay `C:/path/to/aurora-slides-mcp` bằng thư mục bạn đã clon
 claude mcp add aurora-slides --scope user -- node "C:/path/to/aurora-slides-mcp/dist/aurora.mjs"
 ```
 
-Biến môi trường tuỳ chọn (đặt trong khối `"env"` của cấu hình MCP):
+Optional environment variables (put them in the `"env"` block of the MCP config):
 
-| Biến | Tác dụng |
+| Variable | Effect |
 |---|---|
-| `AURORA_IMAGE_PROVIDER` | Cách xử lý `generate`: `agent` (mặc định), `pollinations`, `openai`, `gemini`, `auto` (xem mục Ảnh) |
-| `OPENAI_API_KEY` / `GEMINI_API_KEY` | Chỉ được dùng khi `AURORA_IMAGE_PROVIDER` là `openai`, `gemini` hoặc `auto` |
-| `AURORA_OPENAI_IMAGE_MODEL`, `AURORA_GEMINI_IMAGE_MODEL` | Đổi model tạo ảnh |
-| `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY` | Ảnh Unsplash/Pexels đẹp hơn thay vì Openverse/Wikimedia |
-| `AURORA_DECKS_DIR` | Thư mục mặc định chứa bài (mặc định `./slides` của dự án agent đang mở) |
-| `AURORA_BROWSER` | Đường dẫn Chrome/Edge nếu không tự tìm thấy |
-| `AURORA_PORT` | Cổng server xem trước (mặc định 4747) |
-| `AURORA_HOME` | Thư mục cache icon/ảnh/sơ đồ (mặc định `%LOCALAPPDATA%\aurora-slides`) |
+| `AURORA_IMAGE_PROVIDER` | How `generate` is handled: `agent` (default), `pollinations`, `openai`, `gemini`, `auto` (see Pictures) |
+| `OPENAI_API_KEY` / `GEMINI_API_KEY` | Used only when `AURORA_IMAGE_PROVIDER` is `openai`, `gemini` or `auto` |
+| `AURORA_OPENAI_IMAGE_MODEL`, `AURORA_GEMINI_IMAGE_MODEL` | Change the image model |
+| `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY` | Nicer Unsplash/Pexels photos instead of Openverse/Wikimedia |
+| `AURORA_DECKS_DIR` | Default folder for lessons (default: `./slides` of the project the agent has open) |
+| `AURORA_BROWSER` | Path to Chrome/Edge if it is not found automatically |
+| `AURORA_PORT` | Preview server port (default 4747) |
+| `AURORA_HOME` | Cache folder for icons, images and diagrams (default `%LOCALAPPDATA%\aurora-slides`) |
 
-## Dùng thế nào
+## How to use it
 
-Chỉ cần nói với agent. Ví dụ một bài học trong ngày, giao cho Antigravity:
+Just ask your agent. For example, today's lesson, given to Antigravity:
 
-> Dùng aurora-slides làm bài học hôm nay về **Định luật Ôm** cho mình: lý thuyết → neo trí nhớ → trang ghi vở → bài tập từ dễ
-> đến khó → ôn lại. Ảnh minh hoạ thì **tự tạo bằng công cụ tạo ảnh của bạn**, cùng một phong cách cho cả bài, không có chữ
-> trong ảnh, rồi nạp vào bằng `aurora_add_image`. Xong thì chụp ảnh kiểm tra, sửa lỗi audit và mở bản xem trước.
+> Use aurora-slides to make today's lesson on **Ohm's law** for me: theory → memory anchors → a notebook page → exercises from
+> easy to hard → review. **Make the illustrations with your own image tool**, one style for the whole lesson, no text inside the
+> pictures, and import them with `aurora_add_image`. Then take screenshots to check it, fix the audit errors and open the preview.
 
-Hoặc cả một khoá học:
+Or a whole course:
 
-> Dùng aurora-slides làm khoá học **Máy tính lượng tử** gồm 5 bài nhỏ: lý thuyết lượng tử, cổng lượng tử, rối lượng tử,
-> mạch và thuật toán, phần cứng. Mỗi bài một theme khác nhau, có trang ghi vở sau phần lý thuyết và bài tập từ dễ đến khó.
-> Bài phần cứng làm exploded view bên trong máy tính lượng tử. Mỗi bài có một cung điện ký ức trong căn nhà của mình
-> để nhớ các ý chính, cuối bài đi lại một vòng để ôn. Ảnh tự tạo rồi nạp vào. Xong thì chụp ảnh kiểm tra và mở bản xem trước.
+> Use aurora-slides to make a **Quantum computing** course of 5 small lessons: quantum theory, quantum gates, entanglement,
+> circuits and algorithms, hardware. Give each lesson its own theme, a notebook page after the theory and exercises from easy to
+> hard. Make the hardware lesson an exploded view of a quantum computer. Each lesson gets a memory palace in my home for its key
+> ideas and a recall walk at the end. Make the pictures yourself and import them. Then check the screenshots and open the preview.
 
-Trong Claude Code còn có prompt dựng sẵn: `/mcp__aurora-slides__course` và `/mcp__aurora-slides__lesson`.
+Write the request in any language: the slides and the agent's replies come back in that language.
 
-Bài học được lưu vào `./slides/<tên-bài>/` của dự án agent đang mở (gồm `deck.json`, `index.html` và `images/`).
-Mở `index.html` bằng trình duyệt là học được.
+Claude Code also has ready-made prompts: `/mcp__aurora-slides__course` and `/mcp__aurora-slides__lesson`.
 
-Các tool agent dùng:
+Lessons are saved in `./slides/<lesson-name>/` of the project the agent has open (`deck.json`, `index.html` and `images/`).
+Open `index.html` in a browser to study.
 
-| Tool | Việc |
+Tools the agent uses:
+
+| Tool | Job |
 |---|---|
-| `aurora_guide` | Hướng dẫn viết slide, từng loại slide kèm ví dụ JSON, cách chia khoá học, cách lấy ảnh |
-| `aurora_create_course` | Tạo/sửa khoá học: danh sách bài, theme từng bài, trang chủ khoá học |
-| `aurora_create_deck` | Tạo/ghi đè một bài (deck.json + index.html), báo lỗi chính xác nếu JSON sai, liệt kê ảnh cần tạo |
-| `aurora_edit_deck` | Sửa từng slide: replace, insert, delete, move, update, deck |
-| `aurora_get_deck`, `aurora_build` | Đọc lại deck; build lại deck hoặc cả khoá học |
-| `aurora_add_image` | Nạp ảnh agent tự tạo/tìm (file, URL, base64) vào bài; `for` điền đúng ảnh slide đang chờ rồi tự build lại |
-| `aurora_search_icons`, `aurora_search_images` | Tìm icon (Iconify, hơn 200 nghìn mẫu) và ảnh trên mạng |
-| `aurora_generate_image` | Dự phòng cho agent không tự tạo được ảnh (Pollinations miễn phí) |
-| `aurora_screenshot`, `aurora_audit` | Agent tự nhìn slide (cả từng nấc hiệu ứng) và kiểm tra lỗi bố cục |
-| `aurora_preview` | Server xem trước 127.0.0.1 có live reload (deck hoặc cả khoá học) |
-| `aurora_export_pdf` | Xuất PDF 16:9 |
+| `aurora_guide` | How to write slides: every slide type with a JSON example, how to split a course, how to get pictures |
+| `aurora_create_course` | Create or edit a course: lesson list, theme per lesson, course home page |
+| `aurora_create_deck` | Create or overwrite a lesson (deck.json + index.html), precise errors for bad JSON, list of pictures to make |
+| `aurora_edit_deck` | Edit single slides: replace, insert, delete, move, update, deck |
+| `aurora_get_deck`, `aurora_build` | Read a deck back; rebuild a deck or a whole course |
+| `aurora_add_image` | Import a picture the agent made or found (file, URL, base64); `for` fills a waiting slide picture and rebuilds |
+| `aurora_search_icons`, `aurora_search_images` | Search icons (Iconify, 200,000+) and web photos |
+| `aurora_generate_image` | Fallback for agents that cannot make pictures (free Pollinations) |
+| `aurora_screenshot`, `aurora_audit` | The agent looks at its slides (down to single animation steps) and checks the layout |
+| `aurora_preview` | Preview server on 127.0.0.1 with live reload (a deck or a whole course) |
+| `aurora_export_pdf` | Export a 16:9 PDF |
 
-## Khi học
+## While studying
 
-| Thao tác | Việc |
+| Key | Action |
 |---|---|
-| → / Space / cuộn xuống | Tiếp theo (từng ý, từng dòng vở, từng bước lời giải, từng nấc exploded view) |
-| ← / cuộn lên | Quay lại |
-| N | Ghi chú chi tiết của slide |
-| O / Esc | Tổng quan toàn bài |
-| F | Toàn màn hình |
-| T | Bật/tạm dừng đồng hồ bài tập |
-| 1–6 | Chọn đáp án quiz |
-| 1 / 2 | Nhớ / Chưa nhớ khi ôn cung điện ký ức |
+| → / Space / scroll down | Next (one point, one notebook line, one solution step, one exploded-view stage at a time) |
+| ← / scroll up | Back |
+| N | The slide's detailed notes |
+| O / Esc | Overview of the whole lesson |
+| F | Fullscreen |
+| T | Start/pause the exercise timer |
+| 1–6 | Pick a quiz answer |
+| 1 / 2 | Got it / Missed during a memory palace review |
 
-Trên slide exploded view và cung điện ký ức, cuộn chuột/trackpad sẽ "tua" hiệu ứng liên tục như trang Apple. Bài học nhớ
-chỗ đang học, trang khoá học hiện tiến độ từng bài và những bài đến hạn ôn.
+On exploded-view and memory palace slides, the mouse wheel or trackpad scrubs the animation continuously, like an Apple page.
+Lessons remember where you stopped; the course page shows each lesson's progress and which lessons are due for review.
 
 ## CLI
 
 ```bash
-node dist/aurora.mjs build examples/quang-hop             # build một bài (in ra cả danh sách ảnh cần tạo nếu có)
-node dist/aurora.mjs build examples/may-tinh-luong-tu     # build cả khoá học
+node dist/aurora.mjs build examples/quang-hop             # build a lesson (also prints the pictures to make, if any)
+node dist/aurora.mjs build examples/may-tinh-luong-tu     # build a whole course
 node dist/aurora.mjs serve examples/may-tinh-luong-tu --open
 node dist/aurora.mjs shot examples/quang-hop --sheet      # contact sheet
 node dist/aurora.mjs shot examples/quang-hop --slides 8 --step 2
 node dist/aurora.mjs audit examples/quang-hop
 node dist/aurora.mjs pdf examples/quang-hop
-node dist/aurora.mjs images "chloroplast microscope"      # tìm ảnh
-node dist/aurora.mjs icons leaf atom --style duotone      # tìm icon
-node dist/aurora.mjs generate "glowing qubit chip, dark navy, soft light, no text"   # Pollinations miễn phí
-node dist/aurora.mjs showcase --theme forest              # deck mẫu dùng mọi layout
-node dist/aurora.mjs selftest                             # chạy thử runtime trong Chrome headless
-node scripts/e2e.mjs                                      # kiểm thử MCP end-to-end (mọi tool, kể cả luồng ảnh của agent)
+node dist/aurora.mjs images "chloroplast microscope"      # search photos
+node dist/aurora.mjs icons leaf atom --style duotone      # search icons
+node dist/aurora.mjs generate "glowing qubit chip, dark navy, soft light, no text"   # free Pollinations
+node dist/aurora.mjs showcase --theme forest              # sample deck that uses every layout
+node dist/aurora.mjs selftest                             # drive the runtime in headless Chrome
+node scripts/e2e.mjs                                      # end-to-end MCP test (every tool, including the agent picture flow)
 ```
 
-## Ví dụ có sẵn
+## Examples
 
-- `examples/quang-hop`: bài "Quang hợp" (lý thuyết → neo trí nhớ → ghi vở → thực hành → ôn lại): cung điện "Pha sáng:
-  một vòng quanh nhà", phép so sánh lục lạp với nhà máy điện mặt trời, mẹo nhớ "Con kiến tha mồi", bản đồ tư duy toàn cảnh
-  vẽ bằng Mermaid.
-- `examples/may-tinh-luong-tu`: khoá học "Máy tính lượng tử" 5 bài (3 bài đã viết, 2 bài "Sắp có"), mỗi bài một theme;
-  bài 1 có cung điện ký ức vẽ trên sơ đồ một căn hộ (7 ý về qubit, 7 góc trong nhà), bài 2 mở đầu bằng vòng ôn bài 1 và có
-  lưu đồ Mermaid đi từng bước qua mạch tạo trạng thái Bell, bài 5 có exploded view tủ lạnh pha loãng.
+Both examples are in Vietnamese.
 
-## Cấu trúc
+- `examples/quang-hop`: a lesson on photosynthesis (theory → memory anchors → notebook → practice → review): the memory palace
+  "The light reactions: a walk around the house", an analogy between chloroplasts and a solar power plant, a mnemonic for the
+  Calvin cycle, and a Mermaid mind map of the whole topic.
+- `examples/may-tinh-luong-tu`: a 5-lesson course on quantum computing (3 lessons written, 2 marked "Coming soon"), each with its
+  own theme; lesson 1 has a memory palace drawn on an apartment floor plan (7 ideas about qubits, 7 corners of the home), lesson 2
+  opens with a recall walk of lesson 1 and has a step-by-step Mermaid flowchart of the Bell-state circuit, and lesson 5 has an
+  exploded view of a dilution refrigerator.
+
+## Layout
 
 ```
 src/        TypeScript: schema, render, course, imagegen, MCP tools, CLI
-runtime/    aurora.css + aurora.js chạy trong trình duyệt
-guide/      GUIDE.md cho agent
-examples/   bài và khoá học mẫu
-assets/     runtime đã minify, font và KaTeX nhúng base64, mermaid.min.js (sinh bởi build)
-dist/       aurora.mjs: một file duy nhất chứa toàn bộ server (build sẵn, có trong repo)
-scripts/    build.mjs (toolchain nằm ngoài dự án), e2e.mjs (kiểm thử MCP)
-PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
+runtime/    aurora.css + aurora.js that run in the browser
+guide/      GUIDE.md for agents
+examples/   sample lessons and a sample course
+assets/     minified runtime, base64-embedded fonts and KaTeX, mermaid.min.js (made by the build)
+dist/       aurora.mjs: one file with the whole server (prebuilt, committed)
+scripts/    build.mjs (toolchain outside the project), e2e.mjs (MCP test)
+PLAN.md     status, next ideas, constraints
 ```
 
-## Lịch sử phiên bản
+## Version history
 
-- **0.4.0** (10/10/2026): agent tự tạo ảnh là mặc định. `generate` thành danh sách ảnh cần tạo, `aurora_add_image {for}`
-  điền ảnh và tự build lại, key OpenAI/Gemini chỉ dùng khi bật `AURORA_IMAGE_PROVIDER`. System prompt cho agent viết lại
-  bằng tiếng Anh (Workflow / Rules / Done when), nội dung và câu trả lời theo ngôn ngữ của người dùng.
-- **0.3.0**: slide `diagram` vẽ từ Mermaid lúc build, tô theo theme, hiện từng bước.
-- **0.2.0**: neo trí nhớ: `palace`, `anchors`, `analogy`, `mnemonic`, dòng `@ ` trong vở, lịch ôn ngắt quãng.
-- **0.1.0**: 29 loại slide, khoá học, 14 tool MCP, ảnh, CLI, selftest và e2e.
+- **0.4.0** (2026-10-10): agent-made pictures by default. `generate` becomes a list of pictures to make, `aurora_add_image {for}`
+  fills them and rebuilds, and OpenAI/Gemini keys are used only when `AURORA_IMAGE_PROVIDER` allows it. The agent instructions are
+  rewritten in English (Workflow / Rules / Done when); content and replies follow the user's language.
+- **0.3.0**: `diagram` slides drawn from Mermaid at build time, themed, revealed step by step.
+- **0.2.0**: memory anchors: `palace`, `anchors`, `analogy`, `mnemonic`, `@ ` notebook lines, spaced review.
+- **0.1.0**: 29 slide types, courses, 14 MCP tools, pictures, CLI, selftest and e2e.
 
-## Tác giả, giấy phép và thư viện
+## Author, license and libraries
 
-Aurora Slides do **DuongNAD** ([github.com/DuongNAD](https://github.com/DuongNAD)) xây dựng. Mã nguồn trong `src/`, `runtime/`, `guide/` và `scripts/`
-được viết riêng cho dự án này và phát hành theo **giấy phép MIT** (xem [LICENSE](LICENSE)): ai cũng được dùng, sửa, phân phối,
-kể cả cho mục đích thương mại, miễn là giữ lại thông báo bản quyền và giấy phép.
+Aurora Slides is built by **DuongNAD** ([github.com/DuongNAD](https://github.com/DuongNAD)). The code in `src/`, `runtime/`, `guide/`
+and `scripts/` was written for this project and is released under the **MIT license** (see [LICENSE](LICENSE)): anyone may use,
+change and distribute it, commercially too, as long as the copyright and license notice are kept.
 
-Aurora dùng các thư viện mã nguồn mở, mỗi thư viện giữ giấy phép của tác giả: Model Context Protocol SDK, zod, KaTeX, Shiki,
-Mermaid, esbuild, TypeScript (MIT / Apache-2.0), font Be Vietnam Pro, Inter, JetBrains Mono (SIL Open Font License).
-Icon lấy từ Iconify và ảnh lấy từ Openverse, Wikimedia, Unsplash, Pexels có giấy phép riêng của từng tác giả; Aurora tự ghi
-nguồn ảnh dưới mỗi tấm.
+Aurora uses open-source libraries, each under its authors' license: Model Context Protocol SDK, zod, KaTeX, Shiki, Mermaid,
+esbuild, TypeScript (MIT / Apache-2.0), and the fonts Be Vietnam Pro, Inter and JetBrains Mono (SIL Open Font License).
+Icons from Iconify and photos from Openverse, Wikimedia, Unsplash and Pexels carry their own authors' licenses; Aurora credits
+every photo under the picture.

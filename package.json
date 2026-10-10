@@ -12,7 +12,7 @@
   "bin": {
     "aurora-slides": "dist/aurora.mjs"
   },
-  "files": ["dist", "assets", "runtime", "guide", "deck.schema.json", "README.md"],
+  "files": ["dist", "assets", "runtime", "guide", "deck.schema.json", "README.md", "README.vi.md"],
   "scripts": {
     "setup": "node scripts/build.mjs --install --check",
     "build": "node scripts/build.mjs",
