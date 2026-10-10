@@ -127,6 +127,37 @@ export function resolveLang(lang: string): string | undefined {
   return LANGS[id] ? id : undefined;
 }
 
+export const EXT_LANG: Record<string, string> = {
+  ".py": "python",
+  ".ts": "typescript",
+  ".tsx": "tsx",
+  ".js": "javascript",
+  ".mjs": "javascript",
+  ".cjs": "javascript",
+  ".json": "json",
+  ".md": "markdown",
+  ".sh": "bash",
+  ".ps1": "powershell",
+  ".sql": "sql",
+  ".java": "java",
+  ".c": "c",
+  ".cpp": "cpp",
+  ".cs": "csharp",
+  ".go": "go",
+  ".rs": "rust",
+  ".html": "html",
+  ".css": "css",
+  ".yaml": "yaml",
+  ".yml": "yaml",
+};
+
+export function langFromExt(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  if (dot === -1) return "text";
+  const ext = filename.slice(dot).toLowerCase();
+  return EXT_LANG[ext] ?? "text";
+}
+
 export interface CodeHtml {
   /** <span class="ln" data-l="n">…</span> per line */
   html: string;
@@ -134,22 +165,46 @@ export interface CodeHtml {
   longest: number;
   lang: string;
   known: boolean;
+  filename?: string;
 }
 
-export async function highlightCode(code: string, lang: string): Promise<CodeHtml> {
+export async function highlightCode(
+  code: string,
+  lang: string,
+  lineNumbers?: Array<number | "gap">,
+): Promise<CodeHtml> {
   const src = code.replace(/\r\n/g, "\n").replace(/\t/g, "    ").replace(/\s+$/, "");
   const raw = src.split("\n");
   const longest = Math.max(1, ...raw.map((l) => [...l].length));
   const id = resolveLang(lang);
+  const lineEntries: Array<number | "gap"> = lineNumbers && lineNumbers.length > 0
+    ? lineNumbers
+    : raw.map((_, i) => i + 1);
+
   if (!id) {
-    const html = raw.map((l, i) => `<span class="ln" data-l="${i + 1}">${esc(l) || " "}</span>`).join("\n");
-    return { html, lines: raw.length, longest, lang, known: lang === "text" || lang === "plain" || lang === "txt" };
+    let rawIdx = 0;
+    const htmlLines: string[] = [];
+    for (const entry of lineEntries) {
+      if (entry === "gap") {
+        htmlLines.push(`<span class="ln gap" data-l="">⋯</span>`);
+      } else {
+        const l = raw[rawIdx++] ?? "";
+        htmlLines.push(`<span class="ln" data-l="${entry}">${esc(l) || " "}</span>`);
+      }
+    }
+    const html = htmlLines.join("\n");
+    return { html, lines: lineEntries.length, longest, lang, known: lang === "text" || lang === "plain" || lang === "txt" };
   }
   const h = await getHighlighter();
   if (!h.getLoadedLanguages().includes(id)) await h.loadLanguage((await LANGS[id]!()).default);
   const { tokens } = h.codeToTokens(src, { lang: id, themes: { light: "aurora-light", dark: "aurora-dark" }, defaultColor: false });
-  const html = tokens
-    .map((line, i) => {
+  let tokenIdx = 0;
+  const htmlLines: string[] = [];
+  for (const entry of lineEntries) {
+    if (entry === "gap") {
+      htmlLines.push(`<span class="ln gap" data-l="">⋯</span>`);
+    } else {
+      const line = tokens[tokenIdx++] ?? [];
       const inner = line
         .map((t) => {
           const style = t.htmlStyle
@@ -162,10 +217,11 @@ export async function highlightCode(code: string, lang: string): Promise<CodeHtm
           return style ? `<span style="${esc(style)}">${esc(t.content)}</span>` : esc(t.content);
         })
         .join("");
-      return `<span class="ln" data-l="${i + 1}">${inner || " "}</span>`;
-    })
-    .join("\n");
-  return { html, lines: tokens.length, longest, lang: id, known: true };
+      htmlLines.push(`<span class="ln" data-l="${entry}">${inner || " "}</span>`);
+    }
+  }
+  const html = htmlLines.join("\n");
+  return { html, lines: lineEntries.length, longest, lang: id, known: true };
 }
 
 /** KaTeX → HTML. Never throws; bad TeX renders as red source text. */

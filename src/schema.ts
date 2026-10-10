@@ -140,6 +140,28 @@ const BulletsSlide = z.strictObject({
   icon: IconSchema.optional().describe("Optional large icon on the right (used if no image)"),
 });
 
+const CodeObject = z
+  .strictObject({
+    lang: z
+      .string()
+      .optional()
+      .describe(
+        "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
+      ),
+    code: z.string().min(1).optional().describe("Source code string"),
+    file: z.string().min(1).optional().describe("Path relative to the deck folder, or absolute"),
+    lines: z
+      .string()
+      .regex(/^\s*\d+(\s*-\s*\d+)?(\s*,\s*\d+(\s*-\s*\d+)?)*\s*$/, 'lines like "129-161" or "129-140,147-161"')
+      .optional()
+      .describe('1-based line ranges to quote, e.g. "129-161" or "129-140,147-161" (default: whole file)'),
+    dedent: z.boolean().default(true).describe("Remove common leading indentation from quoted lines (default true)"),
+    filename: z.string().optional().describe("Window title, e.g. main.py (defaults to file basename when file is used)"),
+  })
+  .refine((v) => Boolean(v.code) !== Boolean(v.file), {
+    message: "code requires exactly one of `code` (inline string) or `file` (path to source file)",
+  });
+
 const SplitSlide = z.strictObject({
   type: z.literal("split"),
   ...base,
@@ -149,10 +171,7 @@ const SplitSlide = z.strictObject({
   items: z.array(BulletItem).max(6).optional(),
   image: ImageSchema.optional(),
   icon: IconSchema.optional(),
-  code: z
-    .strictObject({ lang: z.string().default("text"), code: z.string().min(1), filename: z.string().optional() })
-    .optional()
-    .describe("Show a code window as the media"),
+  code: CodeObject.optional().describe("Show a code window as the media"),
   side: z.enum(["left", "right"]).optional().describe("Which side the media sits on (default right)"),
 });
 
@@ -236,18 +255,34 @@ const CodeStep = z.strictObject({
   text: optMd("Explanation shown while these lines are highlighted"),
 });
 
-const CodeSlide = z.strictObject({
-  type: z.literal("code"),
-  ...base,
-  eyebrow,
-  title: optMd("Title"),
-  lang: z.string().default("text").describe("python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml…"),
-  code: md("Source code (keep it ≤ 18 lines; no horizontal scrolling)"),
-  filename: optMd("Window title, e.g. main.py"),
-  text: optMd("Explanation beside the code"),
-  steps: z.array(CodeStep).max(10).optional().describe("Walk through the code: each → highlights lines and swaps the explanation"),
-  output: optMd("Terminal output shown under the code"),
-});
+const CodeSlide = z
+  .strictObject({
+    type: z.literal("code"),
+    ...base,
+    eyebrow,
+    title: optMd("Title"),
+    lang: z
+      .string()
+      .optional()
+      .describe(
+        "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
+      ),
+    code: z.string().min(1).optional().describe("Source code (keep it ≤ 18 lines; no horizontal scrolling)"),
+    file: z.string().min(1).optional().describe("Path relative to the deck folder, or absolute"),
+    lines: z
+      .string()
+      .regex(/^\s*\d+(\s*-\s*\d+)?(\s*,\s*\d+(\s*-\s*\d+)?)*\s*$/, 'lines like "129-161" or "129-140,147-161"')
+      .optional()
+      .describe('1-based line ranges to quote, e.g. "129-161" or "129-140,147-161" (default: whole file)'),
+    dedent: z.boolean().default(true).describe("Remove common leading indentation from quoted lines (default true)"),
+    filename: optMd("Window title, e.g. main.py (defaults to file basename when file is used)"),
+    text: optMd("Explanation beside the code"),
+    steps: z.array(CodeStep).max(10).optional().describe("Walk through the code: each → highlights lines and swaps the explanation"),
+    output: optMd("Terminal output shown under the code"),
+  })
+  .refine((v) => Boolean(v.code) !== Boolean(v.file), {
+    message: "code slide requires exactly one of `code` (inline string) or `file` (path to source file)",
+  });
 
 const TimelineSlide = z.strictObject({
   type: z.literal("timeline"),
@@ -508,10 +543,7 @@ const ExerciseSlide = z.strictObject({
   title: optMd("Exercise title, e.g. 'Bài tập 2'"),
   level: z.enum(["easy", "medium", "hard"]).optional().describe("Difficulty shown as 1–3 dots"),
   problem: md("The task statement ($math$ and markup allowed)"),
-  code: z
-    .strictObject({ lang: z.string().default("text"), code: z.string().min(1), filename: z.string().optional() })
-    .optional()
-    .describe("Starter code or data shown under the problem"),
+  code: CodeObject.optional().describe("Starter code or data shown under the problem"),
   time: z.number().int().min(10).max(3600).optional().describe("Seconds to try alone first; shows a timer the learner can start"),
   hints: z.array(md("Hint")).max(4).optional().describe("Revealed one per → before the solution"),
   solution: z.array(md("Solution step")).max(8).optional().describe("Worked solution, revealed one step per →"),

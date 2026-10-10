@@ -96,16 +96,24 @@ export function lintDeck(deck: Deck): string[] {
         });
         break;
       case "split":
+        if (s.code?.filename && !s.code?.file) {
+          out.push(`Slide ${i + 1} shows "${s.code.filename}" but the code is typed in; use "file" + "lines" so the slide quotes the real file verbatim.`);
+        }
         if (words(s.text) > 60) out.push(`${where}: paragraph has ${words(s.text)} words; ≤ 45 keeps the slide airy (move depth into notes).`);
         break;
       case "quote":
         if (words(s.quote) > 35) out.push(`${where}: quote has ${words(s.quote)} words; trim to the memorable part.`);
         break;
       case "code": {
-        const lines = s.code.replace(/\s+$/, "").split("\n");
-        const longest = Math.max(...lines.map((l) => [...l].length));
-        if (lines.length > 18) out.push(`${where}: ${lines.length} lines of code; ≤ 18 stays readable. Show the essential part and link the rest.`);
-        if (longest > 72) out.push(`${where}: longest code line is ${longest} chars; wrap to ≤ 60 so the font stays large.`);
+        if (s.filename && !s.file) {
+          out.push(`Slide ${i + 1} shows "${s.filename}" but the code is typed in; use "file" + "lines" so the slide quotes the real file verbatim.`);
+        }
+        if (s.code) {
+          const lines = s.code.replace(/\s+$/, "").split("\n");
+          const longest = Math.max(...lines.map((l) => [...l].length));
+          if (lines.length > 18) out.push(`${where}: ${lines.length} lines of code; ≤ 18 stays readable. Show the essential part and link the rest.`);
+          if (longest > 72) out.push(`${where}: longest code line is ${longest} chars; wrap to ≤ 60 so the font stays large.`);
+        }
         break;
       }
       case "bento":
@@ -151,6 +159,9 @@ export function lintDeck(deck: Deck): string[] {
         });
         break;
       case "exercise":
+        if (s.code?.filename && !s.code?.file) {
+          out.push(`Slide ${i + 1} shows "${s.code.filename}" but the code is typed in; use "file" + "lines" so the slide quotes the real file verbatim.`);
+        }
         if (!s.solution?.length && !s.answer) out.push(`${where}: add "solution" steps or an "answer" so the learner can check their work.`);
         if (words(s.problem) > 60) out.push(`${where}: problem statement has ${words(s.problem)} words; keep it ≤ 45 or move data into code/table.`);
         break;

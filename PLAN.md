@@ -3,7 +3,8 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-10): v0.4 agent-made pictures
+## Status (2026-10-10): v0.5 verbatim code quotes (in progress)
+- v0.5 (work in progress): quote real source files with `file` + `lines` (dedent, real line numbers, gap rows `⋯`, error cards, lint notes).
 - The learner mostly builds decks with Antigravity, which can generate images itself, and does not want API keys spent.
   AURORA_IMAGE_PROVIDER (src/imagegen.ts `imageMode`) defaults to `agent`: builds never call an image API; a slide's
   `generate` prompt becomes a picture request (id = genKey of prompt/shape/transparent) listed in the build output

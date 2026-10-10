@@ -421,6 +421,11 @@ html[lang^="vi"] .h2 { line-height: 1.16; }
 .code-pre.focus .ln { opacity: .28; }
 .code-pre.focus .ln.hl { opacity: 1; background: color-mix(in oklab, var(--accent) 13%, transparent); }
 .code-pre.focus .ln.hl::after { content: ""; position: absolute; left: 3.5em; top: 12%; bottom: 12%; width: 4px; border-radius: 2px; background: var(--accent); }
+.ln.gap { opacity: .5; color: var(--fg3); user-select: none; }
+.code-err { border-color: color-mix(in oklab, var(--red) 45%, var(--glass-brd)); }
+.code-err-body { padding: 48px 40px; display: flex; flex-direction: column; gap: 12px; }
+.code-err-body b { color: var(--red); font-size: 26px; }
+.code-err-body span { font-size: 20px; color: var(--fg2); font-family: var(--mono); }
 .term { border-top: 1px solid var(--line); background: color-mix(in oklab, var(--code-bg) 80%, #000); }
 [data-tone="light"] .term { background: #f4f4f6; }
 .term-bar { padding: 14px 26px 0; font-size: 16px; font-weight: 600; color: var(--fg3); }

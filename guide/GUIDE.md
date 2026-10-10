@@ -34,6 +34,7 @@ Golden rules:
   alt text) uses the language the user wrote the request in, unless they ask for another one. Set `lang` to its code (vi, en, ja…).
   JSON keys, ids, icon ids, Mermaid keywords and image prompts stay in English. The examples in this guide are Vietnamese; follow
   their shape, not their language. Reply to the user in their language too.
+- Teaching from real code? Quote it with `file` + `lines`; never retype it from memory.
 - One idea per slide. Short lines. Let the layout carry the structure, not paragraphs.
 - Put depth in `notes`; keep the slide itself minimal.
 - Vary layouts for rhythm; never three identical layouts in a row.
@@ -187,6 +188,19 @@ Rules:
 - Quote a label with punctuation or brackets: `A["Pha sáng (thylakoid)"]`. Avoid `;` and `#` inside labels.
 - Never set colours, themes or `classDef` fills: the slide theme colours the diagram. Front matter config works for layout tweaks.
 - Check with aurora_screenshot; for `steps`, also look at a middle step: `{"slides": [n], "step": 2}`.
+
+## code
+`code` slides (and code objects in `split` and `exercise`) render a macOS-style window with syntax highlighting and line numbers.
+
+Quote verbatim from real source files:
+- `file`: path relative to the deck folder (e.g. `"quang_hop.py"`) or absolute.
+- `lines`: 1-based inclusive range or comma-separated ranges (e.g. `"129-161"` or `"129-140,147-161"`). Defaults to the entire file (warns if >40 lines). Non-contiguous ranges insert a gap row (`⋯`).
+- `dedent`: boolean (default `true`), removes common leading indentation of the cut lines.
+- `steps`: `[{"lines": "147-151", "text": "..."}]` refers to real source line numbers to highlight and explain lines one by one.
+- `lang` and `filename` default automatically from the file extension and basename.
+- Missing files or out-of-bounds line ranges produce build warnings and render an error card on the slide without failing the build.
+
+For inline snippets not backed by a real file, use `code: "..."` with `lang`.
 
 ## course
 Learners study a big subject as a **course of small lessons**: one focused part per lesson, 12–20 slides, 15–25 minutes.

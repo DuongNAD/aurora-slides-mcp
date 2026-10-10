@@ -9,7 +9,7 @@
 import { readFile } from "node:fs/promises";
 import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { PALETTE, renderChart } from "./charts.js";
-import { createMath, highlightCode, type CodeHtml } from "./highlight.js";
+import { createMath, highlightCode, langFromExt, type CodeHtml } from "./highlight.js";
 import { block, inline, plain } from "./markup.js";
 import { diagramKey, mermaidCss, mermaidTheme, renderDiagrams, type DiagramJob, type DiagramOut } from "./diagrams.js";
 import { findGenerated, generateCached, genKey, imageMode, placeInDeck } from "./imagegen.js";
@@ -115,6 +115,24 @@ interface Img {
   key: string;
 }
 
+interface CodeFileJob {
+  slideNo: number;
+  file: string;
+  absPath: string;
+  lines?: string;
+  dedent?: boolean;
+  lang?: string;
+  filename?: string;
+}
+
+interface CodeError {
+  slideNo: number;
+  file: string;
+  lines?: string;
+  reason: string;
+  filename: string;
+}
+
 interface Ctx {
   mode: "collect" | "render";
   deck: Deck;
@@ -126,11 +144,14 @@ interface Ctx {
   icons: Map<string, IconRecord>;
   images: Map<string, ImageResult>;
   code: Map<string, CodeHtml>;
+  codeErrors: Map<string, CodeError>;
+  codeWarnings: Map<string, string>;
   local: Map<string, string>;
   missingLocal: Set<string>;
   needIcons: Set<string>;
   needImages: Map<string, { query: string; orientation: Orientation }>;
   needCode: Map<string, { code: string; lang: string }>;
+  needCodeFiles: Map<string, CodeFileJob>;
   needLocal: Map<string, boolean>;
   needGen: Map<string, { prompt: string; orientation: Orientation; transparent: boolean; slides: number[] }>;
   gen: Map<string, string>;
@@ -335,7 +356,96 @@ function accentAttr(a: string | undefined): string {
 
 /* ───────────────────────── Code windows ───────────────────────── */
 
+export interface CodeSpec {
+  code?: string;
+  file?: string;
+  lines?: string;
+  dedent?: boolean;
+  lang?: string;
+  filename?: string;
+  output?: string;
+}
+
+export interface LineRange {
+  start: number;
+  end: number;
+}
+
+export function parseLineRanges(spec?: string): LineRange[] | undefined {
+  if (!spec || !spec.trim()) return undefined;
+  const ranges: LineRange[] = [];
+  for (const part of spec.split(",")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const pieces = trimmed.split("-").map((x) => parseInt(x.trim(), 10));
+    if (pieces.length === 1) {
+      if (isNaN(pieces[0]!)) throw new Error(`invalid line range "${trimmed}"`);
+      ranges.push({ start: pieces[0]!, end: pieces[0]! });
+    } else if (pieces.length === 2) {
+      if (isNaN(pieces[0]!) || isNaN(pieces[1]!)) throw new Error(`invalid line range "${trimmed}"`);
+      ranges.push({ start: Math.min(pieces[0]!, pieces[1]!), end: Math.max(pieces[0]!, pieces[1]!) });
+    } else {
+      throw new Error(`invalid line range "${trimmed}"`);
+    }
+  }
+  return ranges.length ? ranges : undefined;
+}
+
+export function dedentLines(lines: string[]): string[] {
+  const indents = lines
+    .filter((l) => l.trim().length > 0)
+    .map((l) => l.match(/^[ ]*/)?.[0].length ?? 0);
+  if (!indents.length) return lines;
+  const minIndent = Math.min(...indents);
+  if (minIndent === 0) return lines;
+  return lines.map((l) => (l.trim().length === 0 ? "" : l.slice(minIndent)));
+}
+
+export interface CutResult {
+  code: string;
+  lineEntries: Array<number | "gap">;
+}
+
+export function cutFileLines(
+  fileContent: string,
+  ranges?: LineRange[],
+  dedent = true,
+): CutResult {
+  const fileLines = fileContent.replace(/\r\n/g, "\n").replace(/\t/g, "    ").split("\n");
+  const total = fileLines.length;
+
+  const actualRanges = ranges ?? [{ start: 1, end: total }];
+  for (const r of actualRanges) {
+    if (r.start < 1) throw new Error("line numbers must be >= 1");
+    if (r.end > total || r.start > total) throw new Error(`range is outside file (file has ${total} lines)`);
+  }
+
+  const extractedLines: string[] = [];
+  const lineEntries: Array<number | "gap"> = [];
+
+  for (let i = 0; i < actualRanges.length; i++) {
+    const r = actualRanges[i]!;
+    if (i > 0 && r.start > actualRanges[i - 1]!.end + 1) {
+      lineEntries.push("gap");
+    }
+    for (let k = r.start; k <= r.end; k++) {
+      extractedLines.push(fileLines[k - 1] ?? "");
+      lineEntries.push(k);
+    }
+  }
+
+  const processedLines = dedent ? dedentLines(extractedLines) : extractedLines;
+  return {
+    code: processedLines.join("\n"),
+    lineEntries,
+  };
+}
+
 const codeKey = (lang: string, code: string): string => `${lang}::${hash(code, 16)}`;
+function codeFileKey(abs: string, lines?: string, dedent?: boolean, lang?: string, filename?: string): string {
+  return "cf::" + hash(JSON.stringify([abs, lines, dedent, lang, filename]), 12);
+}
+
 const LANG_LABEL: Record<string, string> = {
   javascript: "JavaScript", typescript: "TypeScript", python: "Python", java: "Java", cpp: "C++", c: "C", csharp: "C#",
   go: "Go", rust: "Rust", kotlin: "Kotlin", swift: "Swift", sql: "SQL", html: "HTML", css: "CSS", shellscript: "Terminal",
@@ -354,13 +464,57 @@ function expandLines(spec: string): number[] {
 
 function codeWindow(
   c: Ctx,
-  code: string,
-  lang: string,
-  filename: string | undefined,
-  output: string | undefined,
+  spec: CodeSpec,
   d: number,
   box: { w: number; h: number },
 ): string {
+  if (spec.file) {
+    const abs = isAbsolute(spec.file) ? spec.file : resolve(c.dir, spec.file);
+    const key = codeFileKey(abs, spec.lines, spec.dedent, spec.lang, spec.filename);
+    if (c.mode === "collect") {
+      c.needCodeFiles.set(key, {
+        slideNo: slideNo(c),
+        file: spec.file,
+        absPath: abs,
+        lines: spec.lines,
+        dedent: spec.dedent,
+        lang: spec.lang,
+        filename: spec.filename,
+      });
+      return "";
+    }
+
+    if (c.codeErrors.has(key)) {
+      const err = c.codeErrors.get(key)!;
+      const rangeStr = err.lines ?? "all";
+      warn(c, `Slide ${slideNo(c)}: cannot quote ${err.file} lines ${rangeStr}: ${err.reason}`);
+      const title = spec.filename ?? err.filename ?? basename(spec.file);
+      return `<div class="window code code-err"${A("rise", d)}><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${esc(title)}</span></div><div class="code-err-body"><b>Cannot quote ${esc(err.file)} (lines ${esc(rangeStr)})</b><span>${esc(err.reason)}</span></div></div>`;
+    }
+
+    if (c.codeWarnings.has(key)) {
+      warn(c, c.codeWarnings.get(key)!);
+    }
+
+    const h = c.code.get(key);
+    if (!h) return "";
+    const lang = spec.lang ?? langFromExt(spec.file);
+    if (!h.known) warn(c, `Unknown code language "${lang}" on slide ${slideNo(c)}; rendered as plain text.`);
+    const outLines = spec.output ? spec.output.replace(/\s+$/, "").split("\n").length + 1.6 : 0;
+    const byW = (box.w - 150) / (h.longest * 0.61);
+    const byH = (box.h - 140) / ((h.lines + outLines) * 1.62);
+    const fs = Math.max(15, Math.min(32, Math.floor(Math.min(byW, byH))));
+    if (fs === 15 && (byW < 15 || byH < 15))
+      warn(c, `Code on slide ${slideNo(c)} is too long to fit comfortably (${h.lines} lines, ${h.longest} cols). Trim it or split the slide.`);
+    const title = spec.filename ?? basename(spec.file);
+    const out = spec.output
+      ? `<div class="term"><div class="term-bar">${esc(c.t.output)}</div><pre>${esc(spec.output.replace(/\s+$/, ""))}</pre></div>`
+      : "";
+    return `<div class="window code"${A("rise", d)} style="--code-fs:${fs}px"><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${esc(title)}</span></div><pre class="code-pre"><code>${h.html}</code></pre>${out}</div>`;
+  }
+
+  const code = spec.code ?? "";
+  const lang = spec.lang ?? "text";
   const key = codeKey(lang, code);
   if (c.mode === "collect") {
     c.needCode.set(key, { code, lang });
@@ -369,15 +523,15 @@ function codeWindow(
   const h = c.code.get(key);
   if (!h) return "";
   if (!h.known) warn(c, `Unknown code language "${lang}" on slide ${slideNo(c)}; rendered as plain text.`);
-  const outLines = output ? output.replace(/\s+$/, "").split("\n").length + 1.6 : 0;
+  const outLines = spec.output ? spec.output.replace(/\s+$/, "").split("\n").length + 1.6 : 0;
   const byW = (box.w - 150) / (h.longest * 0.61);
   const byH = (box.h - 140) / ((h.lines + outLines) * 1.62);
   const fs = Math.max(15, Math.min(32, Math.floor(Math.min(byW, byH))));
   if (fs === 15 && (byW < 15 || byH < 15))
     warn(c, `Code on slide ${slideNo(c)} is too long to fit comfortably (${h.lines} lines, ${h.longest} cols). Trim it or split the slide.`);
-  const title = filename ?? LANG_LABEL[h.lang] ?? lang;
-  const out = output
-    ? `<div class="term"><div class="term-bar">${esc(c.t.output)}</div><pre>${esc(output.replace(/\s+$/, ""))}</pre></div>`
+  const title = spec.filename ?? LANG_LABEL[h.lang] ?? lang;
+  const out = spec.output
+    ? `<div class="term"><div class="term-bar">${esc(c.t.output)}</div><pre>${esc(spec.output.replace(/\s+$/, ""))}</pre></div>`
     : "";
   return `<div class="window code"${A("rise", d)} style="--code-fs:${fs}px"><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${esc(title)}</span></div><pre class="code-pre"><code>${h.html}</code></pre>${out}</div>`;
 }
@@ -467,7 +621,7 @@ const layouts: Layouts = {
     const h = head(c, s.eyebrow, s.title);
     let d = h.d;
     let media = "";
-    if (s.code) media = codeWindow(c, s.code.code, s.code.lang, s.code.filename, undefined, 300, { w: 860, h: 780 });
+    if (s.code) media = codeWindow(c, s.code, 300, { w: 860, h: 780 });
     else if (im) media = figure(c, im, "glow", "sp-fig", 260, "wipe");
     else if (s.icon) media = `<div class="sp-icon" data-depth="0.5">${icon(c, s.icon, "big-ic", 240, "pop", true)}</div>`;
     let body = "";
@@ -559,7 +713,7 @@ const layouts: Layouts = {
   code(s, c) {
     const h = head(c, s.eyebrow, s.title);
     const side = !!(s.text || s.steps?.length);
-    const win = codeWindow(c, s.code, s.lang, s.filename, s.output, h.d, { w: side ? 1080 : 1640, h: h.html ? 720 : 860 });
+    const win = codeWindow(c, s, h.d, { w: side ? 1080 : 1640, h: h.html ? 720 : 860 });
     let sideHtml = "";
     if (s.steps?.length) {
       sideHtml = `<ol class="cw-steps">${s.steps
@@ -978,7 +1132,7 @@ const layouts: Layouts = {
     const lv = s.level ? ["easy", "medium", "hard"].indexOf(s.level) : -1;
     const level = lv >= 0 ? `<span class="ex-lv lv-${lv + 1}" title="${esc(c.t.levels[lv]!)}"><i></i><i></i><i></i><span>${esc(c.t.levels[lv]!)}</span></span>` : "";
     const h = head(c, s.eyebrow ?? c.t.practice, s.title ?? c.t.exercise);
-    const code = s.code ? codeWindow(c, s.code.code, s.code.lang, s.code.filename, undefined, h.d + 200, { w: 900, h: 470 }) : "";
+    const code = s.code ? codeWindow(c, s.code, h.d + 200, { w: 900, h: 470 }) : "";
     const hints = s.hints ?? [];
     const sol = s.solution ?? [];
     let k = 0;
@@ -1414,6 +1568,8 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     icons: new Map<string, IconRecord>(),
     images: new Map<string, ImageResult>(),
     code: new Map<string, CodeHtml>(),
+    codeErrors: new Map<string, CodeError>(),
+    codeWarnings: new Map<string, string>(),
     local: new Map<string, string>(),
     missingLocal: new Set<string>(),
     gen: new Map<string, string>(),
@@ -1423,7 +1579,7 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
   };
   const mk = (mode: Ctx["mode"]): Ctx => ({
     mode, deck, dir, embed: !!opts.embed, t: STRINGS[lang], magic: deck.options?.magicMove !== false, math: createMath(), ...shared,
-    needIcons: new Set(), needImages: new Map(), needCode: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), warnings: [], sections,
+    needIcons: new Set(), needImages: new Map(), needCode: new Map(), needCodeFiles: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), warnings: [], sections,
     quizTotal: deck.slides.filter((s) => s.type === "quiz").length, quizNo: 0, slideIndex: 0, domId: "", backdrops: new Map(), css: [],
   });
 
@@ -1431,11 +1587,36 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
   const col = mk("collect");
   deck.slides.forEach((s, i) => renderSlide(col, s, i));
 
-  // Resolve in parallel: icons, image queries, syntax highlighting, local files.
+  // Resolve in parallel: icons, image queries, syntax highlighting, local files, code files.
   const [iconRes, imgRes] = await Promise.all([
     col.needIcons.size ? resolveIcons(col.needIcons) : Promise.resolve({ icons: new Map<string, IconRecord>(), missing: [] as string[], offline: [] as string[] }),
     col.needImages.size ? resolveImageQueries([...col.needImages.values()]) : Promise.resolve({ found: new Map<string, ImageResult>(), failed: [] as string[] }),
-    Promise.all([...col.needCode].map(async ([key, { code, lang: l }]) => shared.code.set(key, await highlightCode(code, l)))),
+    Promise.all([
+      ...[...col.needCode].map(async ([key, { code, lang: l }]) => shared.code.set(key, await highlightCode(code, l))),
+      ...[...col.needCodeFiles].map(async ([key, job]) => {
+        try {
+          const raw = await readFile(job.absPath, "utf8");
+          const totalLines = raw.replace(/\r\n/g, "\n").split("\n").length;
+          if (!job.lines && totalLines > 40) {
+            shared.codeWarnings.set(key, `Slide ${job.slideNo}: quoting whole file "${job.file}" (${totalLines} lines); add a "lines" range (e.g. "1-25") so the code stays readable.`);
+          }
+          const ranges = parseLineRanges(job.lines);
+          const cut = cutFileLines(raw, ranges, job.dedent !== false);
+          const lang = job.lang ?? langFromExt(job.file);
+          const res = await highlightCode(cut.code, lang, cut.lineEntries);
+          shared.code.set(key, { ...res, filename: job.filename ?? basename(job.file) });
+        } catch (e) {
+          const reason = (e as any)?.code === "ENOENT" ? "file not found" : (e instanceof Error ? e.message : String(e));
+          shared.codeErrors.set(key, {
+            slideNo: job.slideNo,
+            file: job.file,
+            lines: job.lines,
+            reason,
+            filename: job.filename ?? basename(job.file),
+          });
+        }
+      }),
+    ]),
     Promise.all(
       [...col.needLocal].map(async ([abs, embed]) => {
         try {
@@ -1486,7 +1667,7 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
   if (iconRes.offline.length) c.warnings.push(`Could not reach the Iconify API for ${iconRes.offline.length} icon(s); they render as blanks until the next online build.`);
   if (shared.missingLocal.size && !c.warnings.some((w) => w.startsWith("Image file not found"))) c.warnings.push(`${shared.missingLocal.size} local image file(s) were not found.`);
 
-  const usesCode = col.needCode.size > 0;
+  const usesCode = col.needCode.size > 0 || col.needCodeFiles.size > 0;
   const [css, js, katexCss, fonts, mono] = await Promise.all([
     asset("aurora.min.css", "runtime/aurora.css"),
     asset("aurora.min.js", "runtime/aurora.js"),
@@ -1535,6 +1716,6 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     failedImages: imgRes.failed,
     imageRequests: [...col.needGen].filter(([k]) => shared.genWait.has(k)).map(([id, g]) => ({ id, ...g })),
     genIds: [...col.needGen.keys()],
-    stats: { slides: total, icons: shared.icons.size, images: shared.images.size, codeBlocks: col.needCode.size, math: c.math.used(), bytes: Buffer.byteLength(html) },
+    stats: { slides: total, icons: shared.icons.size, images: shared.images.size, codeBlocks: col.needCode.size + col.needCodeFiles.size, math: c.math.used(), bytes: Buffer.byteLength(html) },
   };
 }

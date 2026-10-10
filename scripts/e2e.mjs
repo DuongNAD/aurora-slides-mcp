@@ -4,7 +4,7 @@
  * client (from the C: toolchain) and exercises every tool. Test decks are written outside the project.
  *   node scripts/e2e.mjs
  */
-import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -218,6 +218,66 @@ try {
   const pdf = join(base, "e2e", "deck.pdf");
   r = await call("aurora_export_pdf", { dir: DIR, out: pdf });
   ok("PDF export", !r.isError && existsSync(pdf) && statSync(pdf).size > 20000, textOf(r));
+
+  // Verbatim code quote from a file + missing file warning
+  const CODE_DIR = join(base, "e2e", "code");
+  mkdirSync(CODE_DIR, { recursive: true });
+  const pyCode = [
+    "def line_1_header():",
+    "    line_2_calc = 10",
+    "    line_3_step = line_2_calc * 2",
+    "    return line_3_step",
+    "def line_5_footer():",
+    "    pass",
+  ].join("\n");
+  writeFileSync(join(CODE_DIR, "algo.py"), pyCode, "utf8");
+
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Verbatim code",
+      slides: [
+        {
+          type: "code",
+          title: "Quoted python",
+          file: "algo.py",
+          lines: "2-4",
+          steps: [{ lines: "3", text: "Multiply by 2" }],
+        },
+        {
+          type: "code",
+          title: "Missing file",
+          file: "missing_file.py",
+          lines: "1-5",
+        },
+      ],
+    },
+    dir: CODE_DIR,
+  });
+
+  const codeHtml = existsSync(join(CODE_DIR, "index.html")) ? readFileSync(join(CODE_DIR, "index.html"), "utf8") : "";
+  const codeWarn = textOf(r);
+
+  const codeText = codeHtml.replace(/<[^>]+>/g, "");
+  ok(
+    "code quote slide quotes real file lines 2-4 without line 1",
+    !r.isError &&
+      codeText.includes("line_2_calc = 10") &&
+      codeText.includes("line_3_step = line_2_calc * 2") &&
+      codeText.includes("return line_3_step") &&
+      !codeHtml.includes("line_1_header"),
+  );
+  ok(
+    "code quote slide shows gutter numbers 2, 3, 4",
+    codeHtml.includes('data-l="2"') &&
+      codeHtml.includes('data-l="3"') &&
+      codeHtml.includes('data-l="4"') &&
+      !codeHtml.includes('data-l="1"'),
+  );
+  ok(
+    "missing code file produces warning and error card but deck builds",
+    /Slide 2: cannot quote missing_file\.py/.test(codeWarn) &&
+      codeHtml.includes("code-err"),
+  );
 } catch (e) {
   failed++;
   console.log(`FAIL unexpected: ${e?.stack ?? e}`);

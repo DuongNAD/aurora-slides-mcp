@@ -1766,20 +1766,34 @@
                 "type": "object",
                 "properties": {
                   "lang": {
-                    "default": "text",
+                    "description": "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
                     "type": "string"
                   },
                   "code": {
+                    "description": "Source code string",
                     "type": "string",
                     "minLength": 1
                   },
+                  "file": {
+                    "description": "Path relative to the deck folder, or absolute",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lines": {
+                    "description": "1-based line ranges to quote, e.g. \"129-161\" or \"129-140,147-161\" (default: whole file)",
+                    "type": "string",
+                    "pattern": "^\\s*\\d+(\\s*-\\s*\\d+)?(\\s*,\\s*\\d+(\\s*-\\s*\\d+)?)*\\s*$"
+                  },
+                  "dedent": {
+                    "default": true,
+                    "description": "Remove common leading indentation from quoted lines (default true)",
+                    "type": "boolean"
+                  },
                   "filename": {
+                    "description": "Window title, e.g. main.py (defaults to file basename when file is used)",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "code"
-                ],
                 "additionalProperties": false
               },
               "side": {
@@ -3263,17 +3277,31 @@
                 "type": "string"
               },
               "lang": {
-                "default": "text",
-                "description": "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml…",
+                "description": "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
                 "type": "string"
               },
               "code": {
+                "description": "Source code (keep it ≤ 18 lines; no horizontal scrolling)",
                 "type": "string",
-                "minLength": 1,
-                "description": "Source code (keep it ≤ 18 lines; no horizontal scrolling)"
+                "minLength": 1
+              },
+              "file": {
+                "description": "Path relative to the deck folder, or absolute",
+                "type": "string",
+                "minLength": 1
+              },
+              "lines": {
+                "description": "1-based line ranges to quote, e.g. \"129-161\" or \"129-140,147-161\" (default: whole file)",
+                "type": "string",
+                "pattern": "^\\s*\\d+(\\s*-\\s*\\d+)?(\\s*,\\s*\\d+(\\s*-\\s*\\d+)?)*\\s*$"
+              },
+              "dedent": {
+                "default": true,
+                "description": "Remove common leading indentation from quoted lines (default true)",
+                "type": "boolean"
               },
               "filename": {
-                "description": "Window title, e.g. main.py",
+                "description": "Window title, e.g. main.py (defaults to file basename when file is used)",
                 "type": "string"
               },
               "text": {
@@ -3309,8 +3337,7 @@
               }
             },
             "required": [
-              "type",
-              "code"
+              "type"
             ],
             "additionalProperties": false
           },
@@ -7942,20 +7969,34 @@
                 "type": "object",
                 "properties": {
                   "lang": {
-                    "default": "text",
+                    "description": "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
                     "type": "string"
                   },
                   "code": {
+                    "description": "Source code string",
                     "type": "string",
                     "minLength": 1
                   },
+                  "file": {
+                    "description": "Path relative to the deck folder, or absolute",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lines": {
+                    "description": "1-based line ranges to quote, e.g. \"129-161\" or \"129-140,147-161\" (default: whole file)",
+                    "type": "string",
+                    "pattern": "^\\s*\\d+(\\s*-\\s*\\d+)?(\\s*,\\s*\\d+(\\s*-\\s*\\d+)?)*\\s*$"
+                  },
+                  "dedent": {
+                    "default": true,
+                    "description": "Remove common leading indentation from quoted lines (default true)",
+                    "type": "boolean"
+                  },
                   "filename": {
+                    "description": "Window title, e.g. main.py (defaults to file basename when file is used)",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "code"
-                ],
                 "additionalProperties": false
               },
               "time": {
