@@ -54,8 +54,12 @@ try {
   ok("guide overview", !r.isError && textOf(r).length > 2000 && textOf(r).includes("notebook"), `${textOf(r).length} chars`);
   r = await call("aurora_guide", { type: "exercise" });
   ok("guide for one type", textOf(r).includes("Fields") && textOf(r).includes('"type": "exercise"'));
+  r = await call("aurora_guide", { type: "predict" });
+  ok("guide for predict type", !r.isError && textOf(r).includes('"type": "predict"') && textOf(r).includes("question") && textOf(r).includes("output"));
   r = await call("aurora_guide", { topic: "pedagogy" });
   ok("guide pedagogy section", textOf(r).includes("notebook") && textOf(r).includes("Thực hành"));
+  r = await call("aurora_guide", { topic: "accuracy" });
+  ok("guide accuracy section", !r.isError && textOf(r).includes("source of truth") && textOf(r).includes("Quote, never retype"));
 
   r = await call("aurora_create_deck", { deck: { title: "Bad", slides: [{ type: "bulets", items: ["x"] }, { type: "quiz", question: "Q?", options: ["a"], answr: 0 }] }, dir: DIR });
   const bad = textOf(r);
@@ -201,14 +205,16 @@ try {
     course: {
       title: "Điện học cơ bản",
       lessons: [
-        { title: "Dòng điện", summary: "Electron chuyển động có hướng", icon: "ph:lightning-duotone" },
-        { title: "Định luật Ôm", summary: "I = U / R", theme: "ocean" },
+        { title: "Dòng điện", summary: "Electron chuyển động có hướng", icon: "ph:lightning-duotone", when: "Tuần 1 · Thứ Hai" },
+        { title: "Định luật Ôm", summary: "I = U / R", theme: "ocean", when: "Tuần 1 · Thứ Tư" },
       ],
     },
     dir: COURSE,
   });
   const lessonDir = /dir: (.*01-dong-dien)/.exec(textOf(r))?.[1]?.trim();
   ok("create course", !r.isError && existsSync(join(COURSE, "index.html")) && !!lessonDir, textOf(r).split("\n")[0]);
+  const courseHtml = existsSync(join(COURSE, "index.html")) ? readFileSync(join(COURSE, "index.html"), "utf8") : "";
+  ok("course page shows lesson 'when' label", courseHtml.includes("c-when") && courseHtml.includes("Tuần 1 · Thứ Hai"));
   r = await call("aurora_create_deck", { deck: { title: "Dòng điện", slides: [{ type: "title", title: "Dòng điện" }, { type: "summary", title: "Ghi nhớ", items: ["Dòng điện là dòng electron"] }] }, dir: lessonDir });
   const lessonHtml = existsSync(join(lessonDir ?? "", "index.html")) ? await import("node:fs").then((m) => m.readFileSync(join(lessonDir, "index.html"), "utf8")) : "";
   ok("lesson joins the course (theme, breadcrumb, next lesson)", /lesson 1\/2/.test(textOf(r)) && lessonHtml.includes('class="crumb"') && lessonHtml.includes("Định luật Ôm") && /data-theme="aurora"/.test(lessonHtml));
@@ -218,6 +224,36 @@ try {
   const pdf = join(base, "e2e", "deck.pdf");
   r = await call("aurora_export_pdf", { dir: DIR, out: pdf });
   ok("PDF export", !r.isError && existsSync(pdf) && statSync(pdf).size > 20000, textOf(r));
+
+  // Predict slide + per-slide source
+  const PRED_DIR = join(base, "e2e", "predict");
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Predict test",
+      slides: [
+        {
+          type: "predict",
+          title: "Predict sorted",
+          question: "What does this print?",
+          code: "xs = [3, 1, 2]\nprint(sorted(xs), xs)",
+          lang: "py",
+          command: "python test.py",
+          output: "[1, 2, 3] [3, 1, 2]",
+          explain: "sorted() returns a new sorted list.",
+          source: "Python docs · sorted()",
+        },
+      ],
+    },
+    dir: PRED_DIR,
+  });
+  const predHtml = existsSync(join(PRED_DIR, "index.html")) ? readFileSync(join(PRED_DIR, "index.html"), "utf8") : "";
+  ok(
+    "predict slide with source builds HTML with output and source text",
+    !r.isError &&
+      predHtml.includes("[1, 2, 3] [3, 1, 2]") &&
+      predHtml.includes("sl-source") &&
+      predHtml.includes("Python docs · sorted()"),
+  );
 
   // Verbatim code quote from a file + missing file warning
   const CODE_DIR = join(base, "e2e", "code");

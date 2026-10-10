@@ -178,7 +178,7 @@ export async function buildCourseHub(ref: CoursePaths, course: Course): Promise<
         /* lesson not written yet */
       }
       const built = existsSync(join(dir, "index.html"));
-      return { n: i + 1, title: l.title, summary: l.summary, icon: l.icon, theme, minutes: l.minutes, dir: dirs[i]!, href: built ? `${dirs[i]}/index.html` : undefined, slides, key: lessonKey(course.title, dirs[i]!) };
+      return { n: i + 1, title: l.title, summary: l.summary, icon: l.icon, theme, minutes: l.minutes, when: l.when, dir: dirs[i]!, href: built ? `${dirs[i]}/index.html` : undefined, slides, key: lessonKey(course.title, dirs[i]!) };
     }),
   );
   const { html, warnings } = await renderCourse(course, cards);

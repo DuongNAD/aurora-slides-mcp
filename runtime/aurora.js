@@ -299,6 +299,49 @@
     }
     const cam = s.querySelector(".fb-cam[data-zoom]");
     if (cam) camTo(cam, n);
+    if (s.dataset.type === "predict") {
+      const term = s.querySelector(".pred-term");
+      if (term) {
+        const runStep = +term.dataset.runStep || 1;
+        const outPre = term.querySelector(".term-output");
+        const outCode = outPre && outPre.querySelector("code");
+        const raw = outPre ? outPre.dataset.raw || "" : "";
+        const body = term.querySelector(".term-body");
+        if (n < runStep) {
+          term.classList.remove("running", "done");
+          if (term._printTimer) { clearInterval(term._printTimer); term._printTimer = 0; }
+          if (outCode) outCode.textContent = "";
+        } else {
+          if (!term.classList.contains("done") && !term.classList.contains("running")) {
+            if (animate && !STATIC && !printing && !ov && !reduced && n === runStep) {
+              term.classList.add("running");
+              const lines = raw.split("\n");
+              const totalLines = lines.length;
+              const lineDelay = Math.max(16, Math.min(50, Math.floor(1600 / Math.max(1, totalLines))));
+              let curLine = 0;
+              if (outCode) outCode.textContent = "";
+              term._printTimer = setInterval(() => {
+                curLine++;
+                if (outCode) outCode.textContent = lines.slice(0, curLine).join("\n");
+                if (body) body.scrollTop = body.scrollHeight;
+                if (curLine >= totalLines) {
+                  clearInterval(term._printTimer);
+                  term._printTimer = 0;
+                  term.classList.remove("running");
+                  term.classList.add("done");
+                }
+              }, lineDelay);
+            } else {
+              if (term._printTimer) { clearInterval(term._printTimer); term._printTimer = 0; }
+              term.classList.remove("running");
+              term.classList.add("done");
+              if (outCode) outCode.textContent = raw;
+              if (body) body.scrollTop = body.scrollHeight;
+            }
+          }
+        }
+      }
+    }
     const cw = s.querySelectorAll(".cw-step");
     if (cw.length) {
       let lines = "";
@@ -763,6 +806,20 @@
     // Scripted camera moves jump to where the current step is heading.
     if (s._xp) xpTo(s, (STATIC || printing || ov) && (s._step || 0) === maxStep(s) ? xpExploded(s._xp) : s._step || 0, false);
     if (s._pl) plTo(s, s._step || 0, false);
+    if (s.dataset.type === "predict") {
+      const term = s.querySelector(".pred-term");
+      if (term && term._printTimer) {
+        clearInterval(term._printTimer);
+        term._printTimer = 0;
+        term.classList.remove("running");
+        term.classList.add("done");
+        const outPre = term.querySelector(".term-output");
+        const outCode = outPre && outPre.querySelector("code");
+        if (outCode && outPre) outCode.textContent = outPre.dataset.raw || "";
+        const body = term.querySelector(".term-body");
+        if (body) body.scrollTop = body.scrollHeight;
+      }
+    }
     for (const a of s.getAnimations({ subtree: true })) {
       const it = a.effect && a.effect.getTiming ? a.effect.getTiming().iterations : 1;
       if (it === Infinity) continue;
@@ -1323,17 +1380,62 @@
     const total = CFG.quizzes || 0;
     const answered = Object.keys(scores).length;
     const got = Object.values(scores).reduce((a, b) => a + (b ? 1 : 0), 0);
-    const pct = total ? got / total : 0;
+
+    const predRates = store.get("predRate") || {};
+    const predTotal = CFG.predicts || 0;
+    const predAnswered = Object.keys(predRates).length;
+    const predGot = Object.values(predRates).reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
+
     const fill = box.querySelector(".sm-fill");
     const num = box.querySelector(".sm-got");
     const msg = box.querySelector(".sm-msg");
-    if (num) num.textContent = String(got);
-    if (msg) msg.textContent = !answered ? T.none || "" : pct >= 0.8 ? T.great || "" : pct >= 0.5 ? T.good || "" : T.review || "";
-    if (fill) {
-      fill.style.strokeDasharray = "0 100";
-      fill.style.opacity = pct > 0 ? "1" : "0";
-      if (pct > 0) requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.strokeDasharray = (pct * 100).toFixed(1) + " 100")));
+    const label = box.querySelector(".sm-label");
+    const predEl = box.querySelector(".sm-pred");
+
+    if (total > 0) {
+      const pct = got / total;
+      if (num) num.textContent = String(got);
+      if (msg) msg.textContent = !answered ? T.none || "" : pct >= 0.8 ? T.great || "" : pct >= 0.5 ? T.good || "" : T.review || "";
+      if (fill) {
+        fill.style.strokeDasharray = "0 100";
+        fill.style.opacity = pct > 0 ? "1" : "0";
+        if (pct > 0) requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.strokeDasharray = (pct * 100).toFixed(1) + " 100")));
+      }
+      if (predEl && predTotal > 0) {
+        predEl.textContent = (T.predictionsRight || "Predictions right") + " " + predGot + "/" + predTotal;
+        predEl.hidden = false;
+      }
+    } else if (predTotal > 0) {
+      const pct = predGot / predTotal;
+      if (num) num.textContent = String(predGot);
+      if (label) label.textContent = T.predictionsRight || "Predictions right";
+      if (msg) msg.textContent = !predAnswered ? T.none || "" : pct >= 0.8 ? T.great || "" : pct >= 0.5 ? T.good || "" : T.review || "";
+      if (fill) {
+        fill.style.strokeDasharray = "0 100";
+        fill.style.opacity = pct > 0 ? "1" : "0";
+        if (pct > 0) requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.strokeDasharray = (pct * 100).toFixed(1) + " 100")));
+      }
+      if (predEl) predEl.hidden = true;
     }
+  }
+
+  function predRate(s, r) {
+    if (!s || s.dataset.type !== "predict") return false;
+    const reveal = s.querySelector(".pred-reveal");
+    if (!reveal || reveal.classList.contains("pending")) return false;
+    const sIdx = slides.indexOf(s);
+    const rates = store.get("predRate") || {};
+    rates[sIdx] = r;
+    store.set("predRate", rates);
+
+    const okBtn = s.querySelector(".pred-r.ok");
+    const diffBtn = s.querySelector(".pred-r.diff");
+    if (okBtn) okBtn.classList.toggle("sel", r === 1);
+    if (diffBtn) diffBtn.classList.toggle("sel", r === 0);
+
+    const gapMsg = s.querySelector(".pred-gap-msg");
+    if (gapMsg) gapMsg.hidden = r !== 0;
+    return true;
   }
   deckEl.addEventListener("click", (e) => {
     if (ov) {
@@ -1381,6 +1483,11 @@
     const rate = e.target.closest(".pl-r");
     if (rate) {
       plRate(rate.closest(".slide"), +rate.dataset.r);
+      return;
+    }
+    const predBtn = e.target.closest(".pred-r");
+    if (predBtn) {
+      predRate(predBtn.closest(".slide"), +predBtn.dataset.r);
       return;
     }
     const pin = e.target.closest(".hs-pin");
@@ -1450,7 +1557,13 @@
   addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
     const t = e.target;
-    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        t.blur();
+      }
+      return;
+    }
     const onButton = t && t.tagName === "BUTTON";
     const k = e.key;
     if (helpP && !helpP.hidden && (k === "Escape" || k === "?" || k === "h")) { e.preventDefault(); toggleHelp(false); return; }
@@ -1497,6 +1610,7 @@
       }
       default:
         if ((k === "1" || k === "2") && plRate(slides[idx], k === "1" ? 1 : 0)) break;
+        if ((k === "1" || k === "2") && predRate(slides[idx], k === "1" ? 1 : 0)) break;
         if (/^[1-6]$/.test(k) && answerKey(+k - 1)) break;
         return;
     }
@@ -1599,6 +1713,24 @@
       s.dataset.n = String(i + 1);
       s.inert = true;
       dgPrepare(s);
+      if (s.dataset.type === "predict") {
+        const ta = s.querySelector(".pred-input");
+        if (ta) {
+          const saved = store.get("pred:" + i);
+          if (typeof saved === "string") ta.value = saved;
+          ta.addEventListener("input", () => store.set("pred:" + i, ta.value));
+        }
+        const rates = store.get("predRate") || {};
+        if (rates[i] !== undefined) {
+          const r = rates[i];
+          const okBtn = s.querySelector(".pred-r.ok");
+          const diffBtn = s.querySelector(".pred-r.diff");
+          if (okBtn) okBtn.classList.toggle("sel", r === 1);
+          if (diffBtn) diffBtn.classList.toggle("sel", r === 0);
+          const gapMsg = s.querySelector(".pred-gap-msg");
+          if (gapMsg) gapMsg.hidden = r !== 0;
+        }
+      }
       setStep(s, 0, false);
     });
     // Load every embedded face before measuring, or text fitting would use fallback metrics.

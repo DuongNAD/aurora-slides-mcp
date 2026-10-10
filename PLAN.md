@@ -3,17 +3,22 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-10): v0.5 verbatim code quotes (in progress)
-- v0.5 (work in progress): quote real source files with `file` + `lines` (dedent, real line numbers, gap rows `⋯`, error cards, lint notes).
+## Status (2026-10-10): v0.5.0 complete
+- 35 slide types: new `predict` slide type for predict-then-run practice (question, optional quoted code, prediction textarea with localStorage persistence, macOS terminal with animated line output print, hints, explanation, self-rating with keys 1/2, error log guidance line, summary score card display).
+- Verbatim code quoting: quote real source files with `file` + `lines` (and `dedent`), real gutter line numbers, gap rows `⋯`, localized error cards.
+- Common `source` field on every slide: short citations rendered as a muted footnote at the bottom-left with tooltip.
+- Course lesson `when` scheduling label shown on lesson cards.
+- Stronger pedagogy lint (palace, recall walk, navigation ratio, practice volume, predict for code, citations) and `accuracy` guide topic + shared `ACCURACY_RULE`.
+- Centered `.ph` image placeholders and localized code error cards.
 - The learner mostly builds decks with Antigravity, which can generate images itself, and does not want API keys spent.
   AURORA_IMAGE_PROVIDER (src/imagegen.ts `imageMode`) defaults to `agent`: builds never call an image API; a slide's
   `generate` prompt becomes a picture request (id = genKey of prompt/shape/transparent) listed in the build output
   ("Pictures for you to make") with a glass placeholder on the slide. `aurora_add_image {for: id}` saves images/gen-<id>.*
   (replacing an earlier one) and rebuilds the deck. Pictures already in images/gen-<id>.* or the cache are reused in every mode.
   OpenAI/Gemini keys are ignored unless the mode is auto|openai|gemini; aurora_generate_image is the Pollinations fallback.
-- Agent-facing text is English and shared: src/index.ts LANGUAGE_RULE, PICTURE_RULE and DONE_RULE feed the server
+- Agent-facing text is English and shared: src/index.ts LANGUAGE_RULE, ACCURACY_RULE, PICTURE_RULE and DONE_RULE feed the server
   instructions (Workflow / Rules / Done when) and the lesson/course prompts. Content and replies follow the user's language
-  (the language of the request; deck `lang` set to it); GUIDE.md golden rules and pedagogy say the same.
+  (the language of the request; deck `lang` set to it); GUIDE.md golden rules, pedagogy, and accuracy say the same.
 - Registered as `aurora-slides` in Antigravity (~/.gemini/antigravity/mcp_config.json) and Claude Code (user scope).
 - Git: public repo github.com/DuongNAD/aurora-slides-mcp, MIT license (LICENSE, © 2026 DuongNAD); dist/ and assets/ are committed so a clone runs without a build.
   The git dir lives on C: (C:/Users/Admin/.git-dirs/aurora_slides_mcp.git; `.git` here is a pointer file) so loose objects

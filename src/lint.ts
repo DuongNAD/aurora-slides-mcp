@@ -51,6 +51,8 @@ function stepsOf(s: Slide, deck: Deck): number {
       return s.steps === false ? 0 : s.lines.length;
     case "exercise":
       return (s.hints?.length ?? 0) + (s.solution?.length ?? 0) + (s.answer ? 1 : 0);
+    case "predict":
+      return (s.hints?.length ?? 0) + 2;
     case "explode":
       return (s.image ? 2 : 1) + (s.focus === false ? 0 : s.layers.length);
     case "image":
@@ -165,6 +167,13 @@ export function lintDeck(deck: Deck): string[] {
         if (!s.solution?.length && !s.answer) out.push(`${where}: add "solution" steps or an "answer" so the learner can check their work.`);
         if (words(s.problem) > 60) out.push(`${where}: problem statement has ${words(s.problem)} words; keep it ≤ 45 or move data into code/table.`);
         break;
+      case "predict":
+        if (s.filename && !s.file) {
+          out.push(`Slide ${i + 1} shows "${s.filename}" but the code is typed in; use "file" + "lines" so the slide quotes the real file verbatim.`);
+        }
+        if (words(s.question) > 60) out.push(`${where}: question has ${words(s.question)} words; keep it ≤ 45 or move data into code.`);
+        if (words(s.explain) > 80) out.push(`${where}: explanation has ${words(s.explain)} words; keep it concise and focused on the core mechanism.`);
+        break;
       case "palace": {
         if (s.from) {
           const src = deck.slides.find((x) => x.type === "palace" && x.id === s.from && x !== s);
@@ -207,7 +216,7 @@ export function lintDeck(deck: Deck): string[] {
   let run = 1;
   for (let i = 1; i < deck.slides.length; i++) {
     const t = deck.slides[i]!.type;
-    if (t === deck.slides[i - 1]!.type && !["quiz", "image", "section", "html", "exercise"].includes(t)) {
+    if (t === deck.slides[i - 1]!.type && !["quiz", "image", "section", "html", "exercise", "predict"].includes(t)) {
       run++;
       if (run === 3) out.push(`slides ${i - 1}–${i + 1}: three "${t}" slides in a row; vary layouts (statement, bento, split, image) for rhythm.`);
     } else run = 1;
@@ -216,17 +225,32 @@ export function lintDeck(deck: Deck): string[] {
   const n = deck.slides.length;
   const types = new Set(deck.slides.map((s) => s.type));
   if (n >= 12 && !types.has("section")) out.push(`The deck has ${n} slides but no "section" dividers; add chapters every 4–7 slides.`);
-  if (n >= 8 && !types.has("quiz") && !types.has("flashcards") && !types.has("cloze") && !types.has("exercise"))
+  if (n >= 8 && !types.has("quiz") && !types.has("flashcards") && !types.has("cloze") && !types.has("exercise") && !types.has("predict"))
     out.push("No active-recall slides yet; add a quiz, flashcards, cloze or exercise every 5–7 slides so the learning sticks.");
   if (n >= 10 && !types.has("notebook"))
     out.push('No "notebook" slides: after each theory block, add one page with the lines worth copying by hand (learners write theory into a notebook).');
-  if (n >= 10 && !types.has("exercise")) out.push('No "exercise" slides: follow the theory with a practice section (easy → hard, with hints and worked solutions).');
+  if (n >= 10 && !types.has("exercise") && !types.has("predict")) out.push('No "exercise" slides: follow the theory with a practice section (easy → hard, with hints and worked solutions).');
   const anchorTypes = ["palace", "anchors", "analogy", "mnemonic"];
   if (n >= 10 && !deck.slides.some((s) => anchorTypes.includes(s.type)))
     out.push('No memory anchors: after the theory, tie the key ideas to something familiar with "palace" (a route through a known place), "anchors" (one vivid picture per idea), "analogy" or "mnemonic" (topic "memory").');
+  if (n >= 12 && !types.has("palace"))
+    out.push('No memory palace: turn the lesson\'s key ordered list (4-9 ideas) into a "palace" walk through a place the learner knows (aurora_guide topic "memory").');
   const learnPalaces = deck.slides.filter((s) => s.type === "palace" && s.mode !== "recall");
   if (learnPalaces.length && !deck.slides.some((s) => s.type === "palace" && s.mode === "recall"))
     out.push(`Add a recall walk near the end: {"type": "palace", "from": "${(learnPalaces[0] as { id?: string }).id ?? "<id of the palace>"}", "mode": "recall"} (give the palace an id). Retrieval after a delay is what makes the anchors last.`);
+  if (n >= 12 && !types.has("palace") && !deck.slides.some((s) => s.type === "anchors" && (s as { recall?: boolean }).recall))
+    out.push('No recall: end the practice with a recall walk (palace mode "recall") or anchors with recall: true.');
+  const navCount = deck.slides.filter((s) => s.type === "title" || s.type === "agenda" || s.type === "section").length;
+  if (n >= 10 && navCount / n > 0.25)
+    out.push(`${navCount} of ${n} slides are navigation (title, agenda, section); merge sections or drop the agenda so the content gets the room.`);
+  const practiceCount = deck.slides.filter((s) => s.type === "exercise" || s.type === "predict").length;
+  if (n >= 12 && practiceCount < 2)
+    out.push(`Only ${practiceCount} practice slide(s): add exercises or predict slides from easy to hard (2-4 per lesson).`);
+  const hasCode = deck.slides.some((s) => s.type === "code" || (s as { code?: unknown }).code || (s as { file?: unknown }).file);
+  if (hasCode && !types.has("predict"))
+    out.push('Turn a code walk-through into a "predict" slide: the learner predicts the output, runs it, then compares (predict-then-run).');
+  if (n >= 10 && !deck.slides.some((s) => !!s.source))
+    out.push('No slide says where its facts come from: add "source" (e.g. "Khóa học · transcript 02:13", "Mở rộng · <source>").');
   if (n >= 8 && deck.slides[n - 1]!.type !== "summary") out.push('End with a "summary" slide: takeaways plus the learner\'s quiz score.');
   if (n >= 3 && deck.slides[0]!.type !== "title") out.push('Start with a "title" slide so the deck has a clear opening.');
   return out;

@@ -15,6 +15,7 @@ export interface LessonCard {
   icon?: string;
   theme: ThemeName;
   minutes?: number;
+  when?: string;
   dir: string;
   /** Relative link to the lesson page once its deck is built. */
   href?: string;
@@ -103,10 +104,11 @@ export async function renderCourse(course: Course, lessons: LessonCard[]): Promi
   const cards = lessons
     .map((l) => {
       const meta = [l.minutes ? `${l.minutes} ${t.minutesUnit}` : "", l.slides ? `${l.slides} ${t.slidesUnit}` : ""].filter(Boolean).join(" · ");
+      const whenLine = l.when ? `<div class="c-when">${inline(l.when)}</div>` : "";
       const ic = l.icon ? iconHtml(res.icons.get(l.icon), l.icon, "c-ic") : "";
       const inner =
         `<div class="c-bg" aria-hidden="true"><i></i><i></i></div><div class="c-num">${String(l.n).padStart(2, "0")}</div>` +
-        `<div class="c-body">${meta ? `<div class="c-meta">${esc(meta)}</div>` : ""}<h2 class="c-t">${inline(l.title)}</h2>` +
+        `<div class="c-body">${meta ? `<div class="c-meta">${esc(meta)}</div>` : ""}${whenLine}<h2 class="c-t">${inline(l.title)}</h2>` +
         `${l.summary ? `<p class="c-s">${inline(l.summary)}</p>` : ""}` +
         `<div class="c-state"><span class="c-chip">${esc(l.href ? t.statusNew : t.statusSoon)}</span><span class="c-bar"><i></i></span></div></div>` +
         `${ic ? `<div class="c-icon">${ic}</div>` : ""}`;

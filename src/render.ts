@@ -44,6 +44,11 @@ export const STRINGS = {
     notebook: "Ghi vào vở", practice: "Thực hành", exercise: "Bài tập", problem: "Đề bài", tryFirst: "Thử tự làm trước nhé",
     tryNext: "Nhấn → để xem gợi ý và lời giải", solution: "Lời giải", answer: "Đáp án", start: "Bắt đầu", pause: "Tạm dừng",
     timeUp: "Hết giờ", levels: ["Dễ", "Vừa", "Khó"],
+    cannotQuote: "Không thể trích dẫn", lines: "dòng", all: "tất cả",
+    predictPlaceholder: "Ghi dự đoán của bạn trước khi chạy…", pressToRun: "Nhấn → để chạy",
+    asPredicted: "Đúng như dự đoán", different: "Lệch",
+    gapLesson: "Chỗ lệch là chỗ đáng học: chép nó vào Sổ lỗi.",
+    predictionsRight: "Dự đoán đúng",
     courseHome: "Trang khoá học", lesson: "Bài", nextLesson: "Bài tiếp theo", courseDone: "Bạn đã học xong khoá",
     course: "Khoá học", lessonsUnit: "bài", minutesUnit: "phút", slidesUnit: "slide", startLearning: "Bắt đầu học",
     continueAt: "Học tiếp: Bài", reviewAll: "Ôn lại từ đầu", statusDone: "Đã xong", statusDoing: "Đang học", statusNew: "Chưa học",
@@ -54,7 +59,7 @@ export const STRINGS = {
     recalled: "Bạn nhớ được", stopsUnit: "trạm", reviewMissed: "Ôn lại các trạm màu cam rồi đi thêm một vòng nhé.",
     allRecalled: "Tuyệt vời, không sót trạm nào!", anchors: "Neo trí nhớ", reviewTag: "Ôn lại", analogy: "Neo vào điều đã biết",
     limit: "Chỗ không giống", mnemonic: "Mẹo nhớ", diagramFailed: "Chưa vẽ được sơ đồ",
-    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Nhớ / Chưa nhớ (ôn cung điện)"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
+    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
   },
   en: {
     prev: "Previous", next: "Next", overview: "Overview", notes: "Notes", fullscreen: "Fullscreen", help: "Shortcuts",
@@ -66,6 +71,11 @@ export const STRINGS = {
     notebook: "Write it down", practice: "Practice", exercise: "Exercise", problem: "Problem", tryFirst: "Try it yourself first",
     tryNext: "Press → for hints and the solution", solution: "Solution", answer: "Answer", start: "Start", pause: "Pause",
     timeUp: "Time's up", levels: ["Easy", "Medium", "Hard"],
+    cannotQuote: "Cannot quote", lines: "lines", all: "all",
+    predictPlaceholder: "Write your prediction before running…", pressToRun: "Press → to run",
+    asPredicted: "As predicted", different: "Different",
+    gapLesson: "The gap is the lesson: copy it into your error log.",
+    predictionsRight: "Predictions right",
     courseHome: "Course home", lesson: "Lesson", nextLesson: "Next lesson", courseDone: "You finished the course",
     course: "Course", lessonsUnit: "lessons", minutesUnit: "min", slidesUnit: "slides", startLearning: "Start learning",
     continueAt: "Continue: Lesson", reviewAll: "Review from the start", statusDone: "Done", statusDoing: "In progress", statusNew: "Not started",
@@ -76,7 +86,7 @@ export const STRINGS = {
     recalled: "You recalled", stopsUnit: "stops", reviewMissed: "Review the orange stops, then walk it once more.",
     allRecalled: "Perfect, not a single stop missed!", anchors: "Memory anchors", reviewTag: "Review", analogy: "Anchor it to what you know",
     limit: "Where it breaks", mnemonic: "Mnemonic", diagramFailed: "Could not draw the diagram",
-    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "Got it / Missed (palace review)"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
+    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
   },
 };
 type Strings = (typeof STRINGS)["vi"];
@@ -162,6 +172,7 @@ interface Ctx {
   warnings: string[];
   sections: Array<{ index: number; title: string; number: string }>;
   quizTotal: number;
+  predictTotal: number;
   quizNo: number;
   slideIndex: number;
   domId: string;
@@ -486,10 +497,10 @@ function codeWindow(
 
     if (c.codeErrors.has(key)) {
       const err = c.codeErrors.get(key)!;
-      const rangeStr = err.lines ?? "all";
-      warn(c, `Slide ${slideNo(c)}: cannot quote ${err.file} lines ${rangeStr}: ${err.reason}`);
+      const rangeStr = err.lines ? `${c.t.lines} ${err.lines}` : (c.t.all || "all");
+      warn(c, `Slide ${slideNo(c)}: cannot quote ${err.file} ${rangeStr}: ${err.reason}`);
       const title = spec.filename ?? err.filename ?? basename(spec.file);
-      return `<div class="window code code-err"${A("rise", d)}><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${esc(title)}</span></div><div class="code-err-body"><b>Cannot quote ${esc(err.file)} (lines ${esc(rangeStr)})</b><span>${esc(err.reason)}</span></div></div>`;
+      return `<div class="window code code-err"${A("rise", d)}><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${esc(title)}</span></div><div class="code-err-body"><b>${esc(c.t.cannotQuote)} ${esc(err.file)} (${esc(rangeStr)})</b><span>${esc(err.reason)}</span></div></div>`;
     }
 
     if (c.codeWarnings.has(key)) {
@@ -1019,15 +1030,17 @@ const layouts: Layouts = {
 
   summary(s, c) {
     const h = head(c, s.eyebrow, s.title);
-    if (s.score && !c.quizTotal) warn(c, `Summary on slide ${slideNo(c)} asks for a score but the deck has no quiz slides.`);
-    const showScore = (s.score ?? true) && c.quizTotal > 0;
+    if (s.score && !c.quizTotal && !c.predictTotal) warn(c, `Summary on slide ${slideNo(c)} asks for a score but the deck has no quiz or predict slides.`);
+    const showScore = (s.score ?? true) && (c.quizTotal > 0 || c.predictTotal > 0);
     const list = s.items
       .map((it, k) => `<li class="sm-item"${A("rise", h.d + k * 90)}><i class="sm-ck">${SVG.check}</i><span>${inl(c, it)}</span></li>`)
       .join("");
     const score = showScore
       ? `<div class="sm-score"${A("scale", h.d + 200)}><div class="sm-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="sm-track" cx="100" cy="100" r="84"/>` +
-        `<circle class="sm-fill" cx="100" cy="100" r="84" pathLength="100"/></svg><div class="sm-num"><b class="sm-got">0</b><span>/${c.quizTotal}</span></div></div>` +
-        `<div class="sm-label">${esc(c.t.score)}</div><div class="sm-msg">${esc(c.t.none)}</div></div>`
+        `<circle class="sm-fill" cx="100" cy="100" r="84" pathLength="100"/></svg><div class="sm-num"><b class="sm-got">0</b><span>/${c.quizTotal || c.predictTotal}</span></div></div>` +
+        `<div class="sm-label">${esc(c.quizTotal ? c.t.score : c.t.predictionsRight)}</div><div class="sm-msg">${esc(c.t.none)}</div>` +
+        (c.quizTotal > 0 && c.predictTotal > 0 ? `<div class="sm-pred" hidden></div>` : "") +
+        `</div>`
       : "";
     return {
       cls: showScore ? "with-score" : "",
@@ -1152,6 +1165,53 @@ const layouts: Layouts = {
         `<section class="ex-task"${A("rise", h.d)}><div class="ex-label">${esc(c.t.problem)}</div><div class="ex-problem">${blk(c, s.problem)}</div>${code}</section>` +
         `<div class="ex-side"><div class="ex-try"${A("fade", h.d + 300)}>${timer}<div class="ex-try-t">${esc(c.t.tryFirst)}</div>${k ? `<div class="ex-try-s">${esc(c.t.tryNext)}</div>` : ""}</div>` +
         `<ol class="ex-steps">${steps}</ol></div></div></div>`,
+    };
+  },
+
+  predict(s, c) {
+    const h = head(c, s.eyebrow ?? c.t.practice, s.title);
+    const codeSpec = (s.code || s.file)
+      ? { code: s.code, file: s.file, lines: s.lines, dedent: s.dedent, lang: s.lang, filename: s.filename }
+      : undefined;
+    const code = codeSpec ? codeWindow(c, codeSpec, h.d + 100, { w: 850, h: 360 }) : "";
+    const hints = s.hints ?? [];
+    const runStep = hints.length + 1;
+    const explainStep = runStep + 1;
+
+    const hintItems = hints.length
+      ? `<ul class="pred-hints">${hints.map((t, i) => `<li class="pred-hint" data-step="${i + 1}"><i class="ex-ic">${SVG.bulb}</i><div><b>${esc(c.t.hint)} ${hints.length > 1 ? i + 1 : ""}</b>${inl(c, t)}</div></li>`).join("")}</ul>`
+      : "";
+
+    const inputArea = s.input !== false
+      ? `<div class="pred-box"${A("rise", h.d + 160)}><textarea class="pred-input" placeholder="${esc(c.t.predictPlaceholder)}" aria-label="${esc(c.t.predictPlaceholder)}"></textarea></div>`
+      : "";
+
+    const cmdLine = s.command
+      ? `<div class="term-cmd"><span class="term-ps">$ </span><span class="term-cmd-text">${esc(s.command)}</span></div>`
+      : "";
+
+    return {
+      cls: `${code ? "has-code" : ""}`,
+      html:
+        `<div class="pred">${h.html}<div class="pred-body">` +
+        `<section class="pred-task"${A("rise", h.d)}><div class="pred-q">${blk(c, s.question)}</div>${code}${inputArea}${hintItems}</section>` +
+        `<div class="pred-side">` +
+        `<div class="window pred-term" data-run-step="${runStep}"${A("rise", h.d + 80)}>` +
+        `<div class="win-bar"><i></i><i></i><i></i><span class="win-title">Terminal</span></div>` +
+        `<div class="term-body">` +
+        `<div class="term-run-hint">${esc(c.t.pressToRun)}</div>` +
+        `${cmdLine}` +
+        `<pre class="term-output" data-raw="${esc(s.output)}"><code>${esc(s.output)}</code></pre>` +
+        `</div></div>` +
+        `<div class="pred-reveal" data-step="${explainStep}">` +
+        `<div class="pred-explain card">${blk(c, s.explain)}</div>` +
+        `<div class="pred-rate">` +
+        `<button type="button" class="pred-r ok" data-r="1"><kbd>1</kbd> ${esc(c.t.asPredicted)}</button>` +
+        `<button type="button" class="pred-r diff" data-r="0"><kbd>2</kbd> ${esc(c.t.different)}</button>` +
+        `</div>` +
+        `<div class="pred-gap-msg" hidden>${esc(c.t.gapLesson)}</div>` +
+        `</div>` +
+        `</div></div></div>`,
     };
   },
 
@@ -1410,6 +1470,8 @@ export function titleOf(s: Slide): string {
       return s.title ?? s.caption ?? "";
     case "exercise":
       return s.title ?? s.problem;
+    case "predict":
+      return s.title;
     case "explode":
       return s.title ?? s.layers.map((l) => l.label).join(" · ");
     case "palace":
@@ -1447,9 +1509,10 @@ function renderSlide(c: Ctx, s: Slide, i: number): string {
     ` data-theme="${theme}" data-tone="${tone}" data-bd="${bd}"${acc.attr}${acc.style ? ` style="${acc.style}"` : ""}` +
     `${s.transition ? ` data-transition="${s.transition}"` : ""}${s.morph === false ? ' data-morph="0"' : ""}` +
     ` aria-roledescription="slide" aria-label="${i + 1}${label ? `: ${esc(label.slice(0, 120))}` : ""}"`;
+  const src = s.source ? `<div class="sl-source" title="${esc(plain(s.source))}">${inl(c, s.source)}</div>` : "";
   return (
     `<section${attrs}>${r.under ? `<div class="sl-under">${r.under}</div>` : ""}` +
-    `<div class="sl-stage"><div class="sl-in">${r.html}</div></div>` +
+    `<div class="sl-stage"><div class="sl-in">${r.html}</div>${src}</div>` +
     `${notes ? `<template class="sl-notes">${notes}</template>` : ""}</section>`
   );
 }
@@ -1580,7 +1643,9 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
   const mk = (mode: Ctx["mode"]): Ctx => ({
     mode, deck, dir, embed: !!opts.embed, t: STRINGS[lang], magic: deck.options?.magicMove !== false, math: createMath(), ...shared,
     needIcons: new Set(), needImages: new Map(), needCode: new Map(), needCodeFiles: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), warnings: [], sections,
-    quizTotal: deck.slides.filter((s) => s.type === "quiz").length, quizNo: 0, slideIndex: 0, domId: "", backdrops: new Map(), css: [],
+    quizTotal: deck.slides.filter((s) => s.type === "quiz").length,
+    predictTotal: deck.slides.filter((s) => s.type === "predict").length,
+    quizNo: 0, slideIndex: 0, domId: "", backdrops: new Map(), css: [],
   });
 
   // Pass 1: collect everything the layouts need.
@@ -1690,9 +1755,11 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
       parallax: o.parallax !== false, magicMove: o.magicMove !== false, loop: o.loop === true, resume: o.resume !== false,
     },
     quizzes: c.quizTotal,
+    predicts: c.predictTotal,
     t: {
       correct: c.t.correct, wrong: c.t.wrong, answerIs: c.t.answerIs, resume: c.t.resume, resumeYes: c.t.resumeYes, restart: c.t.restart,
       great: c.t.great, good: c.t.good, review: c.t.review, none: c.t.none, noNotes: c.t.noNotes, notes: c.t.notes,
+      asPredicted: c.t.asPredicted, different: c.t.different, gapLesson: c.t.gapLesson, predictionsRight: c.t.predictionsRight,
     },
     slides: deck.slides.map((s, i) => ({ id: s.id ?? String(i + 1), type: s.type, title: plain(titleOf(s)).slice(0, 140) })),
   };

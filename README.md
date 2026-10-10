@@ -12,7 +12,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.4.0**. Author: **DuongNAD**.
+Current version: **0.5.0**. Author: **DuongNAD**.
 
 ## Highlights
 
@@ -24,9 +24,14 @@ Current version: **0.4.0**. Author: **DuongNAD**.
   are written in English so agents follow them precisely, but they require the lesson content and the agent's replies to use the
   language you wrote the request in (ask in Vietnamese and you get Vietnamese slides with `lang: "vi"`). Image prompts, ids and
   Mermaid keywords stay in English.
-- **34 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
-  code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, quiz, flashcards,
+- **35 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
+  code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
   cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+- **Predict-then-run practice** (`predict`): the learner writes their prediction into a persisted input box, runs the real code in an
+  animated macOS terminal, compares the real output, self-rates with keys 1/2 ("As predicted" / "Different"), and logs gaps into their error log.
+- **Verbatim code quoting** (`code`, `split`, `exercise`, `predict`): quote real source files with `file` + `lines` (and `dedent`),
+  showing real gutter line numbers and syntax highlighting without retyping from memory.
+- **Per-slide citations** (`source`): every slide can carry a clean, muted footnote at the bottom-left with tooltip and markdown links.
 - **Memory anchors**: `palace` is a memory palace. The camera walks a route through a place you know (your home, the way to
   school); each stop holds one idea with a scene to picture, linked to its card by a leader line; scroll to walk. Use a drawn map
   or a photo of the place. At the end comes a recall walk: the ideas are hidden, you recall each stop and rate it Got it / Missed.
@@ -38,11 +43,10 @@ Current version: **0.4.0**. Author: **DuongNAD**.
   draw themselves between them; `steps` reveals one box per → press; `look: "handDrawn"` gives a sketchy style. A syntax error
   shows on the slide with the failing line so the agent can fix it.
 - **9 themes**: aurora, midnight, daylight, titanium, ocean, sunset, forest, paper, liquid (Liquid Glass).
-- **Courses**: `course.json` + a course home page (lesson cards in each lesson's theme colors, a progress ring, a "Continue"
+- **Courses**: `course.json` + a course home page (lesson cards in each lesson's theme colors, optional `when` scheduling labels, a progress ring, a "Continue"
   button); every lesson links back to the course and has a "Next lesson" button. The course page drives **spaced review**:
   finished lessons show "Due for review" after 1, 3, 7, 16 and 35 days.
-- **Agents check their own work**: slide screenshots (contact sheet, single slides, single animation steps), a layout audit,
-  teaching suggestions, and JSON errors with "did you mean…" fixes.
+- **Grounded accuracy & pedagogy lint**: built-in lint checks for memory palaces, recall walks, navigation ratios, practice volume, code prediction, and citations. Guide topic `accuracy` teaches agents to ground lessons in user materials, quote code verbatim, and use plausible quiz distractors.
 - Math (KaTeX) and chemistry `\ce{...}`; Xcode-style code highlighting; live-reload preview; PDF export; **Be Vietnam Pro**
   embedded so Vietnamese diacritics never break.
 
@@ -186,10 +190,16 @@ Tools the agent uses:
 | F | Fullscreen |
 | T | Start/pause the exercise timer |
 | 1–6 | Pick a quiz answer |
-| 1 / 2 | Got it / Missed during a memory palace review |
+| 1 / 2 | Got it / Missed during memory palace review; As predicted / Different on predict slides |
 
 On exploded-view and memory palace slides, the mouse wheel or trackpad scrubs the animation continuously, like an Apple page.
 Lessons remember where you stopped; the course page shows each lesson's progress and which lessons are due for review.
+
+## Troubleshooting
+
+### Antigravity: "tool … is not enabled for server aurora-slides"
+In Google Antigravity, tools are discovered and bound when a conversation begins. When starting Antigravity, MCP servers can take 1–2 minutes to finish initializing in the background. If you send a message before the server is ready, the conversation will not have tool access.
+**Fix**: Wait a moment until the MCP server is initialized, then open a **new conversation**.
 
 ## CLI
 
@@ -236,6 +246,13 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.5.0** (2026-10-10):
+  - Predict-then-run slides (`predict`): learner types prediction in a persisted textarea, runs code in a macOS terminal, self-rates with keys 1/2 ("As predicted" / "Different"), and copies gaps to their error log.
+  - Verbatim code quotes: quote source files with `file` + `lines` (and `dedent`), real gutter line numbers, and error cards.
+  - Per-slide `source` footnote: short citations at the bottom-left of slides.
+  - Course lesson `when` scheduling labels on course cards.
+  - Pedagogy lint and `accuracy` guide topic (source of truth in user materials, no retyping, plausible quiz distractors, no overclaims).
+  - Centered image placeholders and localized code error cards.
 - **0.4.0** (2026-10-10): agent-made pictures by default. `generate` becomes a list of pictures to make, `aurora_add_image {for}`
   fills them and rebuilds, and OpenAI/Gemini keys are used only when `AURORA_IMAGE_PROVIDER` allows it. The agent instructions are
   rewritten in English (Workflow / Rules / Done when); content and replies follow the user's language.

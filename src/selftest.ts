@@ -59,6 +59,29 @@ const SCRIPT = String.raw`(async () => {
         check("diagram is drawn", sl.querySelector(".dg-svg svg") && !sl.querySelector(".dg-failed"));
       }
     }
+    if (s.type === "predict") {
+      const sl = document.querySelector(".slide.on");
+      const ta = sl.querySelector(".pred-box");
+      if (ta && !sl._predTested) {
+        sl._predTested = true;
+        ta.focus();
+        ta.value = "abc";
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        await wait(50);
+        check("predict typing leaves slide unchanged", A.state().slide === s.slide && ta.value === "abc");
+        ta.blur();
+      }
+      if (s.step === s.steps && !sl._predEndTested) {
+        sl._predEndTested = true;
+        const term = sl.querySelector(".pred-term pre");
+        check("predict terminal printed output", term && term.textContent.includes("[1, 2, 3]"), term ? term.textContent : "");
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "1", code: "Digit1", bubbles: true }));
+        await wait(60);
+        const okBtn = sl.querySelector(".pred-r.ok");
+        check("predict rating 1 records rating", okBtn && okBtn.classList.contains("sel"));
+      }
+    }
     if (s.type === "palace") {
       const sl = document.querySelector(".slide.on");
       A.settle();

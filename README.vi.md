@@ -12,7 +12,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.4.0**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.5.0**. Tác giả: **DuongNAD**.
 
 ## Điểm nổi bật
 
@@ -22,9 +22,14 @@ Phiên bản hiện tại: **0.4.0**. Tác giả: **DuongNAD**.
 - **Đúng ngôn ngữ của bạn**: hướng dẫn gửi cho agent (system prompt của MCP, hai prompt `lesson`/`course`, `aurora_guide`) viết
   bằng tiếng Anh cho agent hiểu chính xác, nhưng bắt buộc nội dung bài học và câu trả lời của agent dùng ngôn ngữ bạn viết yêu cầu
   (hỏi bằng tiếng Việt thì ra slide tiếng Việt, `lang: "vi"`). Prompt tạo ảnh, id và từ khoá Mermaid vẫn giữ tiếng Anh.
-- **34 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
-  code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, quiz, flashcards,
+- **35 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
+  code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
   cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+- **Luyện tập đoán rồi chạy** (`predict`): người học ghi dự đoán vào ô nhập (tự lưu theo bài), chạy code thật trong cửa sổ Terminal
+  macOS hoạt hoạ, đối chiếu kết quả thật, tự chấm Đúng như dự đoán / Lệch (phím 1/2) và ghi chỗ lệch vào Sổ lỗi.
+- **Trích dẫn code nguyên văn** (`code`, `split`, `exercise`, `predict`): trích code thật từ file bằng `file` + `lines` (kèm `dedent`),
+  hiện đúng số dòng nguồn thực tế và highlight mà không cần gõ lại từ trí nhớ.
+- **Ghi nguồn từng slide** (`source`): mỗi slide có thể kèm chú thích nguồn ngắn gọn ở góc dưới bên trái có tooltip và link markdown.
 - **Neo trí nhớ**: `palace` là cung điện ký ức. Camera đi dọc lộ trình trong một nơi quen thuộc (căn nhà của bạn, đường tới
   trường), mỗi trạm cất một ý kèm một cảnh để hình dung, có đường nối từ điểm neo tới thẻ; cuộn chuột để "đi". Có thể dùng
   sơ đồ tự vẽ hoặc ảnh căn nhà. Cuối bài có vòng ôn: các ý bị che, đến mỗi trạm tự nhớ rồi chấm Nhớ / Chưa nhớ.
@@ -36,11 +41,10 @@ Phiên bản hiện tại: **0.4.0**. Tác giả: **DuongNAD**.
   giữa chúng; `steps` cho hiện từng hộp mỗi lần nhấn →; `look: "handDrawn"` cho nét vẽ tay. Viết sai cú pháp thì slide báo
   lỗi kèm dòng sai để agent sửa.
 - **9 theme**: aurora, midnight, daylight, titanium, ocean, sunset, forest, paper, liquid (Liquid Glass).
-- **Khoá học**: `course.json` + trang chủ khoá học (thẻ bài mang màu theme của từng bài, vòng tiến độ, nút "Học tiếp");
+- **Khoá học**: `course.json` + trang chủ khoá học (thẻ bài mang màu theme của từng bài, nhãn lịch học `when` tuỳ chọn, vòng tiến độ, nút "Học tiếp");
   trong mỗi bài có đường dẫn về khoá học và nút "Bài tiếp theo". Trang khoá học nhắc **lịch ôn ngắt quãng**: bài đã học
   hiện "Đến hạn ôn" sau 1, 3, 7, 16, 35 ngày.
-- **Agent tự kiểm tra**: chụp ảnh slide (contact sheet, từng slide, từng nấc hiệu ứng), audit bố cục, gợi ý sư phạm,
-  lỗi JSON kèm gợi ý sửa ("ý bạn là…").
+- **Độ chính xác & lint sư phạm chặt chẽ**: lint kiểm tra cung điện ký ức, vòng ôn, tỷ lệ slide điều hướng, số lượng slide thực hành, code kèm predict, và trích dẫn nguồn. Mục hướng dẫn `accuracy` rèn agent bám sát tài liệu gốc, trích dẫn code nguyên văn, không nói quá và tạo câu nhiễu quiz thực tế.
 - Công thức toán (KaTeX) và hoá học `\ce{...}`; code highlight kiểu Xcode; xem trước có live reload; xuất PDF;
   font **Be Vietnam Pro** nhúng sẵn, không lỗi dấu tiếng Việt.
 
@@ -183,10 +187,16 @@ Các tool agent dùng:
 | F | Toàn màn hình |
 | T | Bật/tạm dừng đồng hồ bài tập |
 | 1–6 | Chọn đáp án quiz |
-| 1 / 2 | Nhớ / Chưa nhớ khi ôn cung điện ký ức |
+| 1 / 2 | Nhớ / Chưa nhớ khi ôn cung điện; Đúng như dự đoán / Lệch khi học slide predict |
 
 Trên slide exploded view và cung điện ký ức, cuộn chuột/trackpad sẽ "tua" hiệu ứng liên tục như trang Apple. Bài học nhớ
 chỗ đang học, trang khoá học hiện tiến độ từng bài và những bài đến hạn ôn.
+
+## Xử lý sự cố
+
+### Antigravity: "tool … is not enabled for server aurora-slides"
+Trong Google Antigravity, danh sách tool được nhận diện và gắn vào phiên khi cuộc trò chuyện bắt đầu. Khi mở Antigravity, MCP server có thể mất 1–2 phút để khởi động xong dưới nền. Nếu bạn nhắn tin trước khi server sẵn sàng, cuộc trò chuyện đó sẽ không gọi được tool.
+**Cách xử lý**: Chờ một lát cho MCP server khởi động xong rồi mở một **cuộc trò chuyện mới**.
 
 ## CLI
 
@@ -230,6 +240,13 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.5.0** (10/10/2026):
+  - Luyện tập đoán rồi chạy (`predict`): người học ghi dự đoán vào ô nhập (tự lưu theo bài), chạy code thật trong Terminal macOS, tự chấm bằng phím 1/2 ("Đúng như dự đoán" / "Lệch") và chép chỗ lệch vào Sổ lỗi.
+  - Trích dẫn code nguyên văn: trích file thật với `file` + `lines` (kèm `dedent`), giữ đúng số dòng nguồn thực tế và thẻ báo lỗi nếu thiếu file.
+  - Chú thích nguồn từng slide (`source`): hiển thị ở góc dưới bên trái.
+  - Nhãn lịch học `when` trên thẻ bài khoá học.
+  - Lint sư phạm nâng cao & chủ đề hướng dẫn `accuracy` (bám sát tài liệu gốc, không gõ lại code từ trí nhớ, câu nhiễu quiz thực tế, không nói quá).
+  - Căn giữa ô giữ chỗ ảnh và bản địa hoá thẻ lỗi code theo `STRINGS`.
 - **0.4.0** (10/10/2026): agent tự tạo ảnh là mặc định. `generate` thành danh sách ảnh cần tạo, `aurora_add_image {for}`
   điền ảnh và tự build lại, key OpenAI/Gemini chỉ dùng khi bật `AURORA_IMAGE_PROVIDER`. System prompt cho agent viết lại
   bằng tiếng Anh (Workflow / Rules / Done when), nội dung và câu trả lời theo ngôn ngữ của người dùng.

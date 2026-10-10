@@ -164,6 +164,14 @@ img { max-width: none; }
 }
 .sl-in { position: absolute; inset: 0; padding: 96px 120px 104px; display: flex; flex-direction: column; }
 .sl-notes { display: none; }
+.sl-source {
+  position: absolute; left: 120px; bottom: 34px; max-width: 540px; z-index: 2;
+  font-size: 16px; line-height: 1.4; color: var(--fg3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: auto;
+}
+.sl-source a { color: var(--fg2); text-decoration: underline; text-underline-offset: 2px; }
+.sl-source a:hover { color: var(--accent); }
 
 /* ───────────────────────── Backdrops ───────────────────────── */
 .bd { position: absolute; inset: 0; overflow: hidden; container-type: size; background: var(--bg); opacity: 0; transition: opacity 1s var(--ease-io); }
@@ -365,6 +373,9 @@ html[lang^="vi"] .h2 { line-height: 1.16; }
   position: relative; flex: 1; min-height: 0; overflow: hidden; border-radius: 34px;
   box-shadow: 0 40px 90px -40px var(--shadow), 0 0 0 1px var(--glass-brd);
   background: color-mix(in oklab, var(--fg) 6%, transparent);
+  display: flex; flex-direction: column;
+}
+.media-in > .ph { flex: 1; min-height: 100%;
 }
 .media .main { display: block; width: 100%; height: 100%; object-fit: cover; }
 .media .amb {
@@ -382,7 +393,7 @@ html[lang^="vi"] .h2 { line-height: 1.16; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ph {
-  width: 100%; height: 100%; display: grid; place-items: center; padding: 40px; text-align: center;
+  width: 100%; height: 100%; display: grid; place-items: center; place-content: center; padding: 40px; text-align: center;
   font-size: 24px; color: var(--fg3);
   background:
     radial-gradient(60% 60% at 30% 20%, color-mix(in oklab, var(--accent) 22%, transparent), transparent),
@@ -1066,6 +1077,8 @@ html[lang^="vi"] .df-term { line-height: 1.14; }
 .sm-num b { font-size: 104px; font-weight: 750; color: var(--fg); letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
 .sm-label { margin-top: 28px; font-size: 28px; font-weight: 650; }
 .sm-msg { margin-top: 10px; max-width: 320px; font-size: 22px; line-height: 1.4; color: var(--fg2); }
+.sm-pred { margin-top: 14px; font-size: calc(22px * var(--kt)); color: var(--fg2); font-weight: 500; }
+.sm-pred[hidden] { display: none; }
 
 /* video */
 .video { display: flex; flex-direction: column; align-items: center; height: 100%; }
@@ -1334,6 +1347,89 @@ html.ov .slide > .bd-clone, html.sheet .slide > .bd-clone { display: block; }
 }
 .ex-ans b { font-size: calc(20px * var(--kt)); font-weight: 700; color: var(--green); }
 .has-code .ex-problem { font-size: calc(32px * var(--kt)); }
+
+/* predict: predict-then-run practice */
+.pred { display: flex; flex-direction: column; height: 100%; }
+.pred-body { flex: 1; min-height: 0; display: flex; gap: 56px; margin-top: 40px; }
+.pred-task {
+  flex: 0 0 48%; min-width: 0; max-height: 100%; display: flex; flex-direction: column; gap: 20px;
+  overflow-y: auto; padding-right: 6px;
+}
+.pred-q {
+  font-size: calc(32px * var(--kt)); line-height: 1.45; text-wrap: pretty;
+  padding: 24px 30px; border-radius: 26px; background: var(--glass); border: 1px solid var(--glass-brd);
+}
+.pred-q p { margin: 0; }
+.pred-q p + p { margin-top: .5em; }
+.pred-task .window { flex: none; width: 100%; }
+.pred-box { width: 100%; }
+.pred-input {
+  width: 100%; height: 120px; resize: none; font: inherit; font-size: calc(24px * var(--kt)); line-height: 1.45;
+  padding: 16px 22px; border-radius: 20px; color: var(--fg); background: var(--glass);
+  border: 1.5px solid var(--glass-brd); outline: none; transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.pred-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 25%, transparent); }
+.pred-input::placeholder { color: var(--fg3); }
+.pred-hints { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pred-hint {
+  display: flex; align-items: flex-start; gap: 16px; padding: 14px 20px; border-radius: 20px;
+  font-size: calc(24px * var(--kt)); line-height: 1.4;
+  background: color-mix(in oklab, var(--yellow) 9%, var(--glass)); border: 1px solid color-mix(in oklab, var(--yellow) 32%, transparent);
+}
+.pred-hint b { display: block; margin-bottom: 2px; font-size: calc(18px * var(--kt)); font-weight: 650; color: var(--fg2); }
+.pred-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; max-height: 100%; }
+.pred-term {
+  flex: 0 0 auto; max-height: 480px; display: flex; flex-direction: column; background: #0c0e14; border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .7);
+}
+[data-theme="daylight"] .pred-term, [data-theme="paper"] .pred-term { background: #16181f; color: #f0f2f5; }
+.pred-term .win-bar { background: rgba(255, 255, 255, .05); border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.pred-term .win-title { color: rgba(255, 255, 255, .6); }
+.term-body {
+  flex: 1; min-height: 140px; max-height: 400px; padding: 20px 24px; overflow-y: auto; font-family: var(--mono);
+  font-size: calc(23px * var(--kt)); line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+}
+.term-run-hint { color: var(--fg3); font-style: italic; }
+.pred-term.running .term-run-hint, .pred-term.done .term-run-hint { display: none; }
+.term-cmd { display: none; color: #f5f5f7; font-weight: 600; margin-bottom: 8px; }
+.pred-term.running .term-cmd, .pred-term.done .term-cmd { display: block; }
+.term-ps { color: var(--accent); user-select: none; }
+.term-output {
+  margin: 0; padding: 0; font-family: inherit; font-size: inherit; line-height: inherit;
+  color: color-mix(in oklab, var(--green) 85%, var(--fg)); white-space: pre-wrap; word-break: break-word; display: none;
+}
+.pred-term.running .term-output, .pred-term.done .term-output { display: block; }
+.pred-reveal {
+  display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0;
+}
+.pred-explain {
+  padding: 22px 28px; border-radius: 26px; font-size: calc(26px * var(--kt)); line-height: 1.48; overflow-y: auto;
+}
+.pred-explain p { margin: 0; }
+.pred-explain p + p { margin-top: .5em; }
+.pred-rate { display: flex; gap: 14px; align-items: center; }
+.pred-r {
+  all: unset; display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border-radius: 999px;
+  font-size: calc(21px * var(--kt)); font-weight: 600; cursor: pointer; border: 1.5px solid var(--glass-brd);
+  background: var(--glass); transition: background .15s var(--ease-out), border-color .15s var(--ease-out), transform .15s var(--spring);
+}
+.pred-r kbd {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px;
+  font-family: inherit; font-size: 13px; font-weight: 700; background: color-mix(in oklab, var(--fg) 14%, transparent);
+}
+.pred-r:hover { transform: translateY(-1px); border-color: var(--accent); background: color-mix(in oklab, var(--accent) 15%, var(--glass)); }
+.pred-r.sel { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 25%, var(--glass)); }
+.pred-r.ok.sel { border-color: var(--green); background: color-mix(in oklab, var(--green) 25%, var(--glass)); }
+.pred-r.diff.sel { border-color: var(--orange); background: color-mix(in oklab, var(--orange) 25%, var(--glass)); }
+.pred-gap-msg {
+  padding: 12px 18px; border-radius: 16px; font-size: calc(20px * var(--kt)); line-height: 1.4;
+  color: var(--orange); background: color-mix(in oklab, var(--orange) 10%, transparent); border: 1px solid color-mix(in oklab, var(--orange) 30%, transparent);
+}
+.pred-gap-msg[hidden] { display: none; }
+html.static .pred-term .term-run-hint, html.ov .pred-term .term-run-hint { display: none; }
+html.static .pred-term .term-cmd, html.ov .pred-term .term-cmd { display: block; }
+html.static .pred-term .term-output, html.ov .pred-term .term-output { display: block; }
+html.static .pred-reveal, html.ov .pred-reveal { opacity: 1 !important; visibility: visible !important; transform: none !important; }
 
 /* tweaks */
 .t-split .h2 { font-size: calc(68px * var(--kt)); }
@@ -1821,6 +1917,7 @@ html.static .ay-link *, html.ov .ay-link * { animation: none !important; }
 .c-due[hidden] { display: none; }
 .c-due a { margin-left: 10px; font-weight: 650; color: var(--orange); text-decoration: none; }
 .c-due a:hover { text-decoration: underline; }
+.c-when { font-size: 14px; font-weight: 500; color: var(--fg3); margin-top: 4px; }
 
 /* diagram: Mermaid drawings made at build time; the runtime builds them in (boxes fade in, then the arrows trace between them) */
 .dg { display: flex; flex-direction: column; height: 100%; }

@@ -456,6 +456,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -759,6 +763,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "number": {
                 "description": "Chapter number; auto-numbered if omitted",
                 "type": [
@@ -1058,6 +1066,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "kicker": {
                 "description": "Small lead-in line above the statement",
                 "type": "string"
@@ -1293,6 +1305,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -1639,6 +1655,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -2010,6 +2030,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "image": {
                 "anyOf": [
                   {
@@ -2358,6 +2382,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -2715,6 +2743,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Data source",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -2770,10 +2802,6 @@
                   ],
                   "additionalProperties": false
                 }
-              },
-              "source": {
-                "description": "Data source",
-                "type": "string"
               }
             },
             "required": [
@@ -2980,6 +3008,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "quote": {
                 "type": "string",
@@ -3268,6 +3300,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -3540,6 +3576,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -3791,6 +3831,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -4036,6 +4080,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -4290,6 +4338,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -4561,6 +4613,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -4806,6 +4862,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -5153,6 +5213,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -5401,6 +5465,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -5623,6 +5691,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -5906,6 +5978,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -6152,6 +6228,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "term": {
                 "type": "string",
@@ -6461,6 +6541,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -6786,6 +6870,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -7012,6 +7100,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -7242,6 +7334,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -7468,6 +7564,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "html": {
                 "type": "string",
                 "minLength": 1,
@@ -7682,6 +7782,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -7942,6 +8046,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -8033,6 +8141,288 @@
             "required": [
               "type",
               "problem"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "predict"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Title"
+              },
+              "question": {
+                "type": "string",
+                "minLength": 1,
+                "description": "What the learner must predict"
+              },
+              "lang": {
+                "description": "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
+                "type": "string"
+              },
+              "code": {
+                "description": "Source code string (≤ 18 lines)",
+                "type": "string",
+                "minLength": 1
+              },
+              "file": {
+                "description": "Path relative to the deck folder, or absolute",
+                "type": "string",
+                "minLength": 1
+              },
+              "lines": {
+                "description": "1-based line ranges to quote, e.g. \"129-161\" or \"129-140,147-161\" (default: whole file)",
+                "type": "string",
+                "pattern": "^\\s*\\d+(\\s*-\\s*\\d+)?(\\s*,\\s*\\d+(\\s*-\\s*\\d+)?)*\\s*$"
+              },
+              "dedent": {
+                "default": true,
+                "description": "Remove common leading indentation from quoted lines (default true)",
+                "type": "boolean"
+              },
+              "filename": {
+                "description": "Window title, e.g. main.py (defaults to file basename when file is used)",
+                "type": "string"
+              },
+              "command": {
+                "description": "CLI command shown in the terminal, e.g. python script.py",
+                "type": "string"
+              },
+              "output": {
+                "type": "string",
+                "description": "Real program output, shown verbatim"
+              },
+              "explain": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Why the result is what it is"
+              },
+              "hints": {
+                "description": "Hints revealed before running (at most 3)",
+                "maxItems": 3,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Hint"
+                }
+              },
+              "input": {
+                "description": "Show the prediction textarea (default true)",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "question",
+              "output",
+              "explain"
             ],
             "additionalProperties": false
           },
@@ -8234,6 +8624,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -8625,6 +9019,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -9044,6 +9442,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -9362,6 +9764,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
@@ -9793,6 +10199,10 @@
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
               },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
                 "type": "string"
@@ -10039,6 +10449,10 @@
               "morph": {
                 "description": "false disables automatic Magic Move into this slide",
                 "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
               },
               "eyebrow": {
                 "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",

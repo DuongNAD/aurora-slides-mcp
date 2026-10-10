@@ -27,7 +27,8 @@ Deck fields: `title` (required), `subtitle`, `author`, `lang` (default "vi"), `t
 `accent`, `background`, `transition` (default "fade"), `font` ("vietnam" = Be Vietnam Pro, "inter", "system"),
 `options` {progress, controls, counter, grain, parallax, magicMove, loop, resume}, `slides` (required).
 Every slide accepts: `id` (deep link #/id), `theme` (per-slide override), `accent`, `background`,
-`transition`, `notes` (study notes the learner opens with N), `morph` (false disables Magic Move into it).
+`transition`, `notes` (study notes the learner opens with N), `morph` (false disables Magic Move into it),
+`source` (short citation, e.g. "Khóa học · transcript 02:13", "Mở rộng · <ref>").
 
 Golden rules:
 - Write in the user's language: every learner-facing string (titles, text, notes, quiz options, explanations, hooks, notebook lines,
@@ -233,7 +234,7 @@ Shape every lesson deck for that habit (section titles in the deck language, e.g
 4. **Notebook**: close every block with a `notebook` slide holding the 4–8 lines worth writing down (definitions, formulas,
    rules, one must-remember line, and an `@ ` anchor line with the hook). Notebook lines reveal one per → so the learner can copy at
    their own pace; keep each line copyable in one go (≤ 18 words).
-5. **Practice**: a `section`, then `exercise` slides from easy to hard: a self-contained problem, `time` to try alone
+5. **Practice**: a `section`, then start practice with `predict` slides for the code just taught (predict-then-run: the learner writes a prediction, runs the code in the slide's terminal, then compares and copies gaps into their error log), followed by `exercise` slides from easy to hard: a self-contained problem, `time` to try alone
    (60–300 s), 1–2 `hints` that nudge without giving it away, a worked `solution` in short steps, and a final `answer`.
    Follow with retrieval: `quiz` (with explanations), `cloze`, `flashcards`, and the recall walk of the lesson's palace
    (`{"type": "palace", "from": "<id>", "mode": "recall"}`) or `anchors` with `recall: true`.
@@ -287,6 +288,20 @@ Palace recipe:
 On the notebook page add an anchor line `@ <hook> = <idea>`: the learner writes the hook next to the idea in the margin.
 Anchor pictures: one bold subject, no text, the same style suffix for the whole lesson (topic "media"). Your own image tool
 (then aurora_add_image) or `generate` give the most vivid results; icons are the fallback.
+
+## accuracy
+The user's course materials (transcripts, code, official notebooks, their own roadmap) are the source of truth.
+
+Rules for grounded, reliable lessons:
+- **Quote, never retype**: quote code with `file` + `lines` (and `dedent: true`), never retype it from memory.
+- **Predict-then-run**: for code, prefer `predict` slides with real output captured by running it.
+- **Tag slides with `source`**: tag slides with `source` (e.g. `"Khóa học · transcript 02:13"`, `"Khóa học · Lab 1 dòng 129-161"`), marking external extensions `"Mở rộng · <source>"` and unverifiable claims `"chưa xác minh"`.
+- **State what is simulated**: clearly state what is simulated (mock LLMs, toy datasets, dummy APIs, heuristic approximations) rather than real production behavior.
+- **Never invent numbers or dates**: benchmark metrics, latencies, dates, paper citations, and version numbers must be exact.
+- **No overclaims**: avoid sweeping overclaims ("100%", "always", "works on every model").
+- **Real quiz distractors**: quiz distractors must be real, plausible misconceptions, never absurd or impossible options.
+- **Learner-centered author**: the deck `author` is the learner (or omitted), never the course provider.
+- **Calibrate level**: calibrate the level to the learner's own materials (their roadmap's outcomes and Definition of Done).
 
 ## qa
 Before you report a deck as done:

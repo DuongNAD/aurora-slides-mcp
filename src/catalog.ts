@@ -441,6 +441,21 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
       answer: "**2** phân tử glucose và **12** phân tử O₂",
     },
   },
+  predict: {
+    use: "Predict-then-run: the learner writes a prediction, runs the code in the slide's terminal, then compares; use it for traces, outputs and edge cases of code you just taught.",
+    example: {
+      type: "predict",
+      eyebrow: "Dự đoán kết quả",
+      title: "Hàm sorted() trong Python",
+      question: "Đoạn code sau in ra gì trên màn hình?",
+      lang: "python",
+      code: "xs = [3, 1, 2]\nprint(sorted(xs), xs)",
+      command: "python -c 'xs = [3, 1, 2]; print(sorted(xs), xs)'",
+      output: "[1, 2, 3] [3, 1, 2]",
+      explain: "Hàm `sorted()` trả về **danh sách mới** đã sắp xếp, không làm thay đổi danh sách gốc `xs` (khác với phương thức `xs.sort()` sắp xếp tại chỗ).",
+      hints: ["`sorted()` và `.sort()` có điểm gì khác nhau?"],
+    },
+  },
   html: {
     use: "Escape hatch for a custom layout. Animate with data-a=\"rise|blur|scale|pop|zoom|fade\" and data-d=\"ms\"; style with css (use & for the slide root) and theme variables like var(--accent), var(--fg2).",
     example: {
@@ -456,7 +471,7 @@ export const SHOWCASE_ORDER: SlideType[] = [
   "title", "agenda", "section", "statement", "bullets", "split", "image", "explode", "bento", "stats", "definition",
   "section", "steps", "diagram", "compare", "cycle", "formula", "code", "chart", "table", "timeline", "hotspots",
   "section", "palace", "analogy", "anchors", "mnemonic", "notebook",
-  "section", "exercise", "quiz", "palace", "flashcards", "cloze", "quote", "video", "html", "summary",
+  "section", "exercise", "predict", "quiz", "palace", "flashcards", "cloze", "quote", "video", "html", "summary",
 ];
 
 export function showcaseDeck(theme = "aurora"): Record<string, unknown> {

@@ -78,6 +78,7 @@ const base = {
   transition: z.enum(TRANSITIONS).optional(),
   notes: optMd("Study notes for this slide (press N). Put depth here, keep the slide itself minimal."),
   morph: z.boolean().optional().describe("false disables automatic Magic Move into this slide"),
+  source: optMd("Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')"),
 };
 
 const eyebrow = optMd("Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')");
@@ -550,6 +551,38 @@ const ExerciseSlide = z.strictObject({
   answer: optMd("Final answer, revealed last"),
 });
 
+const PredictSlide = z
+  .strictObject({
+    type: z.literal("predict"),
+    ...base,
+    eyebrow,
+    title: md("Title"),
+    question: md("What the learner must predict"),
+    lang: z
+      .string()
+      .optional()
+      .describe(
+        "python, javascript, typescript, java, c, cpp, csharp, go, rust, sql, html, css, bash, json, yaml… (defaults from file extension when file is used, otherwise text)",
+      ),
+    code: z.string().min(1).optional().describe("Source code string (≤ 18 lines)"),
+    file: z.string().min(1).optional().describe("Path relative to the deck folder, or absolute"),
+    lines: z
+      .string()
+      .regex(/^\s*\d+(\s*-\s*\d+)?(\s*,\s*\d+(\s*-\s*\d+)?)*\s*$/, 'lines like "129-161" or "129-140,147-161"')
+      .optional()
+      .describe('1-based line ranges to quote, e.g. "129-161" or "129-140,147-161" (default: whole file)'),
+    dedent: z.boolean().default(true).describe("Remove common leading indentation from quoted lines (default true)"),
+    filename: optMd("Window title, e.g. main.py (defaults to file basename when file is used)"),
+    command: z.string().optional().describe("CLI command shown in the terminal, e.g. python script.py"),
+    output: z.string().describe("Real program output, shown verbatim"),
+    explain: md("Why the result is what it is"),
+    hints: z.array(md("Hint")).max(3).optional().describe("Hints revealed before running (at most 3)"),
+    input: z.boolean().optional().describe("Show the prediction textarea (default true)"),
+  })
+  .refine((v) => !(v.code && v.file), {
+    message: "predict slide cannot specify both `code` and `file`",
+  });
+
 /* Memory anchors: tie each idea to something the learner already knows (a place, a picture, a system, a phrase). */
 
 const PalaceStation = z.strictObject({
@@ -689,6 +722,7 @@ export const SlideSchema = z.discriminatedUnion("type", [
   HtmlSlide,
   NotebookSlide,
   ExerciseSlide,
+  PredictSlide,
   ExplodeSlide,
   PalaceSlide,
   AnchorsSlide,
@@ -824,6 +858,7 @@ function allowedKeys(type: string | undefined): string[] {
 export const CourseLessonSchema = z.strictObject({
   title: md("Lesson title, e.g. 'Cổng lượng tử'"),
   summary: optMd("One line: what this lesson covers"),
+  when: optMd("When this lesson takes place, e.g. 'Tuần 2 · Thứ Ba 20/10'"),
   dir: z
     .string()
     .regex(/^[A-Za-z0-9._-]+$/, "dir is a plain folder name like 02-cong-luong-tu")

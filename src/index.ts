@@ -83,6 +83,10 @@ const LANGUAGE_RULE =
   "notebook lines, alt text) in the user's language, i.e. the language the user wrote the request in, unless they ask for another one. " +
   'Set the deck "lang" to its BCP-47 code (vi, en, ja…). Keep JSON keys, ids, icon ids, Mermaid keywords and image prompts in English. ' +
   "Write natively, as a good teacher speaks that language, not as a translation. Reply to the user in their language as well.";
+const ACCURACY_RULE =
+  "Accuracy: the user's materials are the source of truth. Quote code with `file` + `lines` (never retype it), tag slides with `source` " +
+  '("Mở rộng" for extensions), say what is simulated, never invent numbers or overclaim, and make quiz distractors real misconceptions ' +
+  '(aurora_guide topic "accuracy").';
 const PICTURE_RULE =
   "Pictures: make them with YOUR OWN image tool when you have one (e.g. Antigravity) and import the file with aurora_add_image; Aurora never " +
   'spends the user\'s API keys. Or write "image": {"generate": "<English prompt>"} in a slide: the build lists it under "Pictures for you to make", ' +
@@ -96,7 +100,7 @@ const DONE_RULE =
 const INSTRUCTIONS = `Aurora Slides builds Apple-keynote-style, animated, interactive HTML lessons for self-study from deck JSON.
 
 Workflow
-1. Call aurora_guide once (overview), then the topics you need: "pedagogy", "memory", "media", "course", "diagram".
+1. Call aurora_guide once (overview), then the topics you need: "pedagogy", "memory", "accuracy", "media", "course", "diagram".
 2. Big subject: aurora_create_course first (small lessons, each with its own theme), then one aurora_create_deck per lesson folder.
 3. Collect visuals in few calls: aurora_search_icons for icons; pictures as described below.
 4. Build with aurora_create_deck. Fix every validation error it lists and call again; fill the pictures it lists.
@@ -104,6 +108,7 @@ Workflow
 
 Rules
 - ${LANGUAGE_RULE}
+- ${ACCURACY_RULE}
 - Teach for memory: theory → memory anchors (palace walk, anchors, analogy, mnemonic) → notebook page → practice (exercises easy → hard) → recall walk → summary.
 - One idea per slide, short lines, varied layouts; the full explanation goes in "notes".
 - Processes, structures and overviews (flowcharts, mind maps, sequence, state, timelines…): a "diagram" slide with Mermaid code.
@@ -569,14 +574,15 @@ async function startMcp(): Promise<void> {
               "2. Theory, as one or more sections titled in the content language: short concept slides (statement, split, definition, formula, " +
                 "steps, compare, diagram…). After each block: memory anchors for its key ideas (a palace walk through a place the learner knows " +
                 "for an ordered list; anchors, analogy or mnemonic for separate terms), then a notebook slide with the 4–8 lines worth copying by hand.",
-              "3. Practice section: exercise slides from easy to hard (time to try alone, hints, worked solution, answer), then quiz, cloze or " +
+              "3. Practice section: start practice with predict slides for the code just taught, then exercise slides from easy to hard (time to try alone, hints, worked solution, answer), then quiz, cloze or " +
                 "flashcards, and the recall walk of the palace.",
               "4. Closing: a summary slide with 3–6 takeaways.",
               "",
-              "Steps: aurora_guide (overview, then topics \"pedagogy\" and \"memory\") → aurora_search_icons → aurora_create_deck → make the pictures " +
+              "Steps: aurora_guide (overview, then topics \"pedagogy\", \"accuracy\" and \"memory\") → aurora_search_icons → aurora_create_deck → make the pictures " +
                 "it lists → aurora_screenshot and aurora_audit → fix with aurora_edit_deck.",
               "",
               LANGUAGE_RULE,
+              ACCURACY_RULE,
               PICTURE_RULE,
               DONE_RULE,
             ].join("\n"),
@@ -608,7 +614,7 @@ async function startMcp(): Promise<void> {
               `Build an Aurora Slides course about: ${topic}`,
               `Learner: ${audience ?? "a self-study learner"}. Content language: ${language ?? "the language this request is written in (the topic above shows it)"}.`,
               "",
-              "1. Read aurora_guide topics \"course\", \"pedagogy\" and \"memory\".",
+              "1. Read aurora_guide topics \"course\", \"pedagogy\", \"accuracy\" and \"memory\".",
               `2. Split the subject into ${lessons ?? "4–8"} small lessons, each one focused part (e.g. theory first, then building blocks, then ` +
                 "applications) of about 12–20 slides, and give every lesson its own theme that fits its content.",
               "3. aurora_create_course with that outline.",
@@ -617,6 +623,7 @@ async function startMcp(): Promise<void> {
               "5. aurora_preview the course folder for the learner.",
               "",
               LANGUAGE_RULE,
+              ACCURACY_RULE,
               PICTURE_RULE,
               DONE_RULE,
             ].join("\n"),
