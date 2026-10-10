@@ -35,6 +35,17 @@ flowchart LR
 - **Progress summary** (`aurora_progress`): summarizes quiz accuracy (with chosen and correct texts for wrong answers), right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
 - **Export control**: "Xuất tiến độ" / "Export progress" button in the help panel (`?`) and on the course page downloads `aurora-progress-<slug>.jsonl`.
 
+The canonical, versioned definition with JSON Schema and fixtures lives in Constellation's [contracts/aurora-progress-event.v1](https://github.com/DuongNAD/constellation-mcp/tree/main/contracts); this README summarizes it.
+
+### Ecosystem
+
+| Project | Role |
+|---|---|
+| [Polaris](https://github.com/DuongNAD/polaris-mcp) | Course architect |
+| Aurora Slides (this repo) | Lessons, practice and progress |
+| [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | SSD governance, learning-aware search, protection of course folders, post-write index hook |
+| [Constellation](https://github.com/DuongNAD/constellation-mcp) | One manifest, registration into Claude Code / Antigravity / Cursor / Codex, health checks, drift doctor, updates |
+
 ## Aurora + SmartDrive-OS
 
 Aurora Slides automatically coordinates with sister project [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os). After Aurora writes learning materials (deck slides, course index, images, or learner progress), it asks SmartDrive-OS to update its search index for that folder (`smart-drive update <dir> --quiet` in the background) so `smart-drive search --kind slide ...` immediately finds new and edited lessons.
@@ -133,6 +144,8 @@ After that, `node scripts/build.mjs --check` is enough.
 > clusters) without thousands of tiny files.
 
 ## Connect your agent
+
+With Constellation installed, `constellation register --dry-run` then `constellation register` keeps every agent config in sync.
 
 Register Aurora as `aurora-slides`, then reload the MCP servers (or restart Antigravity / Claude Code) so the agent sees the tools.
 Replace `C:/path/to/aurora-slides-mcp` with the folder you cloned.

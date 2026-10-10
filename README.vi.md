@@ -35,6 +35,17 @@ flowchart LR
 - **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz (kèm phương án đã chọn và đáp án đúng cho các câu sai), dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
 - **Nút xuất tiến độ**: nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp (`?`) và trên trang chủ khoá học cho phép tải file `aurora-progress-<slug>.jsonl`.
 
+Định nghĩa phiên bản chuẩn tắc kèm JSON Schema và dữ liệu mẫu (fixtures) nằm tại [contracts/aurora-progress-event.v1](https://github.com/DuongNAD/constellation-mcp/tree/main/contracts) của Constellation; tài liệu README này tóm tắt lại cấu trúc đó.
+
+### Hệ sinh thái
+
+| Dự án | Vai trò |
+|---|---|
+| [Polaris](https://github.com/DuongNAD/polaris-mcp) | Kiến trúc sư khoá học |
+| Aurora Slides (repo này) | Bài học, luyện tập và tiến độ |
+| [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | Quản trị SSD, tìm kiếm tối ưu cho học tập, bảo vệ thư mục khoá học, hook cập nhật chỉ mục sau khi ghi |
+| [Constellation](https://github.com/DuongNAD/constellation-mcp) | Một manifest duy nhất, đăng ký vào Claude Code / Antigravity / Cursor / Codex, kiểm tra sức khoẻ, drift doctor, cập nhật |
+
 ## Aurora + SmartDrive-OS
 
 Aurora Slides tự động đồng bộ với dự án song hành [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os). Sau khi Aurora ghi file học tập (slide bài giảng, trang khoá học, hình ảnh hoặc tiến độ học), Aurora sẽ yêu cầu SmartDrive-OS cập nhật chỉ mục tìm kiếm SQLite FTS5 cho thư mục đó (`smart-drive update <dir> --quiet` chạy ngầm) để lệnh tìm kiếm `smart-drive search --kind slide ...` tìm thấy ngay các bài học mới tạo hoặc vừa chỉnh sửa.
@@ -130,6 +141,8 @@ Những lần sau chỉ cần `node scripts/build.mjs --check`.
 > repo chỉ giữ một file bundle. Nhờ vậy có thể đặt dự án trên ổ exFAT hay USB (cluster lớn) mà không sinh hàng nghìn file nhỏ.
 
 ## Kết nối với agent
+
+Khi đã cài đặt Constellation, `constellation register --dry-run` rồi `constellation register` sẽ giữ cấu hình của mọi agent luôn đồng bộ.
 
 Đăng ký Aurora với tên `aurora-slides`, rồi tải lại danh sách MCP (hoặc mở lại Antigravity / Claude Code) để agent nhìn thấy
 các tool. Thay `C:/path/to/aurora-slides-mcp` bằng thư mục bạn đã clone.
