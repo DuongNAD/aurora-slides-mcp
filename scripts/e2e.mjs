@@ -4,6 +4,7 @@
  * client (from the C: toolchain) and exercises every tool. Test decks are written outside the project.
  *   node scripts/e2e.mjs
  */
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
@@ -22,6 +23,17 @@ const { StdioClientTransport } = req("@modelcontextprotocol/sdk/client/stdio.js"
 
 const DIR = join(base, "e2e", "deck");
 rmSync(join(base, "e2e"), { recursive: true, force: true });
+mkdirSync(join(base, "e2e"), { recursive: true });
+
+// Setup fake SmartDrive command for testing
+const fakeSdLog = join(base, "e2e", "smartdrive.log");
+const fakeSdScript = join(base, "e2e", "fake-smartdrive.mjs");
+writeFileSync(
+  fakeSdScript,
+  `import { appendFileSync } from "node:fs";\nappendFileSync(${JSON.stringify(fakeSdLog)}, process.argv.slice(2).join(" ") + "\\n", "utf8");\n`,
+  "utf8",
+);
+process.env.AURORA_SMARTDRIVE_CMD = `"${process.execPath}" "${fakeSdScript}"`;
 
 let failed = 0;
 const ok = (name, cond, detail = "") => {
@@ -31,7 +43,7 @@ const ok = (name, cond, detail = "") => {
 const textOf = (r) => (r.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
 
 const client = new Client({ name: "aurora-e2e", version: "1.0.0" });
-const transport = new StdioClientTransport({ command: process.execPath, args: [join(ROOT, "dist", "aurora.mjs")], stderr: "inherit" });
+const transport = new StdioClientTransport({ command: process.execPath, args: [join(ROOT, "dist", "aurora.mjs")], env: { ...process.env }, stderr: "inherit" });
 await client.connect(transport);
 const call = (name, args = {}) => client.callTool({ name, arguments: args }, undefined, { timeout: 180000 });
 
@@ -83,6 +95,33 @@ try {
   };
   r = await call("aurora_create_deck", { deck: JSON.stringify(deck), dir: DIR });
   ok("create deck from a JSON string", !r.isError && textOf(r).includes("Built") && existsSync(join(DIR, "index.html")), textOf(r).split("\n")[0]);
+
+  // Assert SmartDrive notification ran and was coalesced for DIR
+  await new Promise((res) => setTimeout(res, 300));
+  const sdLines = existsSync(fakeSdLog) ? readFileSync(fakeSdLog, "utf8").trim().split("\n").filter(Boolean) : [];
+  const dirExpected = resolve(DIR);
+  const matchedLines = sdLines.filter((l) => l.includes(dirExpected) || l.includes(DIR));
+  ok(
+    "SmartDrive notification ran for created deck (coalesced: one line for one build)",
+    matchedLines.length === 1 && matchedLines[0] === `update ${dirExpected} --quiet`,
+    matchedLines.join(" | ") || "(none)",
+  );
+
+  // Test AURORA_SMARTDRIVE=off disables notifications
+  const OFF_DIR = join(base, "e2e", "off_deck");
+  mkdirSync(OFF_DIR, { recursive: true });
+  writeFileSync(join(OFF_DIR, "deck.json"), JSON.stringify(deck), "utf8");
+  const logLenBefore = existsSync(fakeSdLog) ? readFileSync(fakeSdLog, "utf8").length : 0;
+  execFileSync(process.execPath, [join(ROOT, "dist", "aurora.mjs"), "build", OFF_DIR], {
+    env: { ...process.env, AURORA_SMARTDRIVE: "off", AURORA_SMARTDRIVE_CMD: `"${process.execPath}" "${fakeSdScript}"` },
+    stdio: "pipe",
+  });
+  await new Promise((res) => setTimeout(res, 300));
+  const logAfter = existsSync(fakeSdLog) ? readFileSync(fakeSdLog, "utf8") : "";
+  ok(
+    "with AURORA_SMARTDRIVE=off nothing is logged",
+    !logAfter.includes(resolve(OFF_DIR)) && !logAfter.includes(OFF_DIR) && logAfter.length === logLenBefore,
+  );
 
   r = await call("aurora_create_deck", { deck, dryRun: true });
   ok("dryRun validates only", !r.isError && /Valid deck with 3 slides/.test(textOf(r)));

@@ -1,6 +1,6 @@
 {
   "name": "aurora-slides-mcp",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "MCP server that builds Apple-keynote-style, animated, interactive HTML slide decks for self-study.",
   "author": "DuongNAD (https://github.com/DuongNAD)",
   "repository": {

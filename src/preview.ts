@@ -6,6 +6,7 @@ import { createReadStream, existsSync } from "node:fs";
 import { appendFile, readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { basename, dirname, extname, join, normalize, resolve, sep } from "node:path";
+import { notifySmartDrive } from "./smartdrive.js";
 import { builds } from "./store.js";
 import { esc, hash } from "./util.js";
 
@@ -121,6 +122,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const progressFile = join(targetDir, "progress.jsonl");
 
     await appendFile(progressFile, JSON.stringify(obj) + "\n", "utf8");
+    notifySmartDrive(targetDir);
     res.writeHead(204, { "Cache-Control": "no-store" });
     res.end();
     return;

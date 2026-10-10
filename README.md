@@ -12,7 +12,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.6.1**. Author: **DuongNAD**.
+Current version: **0.6.2**. Author: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -34,6 +34,14 @@ flowchart LR
 - **Live progress recording**: while studying under `aurora_preview`, quiz answers (with chosen and correct option texts and explanation), predict ratings, and memory palace recall ratings automatically append to `<course folder>/progress.jsonl`.
 - **Progress summary** (`aurora_progress`): summarizes quiz accuracy (with chosen and correct texts for wrong answers), right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
 - **Export control**: "Xuất tiến độ" / "Export progress" button in the help panel (`?`) and on the course page downloads `aurora-progress-<slug>.jsonl`.
+
+## Aurora + SmartDrive-OS
+
+Aurora Slides automatically coordinates with sister project [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os). After Aurora writes learning materials (deck slides, course index, images, or learner progress), it asks SmartDrive-OS to update its search index for that folder (`smart-drive update <dir> --quiet` in the background) so `smart-drive search --kind slide ...` immediately finds new and edited lessons.
+
+- **Non-blocking & coalesced**: Index notifications run detached in the background with a 60 s timeout and are coalesced per folder within 2 s.
+- **Opt-out**: Set `AURORA_SMARTDRIVE=off` to disable SmartDrive-OS indexing notifications.
+- **Custom command**: Set `AURORA_SMARTDRIVE_CMD` (e.g. `python -m smart_drive` or a path to the executable) if `smart-drive` is not on PATH.
 
 ## Highlights
 
@@ -161,6 +169,8 @@ Optional environment variables (put them in the `"env"` block of the MCP config)
 | `AURORA_BROWSER` | Path to Chrome/Edge if it is not found automatically |
 | `AURORA_PORT` | Preview server port (default 4747) |
 | `AURORA_HOME` | Cache folder for icons, images and diagrams (default `%LOCALAPPDATA%\aurora-slides`) |
+| `AURORA_SMARTDRIVE` | Set to `off` to disable automatic SmartDrive-OS index notifications |
+| `AURORA_SMARTDRIVE_CMD` | Custom command for SmartDrive-OS (e.g. `python -m smart_drive`) |
 
 ## How to use it
 
@@ -268,6 +278,8 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.6.2** (2026-10-11):
+  - SmartDrive-OS integration: automatically trigger incremental index updates (`smart-drive update <dir> --quiet`) after writing decks, courses, images, and progress events so `smart-drive search --kind slide ...` finds new and edited lessons at once. Coalesced per folder within 2 seconds, non-blocking. Configurable via `AURORA_SMARTDRIVE=off` and `AURORA_SMARTDRIVE_CMD`.
 - **0.6.1** (2026-10-11):
   - Self-explanatory quiz progress events: add optional `chosenText` and `answerText` (option plain text arrays, capped at 160 chars per item) and `explanation` (capped at 300 chars) to `quiz` events so Polaris error log and `aurora_progress` show the chosen and correct option texts for wrong answers.
 - **0.6.0** (2026-10-10):

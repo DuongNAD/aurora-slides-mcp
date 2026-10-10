@@ -12,7 +12,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.6.1**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.6.2**. Tác giả: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -34,6 +34,14 @@ flowchart LR
 - **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz (kèm văn bản phương án đã chọn, đáp án đúng và giải thích), tự chấm predict và đánh giá cung điện ký ức tự động ghi nối vào `<thư mục khoá học>/progress.jsonl`.
 - **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz (kèm phương án đã chọn và đáp án đúng cho các câu sai), dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
 - **Nút xuất tiến độ**: nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp (`?`) và trên trang chủ khoá học cho phép tải file `aurora-progress-<slug>.jsonl`.
+
+## Aurora + SmartDrive-OS
+
+Aurora Slides tự động đồng bộ với dự án song hành [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os). Sau khi Aurora ghi file học tập (slide bài giảng, trang khoá học, hình ảnh hoặc tiến độ học), Aurora sẽ yêu cầu SmartDrive-OS cập nhật chỉ mục tìm kiếm SQLite FTS5 cho thư mục đó (`smart-drive update <dir> --quiet` chạy ngầm) để lệnh tìm kiếm `smart-drive search --kind slide ...` tìm thấy ngay các bài học mới tạo hoặc vừa chỉnh sửa.
+
+- **Không chặn & gom lệnh (coalesced)**: Lệnh chạy nền độc lập với thời gian chờ 60 giây và tự động gộp các thay đổi trong vòng 2 giây trên cùng một thư mục.
+- **Tắt tính năng**: Đặt `AURORA_SMARTDRIVE=off` để tắt thông báo cập nhật chỉ mục SmartDrive-OS.
+- **Tuỳ biến lệnh**: Đặt `AURORA_SMARTDRIVE_CMD` (ví dụ `python -m smart_drive` hoặc đường dẫn `smart-drive`) để chỉ định lệnh cập nhật.
 
 ## Điểm nổi bật
 
@@ -158,6 +166,8 @@ Biến môi trường tuỳ chọn (đặt trong khối `"env"` của cấu hìn
 | `AURORA_BROWSER` | Đường dẫn Chrome/Edge nếu không tự tìm thấy |
 | `AURORA_PORT` | Cổng server xem trước (mặc định 4747) |
 | `AURORA_HOME` | Thư mục cache icon/ảnh/sơ đồ (mặc định `%LOCALAPPDATA%\aurora-slides`) |
+| `AURORA_SMARTDRIVE` | Đặt thành `off` để tắt thông báo cập nhật chỉ mục SmartDrive-OS |
+| `AURORA_SMARTDRIVE_CMD` | Lệnh tuỳ biến cho SmartDrive-OS (ví dụ `python -m smart_drive`) |
 
 ## Dùng thế nào
 
@@ -262,6 +272,8 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.6.2** (11/10/2026):
+  - Tích hợp SmartDrive-OS: tự động kích hoạt cập nhật chỉ mục (`smart-drive update <dir> --quiet`) sau khi ghi bài học, khoá học, ảnh và tiến độ để `smart-drive search --kind slide ...` tìm thấy ngay bài học mới và chỉnh sửa. Chạy ngầm không chặn luồng build, tự gom lệnh trong 2 giây. Tuỳ biến qua `AURORA_SMARTDRIVE=off` và `AURORA_SMARTDRIVE_CMD`.
 - **0.6.1** (11/10/2026):
   - Sự kiện tiến độ quiz tự diễn giải: bổ sung các trường tuỳ chọn `chosenText` và `answerText` (mảng văn bản thuần của các phương án, tối đa 160 ký tự mỗi mục) cùng `explanation` (tối đa 300 ký tự) vào sự kiện `quiz` giúp Sổ lỗi Polaris và `aurora_progress` hiển thị trực tiếp phương án đã chọn và đáp án đúng cho các câu sai.
 - **0.6.0** (10/10/2026):

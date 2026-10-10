@@ -11,6 +11,7 @@ import { LESSON_THEMES, lessonKey, renderCourse, type LessonCard } from "./cours
 import { lintDeck, outline, type OutlineRow } from "./lint.js";
 import { renderDeck, type CourseNav, type RenderResult } from "./render.js";
 import { SLIDE_TYPES, THEMES, validateCourse, validateDeck, type Course, type Deck } from "./schema.js";
+import { notifySmartDrive } from "./smartdrive.js";
 import { slugify } from "./util.js";
 
 export interface DeckPaths {
@@ -101,6 +102,7 @@ export async function buildDeck(
     if (opts.saveJson !== false) await writeFile(p.json, JSON.stringify(raw, null, 2) + "\n", "utf8");
     await writeFile(p.html, result.html, "utf8");
     builds.emit("built", p.dir);
+    notifySmartDrive(p.dir);
     if (ctx && !opts.skipHub) await buildCourseHub(ctx.ref, ctx.course).catch(() => undefined);
   }
   const extra: string[] = [];
@@ -195,6 +197,7 @@ export async function buildCourseHub(ref: CoursePaths, course: Course): Promise<
   await mkdir(ref.dir, { recursive: true });
   await writeFile(ref.html, html, "utf8");
   builds.emit("built", ref.dir);
+  notifySmartDrive(ref.dir);
   return { warnings, cards };
 }
 
@@ -237,6 +240,7 @@ export async function buildCourse(raw: unknown, ref: CoursePaths, opts: { rebuil
     }
   }
   const hub = await buildCourseHub(ref, course);
+  notifySmartDrive(ref.dir);
   return { ok: true, errors: [], warnings: [...warnings, ...hub.warnings], ref, course, cards: hub.cards, rebuilt };
 }
 

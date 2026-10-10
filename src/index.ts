@@ -27,6 +27,7 @@ import { appDir, errMsg, VERSION } from "./util.js";
 import { lintDeck } from "./lint.js";
 import { loadProgressEvents, summarizeProgress } from "./progress.js";
 import { selfTest } from "./selftest.js";
+import { notifySmartDrive } from "./smartdrive.js";
 
 type Content = { type: "text"; text: string } | { type: "image"; data: string; mimeType: string };
 type ToolResult = { content: Content[]; isError?: boolean };
@@ -320,6 +321,7 @@ async function startMcp(): Promise<void> {
       safe(async () => {
         const p = deckPaths(dir);
         const r = await importImage({ path, url, base64, name, slot }, p.dir);
+        notifySmartDrive(p.dir);
         const ext = extname(r.file).slice(1).replace("jpg", "jpeg").replace("svg", "svg+xml");
         const lines = [`Saved ${r.file} (${(r.bytes / 1024).toFixed(0)} KB).`];
         if (r.id) {
