@@ -86,17 +86,18 @@ Khi sửa mã nguồn (`src/`, `runtime/`, `guide/`) thì build lại:
 node scripts/build.mjs --install --check
 ```
 
-Lệnh trên cài toolchain vào `%LOCALAPPDATA%\aurora-slides\toolchain` (ổ C:) rồi build ra `dist/aurora.mjs`. Lần đầu nó cũng
-tải gói Mermaid từ npm nhưng chỉ lấy đúng một file `assets/mermaid.min.js` (khoảng 5 MB, chỉ dùng lúc build, không nhúng vào bài).
+Lệnh trên cài toolchain (TypeScript, esbuild, MCP SDK, KaTeX, Shiki…) vào `%LOCALAPPDATA%\aurora-slides\toolchain`
+(Linux/macOS: `~/.cache/aurora-slides/toolchain`) rồi build ra `dist/aurora.mjs`. Lần đầu nó cũng tải gói Mermaid từ npm nhưng
+chỉ lấy đúng một file `assets/mermaid.min.js` (khoảng 5 MB, chỉ dùng lúc build, không nhúng vào bài).
 Những lần sau chỉ cần `node scripts/build.mjs --check`.
 
-> **Đừng chạy `npm install` trong thư mục dự án.** Ổ D: là exFAT cluster 512 KB; `node_modules` ở đây từng ngốn 4,3 GB.
-> Mọi dependency nằm ở toolchain trên ổ C:, dự án chỉ giữ một file bundle.
+> **Đừng chạy `npm install` trong thư mục dự án.** Dự án cố ý không có `node_modules`: mọi dependency nằm ở toolchain bên ngoài,
+> repo chỉ giữ một file bundle. Nhờ vậy có thể đặt dự án trên ổ exFAT hay USB (cluster lớn) mà không sinh hàng nghìn file nhỏ.
 
 ## Kết nối với agent
 
-Trên máy này Aurora đã được đăng ký với tên `aurora-slides` cho cả Antigravity và Claude Code (từ 10/10/2026).
-Sau khi đăng ký, hãy tải lại danh sách MCP (hoặc mở lại Antigravity / Claude Code) để agent nhìn thấy các tool.
+Đăng ký Aurora với tên `aurora-slides`, rồi tải lại danh sách MCP (hoặc mở lại Antigravity / Claude Code) để agent nhìn thấy
+các tool. Thay `C:/path/to/aurora-slides-mcp` bằng thư mục bạn đã clone.
 
 **Google Antigravity**: thêm vào `mcpServers` trong `%USERPROFILE%\.gemini\antigravity\mcp_config.json`
 (Cursor dùng cùng định dạng trong `.cursor/mcp.json`):
@@ -106,7 +107,7 @@ Sau khi đăng ký, hãy tải lại danh sách MCP (hoặc mở lại Antigravi
   "mcpServers": {
     "aurora-slides": {
       "command": "node",
-      "args": ["D:/03_Development_Projects/Slide_Projects/my_projects/aurora_slides_mcp/dist/aurora.mjs"]
+      "args": ["C:/path/to/aurora-slides-mcp/dist/aurora.mjs"]
     }
   }
 }
@@ -115,7 +116,7 @@ Sau khi đăng ký, hãy tải lại danh sách MCP (hoặc mở lại Antigravi
 **Claude Code**:
 
 ```bash
-claude mcp add aurora-slides --scope user -- node "D:/03_Development_Projects/Slide_Projects/my_projects/aurora_slides_mcp/dist/aurora.mjs"
+claude mcp add aurora-slides --scope user -- node "C:/path/to/aurora-slides-mcp/dist/aurora.mjs"
 ```
 
 Biến môi trường tuỳ chọn (đặt trong khối `"env"` của cấu hình MCP):
@@ -219,7 +220,7 @@ guide/      GUIDE.md cho agent
 examples/   bài và khoá học mẫu
 assets/     runtime đã minify, font và KaTeX nhúng base64, mermaid.min.js (sinh bởi build)
 dist/       aurora.mjs: một file duy nhất chứa toàn bộ server (build sẵn, có trong repo)
-scripts/    build.mjs (toolchain trên ổ C:), e2e.mjs (kiểm thử MCP)
+scripts/    build.mjs (toolchain nằm ngoài dự án), e2e.mjs (kiểm thử MCP)
 PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 ```
 
@@ -232,10 +233,11 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 - **0.2.0**: neo trí nhớ: `palace`, `anchors`, `analogy`, `mnemonic`, dòng `@ ` trong vở, lịch ôn ngắt quãng.
 - **0.1.0**: 29 loại slide, khoá học, 14 tool MCP, ảnh, CLI, selftest và e2e.
 
-## Tác giả và thư viện
+## Tác giả, giấy phép và thư viện
 
 Aurora Slides do **DuongNAD** ([github.com/DuongNAD](https://github.com/DuongNAD)) xây dựng. Mã nguồn trong `src/`, `runtime/`, `guide/` và `scripts/`
-được viết riêng cho dự án này.
+được viết riêng cho dự án này và phát hành theo **giấy phép MIT** (xem [LICENSE](LICENSE)): ai cũng được dùng, sửa, phân phối,
+kể cả cho mục đích thương mại, miễn là giữ lại thông báo bản quyền và giấy phép.
 
 Aurora dùng các thư viện mã nguồn mở, mỗi thư viện giữ giấy phép của tác giả: Model Context Protocol SDK, zod, KaTeX, Shiki,
 Mermaid, esbuild, TypeScript (MIT / Apache-2.0), font Be Vietnam Pro, Inter, JetBrains Mono (SIL Open Font License).

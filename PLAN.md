@@ -14,7 +14,7 @@ Apple-keynote-style animated, interactive HTML slide decks and small-lesson cour
   instructions (Workflow / Rules / Done when) and the lesson/course prompts. Content and replies follow the user's language
   (the language of the request; deck `lang` set to it); GUIDE.md golden rules and pedagogy say the same.
 - Registered as `aurora-slides` in Antigravity (~/.gemini/antigravity/mcp_config.json) and Claude Code (user scope).
-- Git: private repo github.com/DuongNAD/aurora-slides-mcp; dist/ and assets/ are committed so a clone runs without a build.
+- Git: public repo github.com/DuongNAD/aurora-slides-mcp, MIT license (LICENSE, © 2026 DuongNAD); dist/ and assets/ are committed so a clone runs without a build.
   The git dir lives on C: (C:/Users/Admin/.git-dirs/aurora_slides_mcp.git; `.git` here is a pointer file) so loose objects
   never land on the exFAT drive. Not under %LOCALAPPDATA%: the Claude desktop app is packaged (MSIX) and redirects writes
   there into its own Packages/Claude_*/LocalCache, which would vanish with the app.
