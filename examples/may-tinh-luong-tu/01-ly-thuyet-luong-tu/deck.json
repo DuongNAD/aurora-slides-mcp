@@ -1,0 +1,342 @@
+{
+  "$schema": "../../../deck.schema.json",
+  "title": "Lý thuyết lượng tử",
+  "lang": "vi",
+  "slides": [
+    {
+      "type": "title",
+      "eyebrow": "Máy tính lượng tử · Bài 1",
+      "title": "Qubit:\n++bit++ biết lưỡng lự",
+      "subtitle": "Một qubit có thể vừa 0 vừa 1. Điều đó thật sự nghĩa là gì?",
+      "meta": "Lý thuyết → neo trí nhớ → ghi vở → thực hành · 20 phút",
+      "icon": "ph:atom-duotone",
+      "notes": "Bài này chỉ cần đại số phổ thông. Kí hiệu |0⟩ đọc là \"ket không\": nó chỉ là tên của một trạng thái."
+    },
+    {
+      "type": "section",
+      "title": "Lý thuyết",
+      "subtitle": "Từ bit cổ điển đến qubit",
+      "icon": "ph:book-open-text-duotone"
+    },
+    {
+      "type": "statement",
+      "text": "Bit cổ điển luôn là 0 **hoặc** 1. Qubit có thể ở ==chồng chập== của cả hai, cho tới khi ta ++đo++.",
+      "effect": "spotlight"
+    },
+    {
+      "type": "compare",
+      "title": "Bit và qubit",
+      "vs": true,
+      "columns": [
+        {
+          "title": "Bit",
+          "subtitle": "Máy tính cổ điển",
+          "icon": "ph:toggle-left-duotone",
+          "items": [
+            "Luôn là 0 hoặc 1",
+            "Đọc giá trị không làm nó thay đổi",
+            "Sao chép tự do"
+          ]
+        },
+        {
+          "title": "Qubit",
+          "subtitle": "Máy tính lượng tử",
+          "icon": "ph:atom-duotone",
+          "tone": "accent",
+          "highlight": true,
+          "items": [
+            "Chồng chập α|0⟩ + β|1⟩",
+            "Đo làm trạng thái sụp về 0 hoặc 1",
+            "Không thể sao chép (no-cloning)"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "analogy",
+      "title": "Qubit giống một đồng xu đang quay",
+      "known": {
+        "label": "Đồng xu đang quay",
+        "icon": "ph:coin-vertical-duotone"
+      },
+      "concept": {
+        "label": "Qubit",
+        "icon": "ph:atom-duotone"
+      },
+      "pairs": [
+        {
+          "known": "Mặt sấp, mặt ngửa",
+          "concept": "Hai trạng thái $|0\\rangle$ và $|1\\rangle$"
+        },
+        {
+          "known": "Đang quay: chưa sấp chưa ngửa",
+          "concept": "Chồng chập $\\alpha|0\\rangle + \\beta|1\\rangle$"
+        },
+        {
+          "known": "Đồng xu lệch, dễ ra một mặt hơn",
+          "concept": "$|\\alpha|^2 \\neq |\\beta|^2$"
+        },
+        {
+          "known": "Đập tay xuống bàn",
+          "concept": "Phép đo: ra đúng một kết quả"
+        }
+      ],
+      "limit": "Đồng xu thật luôn có sẵn một mặt, chỉ là ta chưa nhìn; qubit thì chưa có giá trị nào cho tới khi đo, và biên độ có thể âm.",
+      "notes": "Phép so sánh giúp nhớ hình dạng của ý tưởng, nhưng đừng đi quá xa: chồng chập không phải là \"ta chưa biết\". Hai biên độ có thể triệt tiêu nhau (giao thoa), điều mà một đồng xu không bao giờ làm được."
+    },
+    {
+      "type": "formula",
+      "title": "Trạng thái của một qubit",
+      "formula": "|\\psi\\rangle = \\alpha\\,|0\\rangle + \\beta\\,|1\\rangle",
+      "legend": [
+        {
+          "symbol": "\\alpha, \\beta",
+          "meaning": "Biên độ (số phức)"
+        },
+        {
+          "symbol": "|\\alpha|^2",
+          "meaning": "Xác suất đo ra 0"
+        },
+        {
+          "symbol": "|\\alpha|^2 + |\\beta|^2 = 1",
+          "meaning": "Tổng xác suất"
+        }
+      ],
+      "text": "Biên độ chưa phải xác suất: bình phương độ lớn của nó mới là xác suất."
+    },
+    {
+      "type": "split",
+      "eyebrow": "Hình dung",
+      "title": "Quả cầu Bloch",
+      "text": "Mọi trạng thái của một qubit là một điểm trên mặt cầu: cực bắc là **|0⟩**, cực nam là **|1⟩**, các điểm trên xích đạo là chồng chập cân bằng.",
+      "items": [
+        "Vĩ độ quyết định xác suất",
+        "Kinh độ là pha tương đối"
+      ],
+      "image": {
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><defs><radialGradient id='g' cx='38%' cy='32%' r='75%'><stop offset='0' stop-color='#8ff5cf' stop-opacity='.38'/><stop offset='1' stop-color='#0b3d5c' stop-opacity='.08'/></radialGradient><marker id='a' viewBox='0 0 10 10' refX='7' refY='5' markerWidth='6' markerHeight='6' orient='auto'><path d='M0 0L10 5L0 10z' fill='#ffd36b'/></marker></defs><circle cx='200' cy='205' r='150' fill='url(#g)' stroke='#9fe8d2' stroke-opacity='.75' stroke-width='2'/><ellipse cx='200' cy='205' rx='150' ry='44' fill='none' stroke='#9fe8d2' stroke-opacity='.55' stroke-width='1.6' stroke-dasharray='6 7'/><line x1='200' y1='48' x2='200' y2='362' stroke='#d8fff0' stroke-opacity='.45' stroke-width='1.6'/><line x1='60' y1='205' x2='340' y2='205' stroke='#d8fff0' stroke-opacity='.25' stroke-width='1.2'/><line x1='200' y1='205' x2='296' y2='104' stroke='#ffd36b' stroke-width='4.5' stroke-linecap='round' marker-end='url(#a)'/><circle cx='200' cy='205' r='5' fill='#fff'/><text x='200' y='34' fill='#eafff7' font-size='26' text-anchor='middle' font-family='Georgia,serif'>|0⟩</text><text x='200' y='392' fill='#eafff7' font-size='26' text-anchor='middle' font-family='Georgia,serif'>|1⟩</text><text x='306' y='96' fill='#ffd36b' font-size='26' font-family='Georgia,serif'>|ψ⟩</text></svg>",
+        "alt": "Quả cầu Bloch với vectơ trạng thái",
+        "frame": "none",
+        "fit": "contain"
+      }
+    },
+    {
+      "type": "steps",
+      "eyebrow": "Đo lường",
+      "title": "Điều gì xảy ra khi ta đo?",
+      "items": [
+        {
+          "title": "Chuẩn bị",
+          "text": "Qubit ở trạng thái α|0⟩ + β|1⟩",
+          "icon": "ph:atom-duotone"
+        },
+        {
+          "title": "Đo",
+          "text": "Hỏi qubit: 0 hay 1?",
+          "icon": "ph:ruler-duotone"
+        },
+        {
+          "title": "Kết quả ngẫu nhiên",
+          "text": "0 với xác suất |α|², 1 với |β|²",
+          "icon": "ph:dice-five-duotone"
+        },
+        {
+          "title": "Sụp đổ",
+          "text": "Trạng thái trở thành đúng kết quả đó",
+          "icon": "ph:arrow-fat-line-down-duotone"
+        }
+      ],
+      "steps": true
+    },
+    {
+      "type": "chart",
+      "eyebrow": "Thí nghiệm",
+      "title": "Đo 1000 lần cùng một chồng chập",
+      "subtitle": "Mỗi lần đo là ngẫu nhiên, nhưng thống kê đúng 50/50.",
+      "kind": "bar",
+      "labels": [
+        "Ra 0",
+        "Ra 1"
+      ],
+      "series": [
+        {
+          "name": "Số lần",
+          "values": [
+            503,
+            497
+          ]
+        }
+      ],
+      "note": "Mô phỏng trạng thái (|0⟩ + |1⟩)/√2."
+    },
+    {
+      "type": "palace",
+      "id": "nha-qubit",
+      "title": "Bảy ý về qubit,\nbảy góc trong nhà",
+      "subtitle": "Đi từ cửa ra vào tới ban công, mỗi chỗ cất một ý",
+      "image": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1600 1000\"> <defs> <radialGradient id=\"vig\" cx=\"50%\" cy=\"48%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#0b1220\"/><stop offset=\"1\" stop-color=\"#05080f\"/></radialGradient> <radialGradient id=\"warm\" r=\"50%\"><stop offset=\"0\" stop-color=\"#ffcf7a\" stop-opacity=\".42\"/><stop offset=\"1\" stop-color=\"#ffcf7a\" stop-opacity=\"0\"/></radialGradient> <radialGradient id=\"cool\" r=\"50%\"><stop offset=\"0\" stop-color=\"#5cc8ff\" stop-opacity=\".34\"/><stop offset=\"1\" stop-color=\"#5cc8ff\" stop-opacity=\"0\"/></radialGradient> <radialGradient id=\"leaf\" cx=\"40%\" cy=\"35%\" r=\"65%\"><stop offset=\"0\" stop-color=\"#57d08f\"/><stop offset=\"1\" stop-color=\"#17603f\"/></radialGradient> <linearGradient id=\"fridge\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#e8eef7\"/><stop offset=\"1\" stop-color=\"#9fb0c7\"/></linearGradient> <linearGradient id=\"sofa\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3f7f86\"/><stop offset=\"1\" stop-color=\"#2a5a61\"/></linearGradient> <linearGradient id=\"wood\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6a4a33\"/><stop offset=\"1\" stop-color=\"#47301f\"/></linearGradient> <pattern id=\"planks\" width=\"160\" height=\"40\" patternUnits=\"userSpaceOnUse\"><rect width=\"160\" height=\"40\" fill=\"#111a2b\"/><path d=\"M0 39.5h160M100 0v40\" stroke=\"#16223a\" stroke-width=\"2\"/></pattern> <pattern id=\"tiles\" width=\"60\" height=\"60\" patternUnits=\"userSpaceOnUse\"><rect width=\"60\" height=\"60\" fill=\"#121b2c\"/><path d=\"M0 59.5h60M59.5 0v60\" stroke=\"#1a263c\" stroke-width=\"2\"/></pattern> <pattern id=\"deck\" width=\"36\" height=\"200\" patternUnits=\"userSpaceOnUse\"><rect width=\"36\" height=\"200\" fill=\"#10201c\"/><path d=\"M35 0v200\" stroke=\"#18302a\" stroke-width=\"3\"/></pattern> <filter id=\"soft\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feDropShadow dx=\"0\" dy=\"10\" stdDeviation=\"10\" flood-color=\"#000\" flood-opacity=\".45\"/></filter> </defs> <rect width=\"1600\" height=\"1000\" fill=\"url(#vig)\"/>  <rect x=\"90\" y=\"70\" width=\"670\" height=\"860\" fill=\"url(#planks)\"/> <rect x=\"760\" y=\"70\" width=\"750\" height=\"570\" fill=\"url(#tiles)\"/> <rect x=\"1140\" y=\"640\" width=\"370\" height=\"290\" fill=\"url(#deck)\"/> <rect x=\"760\" y=\"640\" width=\"380\" height=\"290\" fill=\"#0c1220\"/>  <circle cx=\"430\" cy=\"150\" r=\"260\" fill=\"url(#cool)\"/> <circle cx=\"970\" cy=\"300\" r=\"300\" fill=\"url(#warm)\"/> <circle cx=\"690\" cy=\"560\" r=\"220\" fill=\"url(#warm)\"/> <circle cx=\"1330\" cy=\"790\" r=\"230\" fill=\"url(#cool)\" opacity=\".7\"/>  <rect x=\"220\" y=\"330\" width=\"430\" height=\"290\" rx=\"26\" fill=\"#1a2740\" stroke=\"#273754\" stroke-width=\"3\"/> <rect x=\"250\" y=\"360\" width=\"370\" height=\"230\" rx=\"18\" fill=\"none\" stroke=\"#22314c\" stroke-width=\"2\" stroke-dasharray=\"8 10\"/> <rect x=\"365\" y=\"420\" width=\"150\" height=\"100\" rx=\"16\" fill=\"url(#wood)\" filter=\"url(#soft)\"/> <circle cx=\"440\" cy=\"470\" r=\"18\" fill=\"#2b7a5a\"/><circle cx=\"433\" cy=\"463\" r=\"7\" fill=\"#4fd394\"/> <g filter=\"url(#soft)\"> <rect x=\"215\" y=\"640\" width=\"450\" height=\"96\" rx=\"28\" fill=\"url(#sofa)\"/> <rect x=\"215\" y=\"700\" width=\"450\" height=\"36\" rx=\"18\" fill=\"#22484e\"/> <rect x=\"215\" y=\"640\" width=\"46\" height=\"96\" rx=\"20\" fill=\"#2f666d\"/> <rect x=\"619\" y=\"640\" width=\"46\" height=\"96\" rx=\"20\" fill=\"#2f666d\"/> <rect x=\"272\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> <rect x=\"388\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> <rect x=\"504\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> </g> <rect x=\"300\" y=\"96\" width=\"260\" height=\"38\" rx=\"10\" fill=\"#1d283b\" filter=\"url(#soft)\"/> <rect x=\"318\" y=\"84\" width=\"224\" height=\"16\" rx=\"5\" fill=\"#0a0f18\" stroke=\"#6fd0ff\" stroke-width=\"3\"/> <circle cx=\"690\" cy=\"560\" r=\"20\" fill=\"#3a3326\" stroke=\"#ffcf7a\" stroke-width=\"3\"/>  <rect x=\"104\" y=\"520\" width=\"58\" height=\"150\" rx=\"10\" fill=\"#33435e\" stroke=\"#4d6285\" stroke-width=\"3\" filter=\"url(#soft)\"/> <path d=\"M112 560h42M112 600h42M112 640h42\" stroke=\"#4d6285\" stroke-width=\"3\" stroke-linecap=\"round\"/> <rect x=\"110\" y=\"712\" width=\"62\" height=\"76\" rx=\"10\" fill=\"#1f6b52\"/> <path d=\"M96 700 L196 700\" stroke=\"#c9d6e8\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M196 700 A100 100 0 0 1 96 800\" fill=\"none\" stroke=\"#5f7393\" stroke-width=\"3\" stroke-dasharray=\"6 9\"/>  <g filter=\"url(#soft)\"> <rect x=\"896\" y=\"190\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/><rect x=\"986\" y=\"190\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/> <rect x=\"896\" y=\"376\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/><rect x=\"986\" y=\"376\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/> <rect x=\"870\" y=\"230\" width=\"200\" height=\"140\" rx=\"24\" fill=\"url(#wood)\"/> </g> <circle cx=\"970\" cy=\"300\" r=\"26\" fill=\"#ffe2a8\" opacity=\".85\"/> <circle cx=\"930\" cy=\"268\" r=\"12\" fill=\"#d9c08f\" opacity=\".6\"/><circle cx=\"1012\" cy=\"334\" r=\"12\" fill=\"#d9c08f\" opacity=\".6\"/>  <rect x=\"1150\" y=\"84\" width=\"346\" height=\"64\" rx=\"10\" fill=\"#26334a\"/> <rect x=\"1432\" y=\"148\" width=\"64\" height=\"330\" rx=\"10\" fill=\"#26334a\"/> <rect x=\"1270\" y=\"92\" width=\"120\" height=\"50\" rx=\"8\" fill=\"#141c2b\"/> <g fill=\"none\" stroke=\"#ff8a5c\" stroke-width=\"3\"><circle cx=\"1300\" cy=\"108\" r=\"11\"/><circle cx=\"1360\" cy=\"108\" r=\"11\"/><circle cx=\"1300\" cy=\"128\" r=\"8\"/><circle cx=\"1360\" cy=\"128\" r=\"8\"/></g> <rect x=\"1444\" y=\"280\" width=\"40\" height=\"80\" rx=\"12\" fill=\"#18212f\" stroke=\"#6b82a6\" stroke-width=\"3\"/> <rect x=\"1160\" y=\"168\" width=\"92\" height=\"124\" rx=\"12\" fill=\"url(#fridge)\" filter=\"url(#soft)\"/> <path d=\"M1160 214h92\" stroke=\"#8a9bb3\" stroke-width=\"3\"/><path d=\"M1240 180v24M1240 226v44\" stroke=\"#6b7c94\" stroke-width=\"5\" stroke-linecap=\"round\"/>  <rect x=\"810\" y=\"690\" width=\"260\" height=\"200\" rx=\"22\" fill=\"#141d2f\" stroke=\"#1d2a42\" stroke-width=\"3\"/> <rect x=\"830\" y=\"706\" width=\"100\" height=\"48\" rx=\"14\" fill=\"#1d2940\"/><rect x=\"950\" y=\"706\" width=\"100\" height=\"48\" rx=\"14\" fill=\"#1d2940\"/>  <g filter=\"url(#soft)\"> <circle cx=\"1300\" cy=\"780\" r=\"52\" fill=\"url(#leaf)\"/> <circle cx=\"1392\" cy=\"836\" r=\"40\" fill=\"url(#leaf)\"/> <circle cx=\"1220\" cy=\"860\" r=\"34\" fill=\"url(#leaf)\"/> <rect x=\"1380\" y=\"700\" width=\"70\" height=\"60\" rx=\"16\" fill=\"#3b4a62\"/> </g> <path d=\"M1500 652 V918 H1152\" fill=\"none\" stroke=\"#6b82a6\" stroke-width=\"4\" stroke-dasharray=\"3 12\" stroke-linecap=\"round\"/>  <g fill=\"none\" stroke=\"#33445f\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M96 700 V76 H1504 V924 H96 V800\" stroke-width=\"14\"/> <path d=\"M1140 76 V262\" stroke-width=\"10\"/> <path d=\"M760 640 H1100 M1140 640 V924 M760 640 V924\" stroke-width=\"10\"/> <path d=\"M1140 640 H1230 M1420 640 H1504\" stroke-width=\"10\"/> </g> <path d=\"M1236 640 H1414\" stroke=\"#6fd0ff\" stroke-width=\"4\" opacity=\".7\"/> </svg>",
+        "alt": "Sơ đồ một căn hộ nhìn từ trên xuống: cửa, kệ giày, sofa, ti vi, bàn ăn, tủ lạnh, ban công"
+      },
+      "stations": [
+        {
+          "place": "Cửa ra vào",
+          "item": "Bit: chỉ 0 hoặc 1",
+          "hook": "Cửa nhà bạn chỉ có hai kiểu: đóng hẳn là 0, mở toang là 1, không bao giờ khép hờ",
+          "icon": "ph:door-open-duotone",
+          "x": 8.8,
+          "y": 75
+        },
+        {
+          "place": "Kệ giày",
+          "item": "Qubit ở chồng chập",
+          "hook": "Trên kệ có một chiếc giày lạ: vừa là giày trái vừa là giày phải, chỉ khi xỏ chân vào mới biết",
+          "icon": "ph:sneaker-duotone",
+          "x": 8.3,
+          "y": 59.5
+        },
+        {
+          "place": "Ghế sofa",
+          "item": "Biên độ α và β",
+          "hook": "Hai chú mèo tên α và β tranh nhau chỗ ngồi; con nào to hơn thì dễ giành được chỗ hơn",
+          "icon": "ph:cat-duotone",
+          "x": 27.5,
+          "y": 69
+        },
+        {
+          "place": "Ti vi",
+          "item": "Xác suất là |α|²",
+          "hook": "Ti vi phóng to chú mèo α rồi bình phương nó lên: chỉ con số đó mới là cơ hội ra 0",
+          "icon": "ph:television-simple-duotone",
+          "x": 26.9,
+          "y": 9.5
+        },
+        {
+          "place": "Bàn ăn",
+          "item": "|α|² + |β|² = 1",
+          "hook": "Trên bàn chỉ có đúng một chiếc pizza; hai chú mèo chia nhau, cộng lại vẫn vừa đủ một chiếc",
+          "icon": "ph:pizza-duotone",
+          "x": 60.6,
+          "y": 30
+        },
+        {
+          "place": "Tủ lạnh",
+          "item": "Đo làm trạng thái sụp đổ",
+          "hook": "Vừa mở cửa tủ lạnh, đèn bật sáng và mọi thứ bên trong đông cứng lại thành đúng một kết quả",
+          "icon": "ph:snowflake-duotone",
+          "x": 75.4,
+          "y": 23
+        },
+        {
+          "place": "Ban công",
+          "item": "Quả cầu Bloch",
+          "hook": "Ngoài ban công buộc một quả bóng bay hình địa cầu, mũi tên trên đó chỉ trạng thái của qubit",
+          "icon": "ph:globe-hemisphere-east-duotone",
+          "x": 81.3,
+          "y": 78
+        }
+      ],
+      "notes": "Phương pháp cung điện ký ức (method of loci): bộ não nhớ đường đi và vị trí rất tốt, nên ta gắn mỗi ý mới vào một chỗ quen thuộc trên đường đi trong nhà.\n\nLần đầu hãy đi thật chậm: dừng ở mỗi trạm, nhắm mắt hình dung cảnh trong thẻ thật rõ, càng phóng đại và phi lý càng dễ nhớ. Cuối bài bạn sẽ đi lại một vòng khi các ý bị che đi; bài sau mở đầu bằng một vòng nữa."
+    },
+    {
+      "type": "notebook",
+      "title": "Qubit và phép đo",
+      "page": "Bài 1",
+      "lines": [
+        "# Qubit",
+        {
+          "term": "Qubit",
+          "def": "đơn vị thông tin lượng tử, trạng thái $\\alpha|0\\rangle + \\beta|1\\rangle$"
+        },
+        "= |\\alpha|^2 + |\\beta|^2 = 1",
+        "# Đo lường",
+        "Ra 0 với xác suất |α|², ra 1 với xác suất |β|²",
+        "Sau khi đo, trạng thái sụp về đúng kết quả vừa đo",
+        "! Không thể sao chép một trạng thái lượng tử chưa biết (no-cloning)",
+        "@ Đồng xu đang quay = chồng chập; đập tay xuống bàn = phép đo"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Thực hành",
+      "subtitle": "Tính xác suất từ biên độ",
+      "icon": "ph:pencil-simple-line-duotone"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 1",
+      "level": "easy",
+      "problem": "Qubit ở trạng thái $\\frac{\\sqrt{3}}{2}|0\\rangle + \\frac{1}{2}|1\\rangle$. Xác suất đo được **1** là bao nhiêu?",
+      "time": 90,
+      "hints": [
+        "Xác suất bằng bình phương độ lớn của biên độ."
+      ],
+      "solution": [
+        "Biên độ của |1⟩ là $\\beta = \\frac{1}{2}$",
+        "$P(1) = |\\beta|^2 = \\frac{1}{4}$"
+      ],
+      "answer": "**25%**"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 2",
+      "level": "medium",
+      "problem": "Trạng thái $0.6|0\\rangle + 0.8|1\\rangle$ có hợp lệ không? Nếu có, xác suất đo ra **0** là bao nhiêu?",
+      "time": 120,
+      "hints": [
+        "Một trạng thái hợp lệ khi tổng các xác suất bằng 1."
+      ],
+      "solution": [
+        "$0.6^2 + 0.8^2 = 0.36 + 0.64 = 1$, vậy trạng thái hợp lệ",
+        "$P(0) = 0.6^2 = 0.36$"
+      ],
+      "answer": "Hợp lệ; P(0) = **36%**"
+    },
+    {
+      "type": "quiz",
+      "question": "Đo một qubit đang ở chồng chập thì điều gì xảy ra?",
+      "options": [
+        "Nó cho cả 0 và 1 cùng lúc",
+        "Nó sụp về 0 hoặc 1 một cách ngẫu nhiên",
+        "Nó luôn cho 0",
+        "Không thể đo được"
+      ],
+      "answer": 1,
+      "explanation": "Mỗi lần đo cho **một** kết quả; xác suất của mỗi kết quả là bình phương biên độ, và trạng thái sụp về kết quả đó."
+    },
+    {
+      "type": "palace",
+      "from": "nha-qubit",
+      "mode": "recall",
+      "notes": "Đi lại bảy trạm. Ở mỗi trạm, cố nhớ ý đã cất ở đó trước khi nhấn → để kiểm tra, rồi tự chấm Nhớ / Chưa nhớ (phím 1 / 2)."
+    },
+    {
+      "type": "flashcards",
+      "title": "Lật thẻ để ôn",
+      "cards": [
+        {
+          "front": "Qubit",
+          "back": "Đơn vị thông tin lượng tử: α|0⟩ + β|1⟩ với |α|² + |β|² = 1."
+        },
+        {
+          "front": "Chồng chập",
+          "back": "Tổ hợp của các trạng thái cơ sở; đo chỉ cho một kết quả."
+        },
+        {
+          "front": "No-cloning",
+          "back": "Không thể tạo bản sao hoàn hảo của một trạng thái lượng tử chưa biết."
+        }
+      ]
+    },
+    {
+      "type": "summary",
+      "title": "Ghi nhớ",
+      "items": [
+        "Qubit: α|0⟩ + β|1⟩, tổng xác suất bằng 1",
+        "Xác suất = bình phương độ lớn biên độ",
+        "Đo cho một kết quả và làm trạng thái sụp đổ",
+        "Quả cầu Bloch giúp hình dung một qubit"
+      ]
+    }
+  ]
+}

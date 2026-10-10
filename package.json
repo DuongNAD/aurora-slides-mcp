@@ -1,0 +1,32 @@
+{
+  "name": "aurora-slides-mcp",
+  "version": "0.4.0",
+  "description": "MCP server that builds Apple-keynote-style, animated, interactive HTML slide decks for self-study.",
+  "author": "DuongNAD (https://github.com/DuongNAD)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuongNAD/aurora-slides-mcp.git"
+  },
+  "type": "module",
+  "main": "dist/aurora.mjs",
+  "bin": {
+    "aurora-slides": "dist/aurora.mjs"
+  },
+  "files": ["dist", "assets", "runtime", "guide", "deck.schema.json", "README.md"],
+  "scripts": {
+    "setup": "node scripts/build.mjs --install --check",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "showcase": "node dist/aurora.mjs showcase",
+    "selftest": "node dist/aurora.mjs selftest",
+    "start": "node dist/aurora.mjs"
+  },
+  "engines": {
+    "node": ">=22.4"
+  },
+  "keywords": ["mcp", "model-context-protocol", "slides", "keynote", "presentation", "education", "self-study"],
+  "license": "MIT",
+  "aurora": {
+    "note": "No dependencies here on purpose: the toolchain lives in %LOCALAPPDATA%/aurora-slides/toolchain (see DEPS in scripts/build.mjs). Never run npm install in this folder."
+  }
+}

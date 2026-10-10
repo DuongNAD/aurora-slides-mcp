@@ -1,0 +1,459 @@
+{
+  "$schema": "../../deck.schema.json",
+  "title": "Quang hợp",
+  "subtitle": "Sinh học 10 · Bài 12",
+  "author": "Aurora Slides",
+  "lang": "vi",
+  "theme": "aurora",
+  "slides": [
+    {
+      "type": "title",
+      "id": "mo-dau",
+      "eyebrow": "Sinh học 10 · Bài 12",
+      "title": "Quang hợp:\n++bếp ăn++ của lá cây",
+      "subtitle": "Vì sao một cái cây lớn lên được chỉ nhờ ánh sáng, nước và không khí?",
+      "meta": "Tự học · khoảng 25 phút",
+      "icon": "ph:plant-duotone",
+      "notes": "Cách học bài này: đọc phần **Lý thuyết** trước, chép các trang *Ghi vào vở* vào vở, rồi mới làm phần **Thực hành**.\n\nPhím tắt: → hoặc Space để đi tiếp, N để mở ghi chú, O để xem tổng quan."
+    },
+    {
+      "type": "agenda",
+      "title": "Lộ trình hôm nay"
+    },
+    {
+      "type": "section",
+      "title": "Lý thuyết",
+      "subtitle": "Quang hợp là gì và diễn ra ở đâu",
+      "icon": "ph:book-open-text-duotone"
+    },
+    {
+      "type": "statement",
+      "kicker": "Một câu để nhớ",
+      "text": "Cây không ăn đất: chúng ++tự nấu thức ăn++ từ ==ánh sáng, nước và CO₂==.",
+      "effect": "spotlight",
+      "notes": "Thí nghiệm của Van Helmont (thế kỷ 17): ông trồng một cây liễu trong 5 năm. Cây nặng thêm khoảng 74 kg, nhưng đất trong chậu chỉ hụt khoảng 57 g. Vậy phần lớn khối lượng của cây **không** đến từ đất."
+    },
+    {
+      "type": "definition",
+      "term": "Quang hợp",
+      "kind": "khái niệm",
+      "definition": "Quá trình lá cây dùng năng lượng ánh sáng để tổng hợp chất hữu cơ từ CO₂ và nước, đồng thời giải phóng O₂.",
+      "example": "Tiếng Anh: *photosynthesis* (photo = ánh sáng, synthesis = tổng hợp).",
+      "related": [
+        "lục lạp",
+        "diệp lục",
+        "glucose"
+      ],
+      "icon": "ph:leaf-duotone"
+    },
+    {
+      "type": "bullets",
+      "eyebrow": "Nguyên liệu",
+      "title": "Cây cần gì để quang hợp?",
+      "items": [
+        {
+          "text": "Ánh sáng mặt trời",
+          "detail": "Nguồn năng lượng cho cả quá trình",
+          "icon": "solar:sun-bold-duotone"
+        },
+        {
+          "text": "Nước (H₂O)",
+          "detail": "Rễ hút lên, đi theo mạch gỗ tới lá",
+          "icon": "solar:waterdrops-bold-duotone"
+        },
+        {
+          "text": "Khí CO₂",
+          "detail": "Đi vào lá qua khí khổng",
+          "icon": "solar:wind-bold-duotone"
+        }
+      ],
+      "steps": true
+    },
+    {
+      "type": "split",
+      "eyebrow": "Bào quan",
+      "title": "Lục lạp:\nnhà máy xanh",
+      "text": "Mỗi tế bào lá có **20–100 lục lạp** (chloroplast). Bên trong, các túi **thylakoid** xếp chồng thành grana, nơi diệp lục bắt ánh sáng.",
+      "items": [
+        "Màng kép bao bọc",
+        "Có DNA riêng",
+        "Chất nền stroma chứa enzyme"
+      ],
+      "image": {
+        "query": "chloroplast plant cell microscope",
+        "alt": "Lục lạp dưới kính hiển vi"
+      }
+    },
+    {
+      "type": "analogy",
+      "title": "Lục lạp giống một nhà máy điện mặt trời",
+      "known": {
+        "label": "Nhà máy điện mặt trời",
+        "icon": "ph:solar-panel-duotone"
+      },
+      "concept": {
+        "label": "Lục lạp",
+        "icon": "ph:leaf-duotone"
+      },
+      "pairs": [
+        {
+          "known": "Tấm pin mặt trời",
+          "concept": "Màng thylakoid chứa diệp lục"
+        },
+        {
+          "known": "Bình ắc quy được sạc đầy",
+          "concept": "ATP"
+        },
+        {
+          "known": "Xe chở hàng",
+          "concept": "NADPH chở electron"
+        },
+        {
+          "known": "Xưởng lắp ráp",
+          "concept": "Chu trình Calvin trong stroma"
+        }
+      ],
+      "limit": "Nhà máy chỉ tạo ra điện; lục lạp còn dùng năng lượng đó để biến CO₂ thành đường.",
+      "notes": "Neo một hệ thống mới vào một hệ thống quen thuộc giúp nhớ vai trò của từng bộ phận. Nhớ cả chỗ không giống để khỏi hiểu sai."
+    },
+    {
+      "type": "formula",
+      "title": "Phương trình tổng quát",
+      "formula": "\\ce{6CO2 + 6H2O ->[\\text{ánh sáng}] C6H12O6 + 6O2}",
+      "legend": [
+        {
+          "symbol": "\\ce{CO2}",
+          "meaning": "Khí cacbonic"
+        },
+        {
+          "symbol": "\\ce{C6H12O6}",
+          "meaning": "Glucose"
+        },
+        {
+          "symbol": "\\ce{O2}",
+          "meaning": "Oxy, sản phẩm phụ"
+        }
+      ],
+      "text": "Sáu phân tử CO₂ và sáu phân tử nước tạo ra một phân tử đường."
+    },
+    {
+      "type": "notebook",
+      "title": "Quang hợp là gì?",
+      "page": "Trang 1",
+      "lines": [
+        {
+          "term": "Quang hợp",
+          "def": "dùng năng lượng ánh sáng tổng hợp chất hữu cơ từ CO₂ và H₂O"
+        },
+        "Nguyên liệu: ánh sáng, nước, CO₂",
+        "Nơi diễn ra: lục lạp (chloroplast) trong tế bào lá",
+        "= \\ce{6CO2 + 6H2O ->[\\text{ánh sáng}] C6H12O6 + 6O2}",
+        "! Sản phẩm: glucose (chất hữu cơ) và O₂"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Hai pha của quang hợp",
+      "subtitle": "Pha sáng thu năng lượng, pha tối dùng năng lượng ấy",
+      "icon": "solar:sun-2-bold-duotone"
+    },
+    {
+      "type": "steps",
+      "eyebrow": "Pha sáng",
+      "title": "Từ photon đến ATP",
+      "items": [
+        {
+          "title": "Hấp thụ ánh sáng",
+          "text": "Diệp lục bị kích thích, bật electron",
+          "icon": "ph:sun-duotone"
+        },
+        {
+          "title": "Quang phân li nước",
+          "text": "H₂O tách thành H⁺, electron và O₂",
+          "icon": "ph:drop-duotone"
+        },
+        {
+          "title": "Chuyền electron",
+          "text": "Bơm H⁺ vào lòng thylakoid",
+          "icon": "ph:lightning-duotone"
+        },
+        {
+          "title": "Tạo ATP, NADPH",
+          "text": "Nhiên liệu cho chu trình Calvin",
+          "icon": "ph:battery-charging-duotone"
+        }
+      ],
+      "steps": true,
+      "notes": "Pha sáng chỉ xảy ra khi có ánh sáng. Năng lượng ánh sáng được \"đóng gói\" vào hai phân tử mang năng lượng là **ATP** và **NADPH**."
+    },
+    {
+      "type": "cycle",
+      "eyebrow": "Pha tối",
+      "title": "Chu trình Calvin",
+      "center": "Trong stroma",
+      "centerIcon": "ph:arrows-clockwise-duotone",
+      "items": [
+        {
+          "title": "Cố định CO₂",
+          "text": "RuBisCO gắn CO₂ vào RuBP"
+        },
+        {
+          "title": "Khử",
+          "text": "ATP + NADPH tạo G3P"
+        },
+        {
+          "title": "Xuất đường",
+          "text": "1 G3P rời chu trình tạo glucose"
+        },
+        {
+          "title": "Tái tạo RuBP",
+          "text": "Dùng ATP, chu trình lặp lại"
+        }
+      ],
+      "steps": true
+    },
+    {
+      "type": "compare",
+      "title": "So sánh hai pha",
+      "vs": true,
+      "columns": [
+        {
+          "title": "Pha sáng",
+          "subtitle": "Trên màng thylakoid",
+          "icon": "ph:sun-duotone",
+          "tone": "accent",
+          "items": [
+            "Cần ánh sáng trực tiếp",
+            "Phân li nước, giải phóng O₂",
+            "Tạo ATP và NADPH"
+          ]
+        },
+        {
+          "title": "Pha tối",
+          "subtitle": "Trong chất nền stroma",
+          "icon": "ph:moon-stars-duotone",
+          "tone": "accent",
+          "items": [
+            "Không cần ánh sáng trực tiếp",
+            "Cố định CO₂ nhờ RuBisCO",
+            "Dùng ATP, NADPH để tạo đường"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "palace",
+      "id": "pha-sang",
+      "title": "Pha sáng:\nmột vòng quanh nhà",
+      "subtitle": "Sáu bước, sáu chỗ quen thuộc trong nhà bạn",
+      "stations": [
+        {
+          "place": "Cửa ra vào",
+          "item": "Diệp lục hấp thụ ánh sáng",
+          "hook": "Tấm thảm chùi chân màu xanh lá hút sạch nắng, nóng ran dưới chân",
+          "icon": "ph:sun-duotone"
+        },
+        {
+          "place": "Kệ giày",
+          "item": "Quang phân li nước",
+          "hook": "Đôi ủng đầy nước bỗng vỡ tung thành bọt khí O₂ bay lên trần nhà",
+          "icon": "ph:drop-duotone"
+        },
+        {
+          "place": "Ghế sofa",
+          "item": "Chuyền electron",
+          "hook": "Cả nhà ngồi trên sofa chuyền tay nhau một quả bóng tóe lửa điện",
+          "icon": "ph:lightning-duotone"
+        },
+        {
+          "place": "Tủ lạnh",
+          "item": "Bơm H⁺ vào thylakoid",
+          "hook": "Mở tủ lạnh ra, hàng trăm quả bóng chữ H bị nhồi chật cứng",
+          "icon": "ph:arrows-in-duotone"
+        },
+        {
+          "place": "Bếp",
+          "item": "ATP synthase tạo ATP",
+          "hook": "Cối xay gió tí hon trên bếp quay tít, nhả ra từng viên pin",
+          "icon": "ph:battery-charging-duotone"
+        },
+        {
+          "place": "Ban công",
+          "item": "Tạo NADPH",
+          "hook": "Xe tải nhỏ chở đầy electron đậu ngoài ban công, chờ chạy sang chu trình Calvin",
+          "icon": "ph:truck-duotone"
+        }
+      ],
+      "notes": "Cung điện ký ức: gắn mỗi bước vào một chỗ quen thuộc trên đường đi trong nhà bạn, theo đúng thứ tự. Dừng ở từng trạm, nhắm mắt hình dung cảnh trong thẻ thật rõ, càng phóng đại càng dễ nhớ. Cuối bài sẽ đi lại một vòng khi các ý bị che."
+    },
+    {
+      "type": "mnemonic",
+      "title": "Ba giai đoạn của chu trình Calvin",
+      "phrase": "**C**on **k**iến **t**ha mồi",
+      "items": [
+        {
+          "cue": "**C**on",
+          "text": "**C**ố định CO₂: RuBisCO gắn CO₂ vào RuBP"
+        },
+        {
+          "cue": "**K**iến",
+          "text": "**K**hử: ATP và NADPH biến 3-PGA thành G3P"
+        },
+        {
+          "cue": "**T**ha mồi",
+          "text": "**T**ái sinh RuBP để chu trình quay tiếp"
+        }
+      ],
+      "notes": "Con kiến tha mồi về tổ rồi lại đi tha tiếp, giống chu trình Calvin quay vòng: cố định, khử, tái sinh, rồi lặp lại."
+    },
+    {
+      "type": "notebook",
+      "title": "Hai pha của quang hợp",
+      "page": "Trang 2",
+      "lines": [
+        "# Pha sáng (màng thylakoid)",
+        "Cần ánh sáng; quang phân li nước",
+        "Tạo ATP, NADPH và giải phóng O₂",
+        "# Pha tối (chất nền stroma)",
+        "Chu trình Calvin cố định CO₂ nhờ enzyme RuBisCO",
+        "Dùng ATP, NADPH để tạo đường",
+        "! O₂ sinh ra từ nước, không phải từ CO₂",
+        "@ Pha sáng: một vòng quanh nhà; Calvin: con kiến tha mồi"
+      ]
+    },
+    {
+      "type": "diagram",
+      "eyebrow": "Toàn cảnh",
+      "title": "Quang hợp trên một tấm bản đồ",
+      "code": "mindmap\n  root((Quang hợp))\n    Nguyên liệu\n      Ánh sáng\n      Nước H₂O\n      Khí CO₂\n    Pha sáng\n      Màng thylakoid\n      Tạo ATP, NADPH\n      Giải phóng O₂\n    Pha tối\n      Chất nền stroma\n      Chu trình Calvin\n      Tạo glucose",
+      "caption": "Nhìn lại cả bài trước khi bắt tay vào làm bài tập.",
+      "notes": "Bản đồ tư duy giúp thấy các ý nối với nhau thế nào. Thử che bản đồ đi và tự vẽ lại vào vở: đó cũng là một cách ôn rất hiệu quả."
+    },
+    {
+      "type": "section",
+      "title": "Thực hành",
+      "subtitle": "Làm từ dễ đến khó, tự kiểm tra từng bước",
+      "icon": "ph:pencil-simple-line-duotone",
+      "transition": "zoom"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 1",
+      "level": "easy",
+      "problem": "Kể tên **3 nguyên liệu** và **2 sản phẩm** của quang hợp.",
+      "time": 60,
+      "hints": [
+        "Nhìn lại phương trình tổng quát ở trang vở số 1."
+      ],
+      "solution": [
+        "Nguyên liệu: ánh sáng, nước (H₂O), khí CO₂",
+        "Sản phẩm: glucose (C₆H₁₂O₆) và khí O₂"
+      ],
+      "answer": "Ánh sáng, H₂O, CO₂ → glucose và O₂"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 2",
+      "level": "medium",
+      "problem": "Một cây hấp thụ **12 phân tử CO₂** để quang hợp. Cây tạo ra bao nhiêu phân tử **glucose** và giải phóng bao nhiêu phân tử **O₂**?",
+      "time": 120,
+      "hints": [
+        "Viết phương trình tổng quát và nhìn hệ số của CO₂."
+      ],
+      "solution": [
+        "Phương trình: $\\ce{6CO2 + 6H2O -> C6H12O6 + 6O2}$",
+        "6 CO₂ tạo 1 glucose, nên 12 CO₂ tạo $12 \\div 6 = 2$ glucose",
+        "Mỗi glucose đi kèm 6 O₂, nên giải phóng $2 \\times 6 = 12$ O₂"
+      ],
+      "answer": "**2** phân tử glucose và **12** phân tử O₂"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 3",
+      "level": "hard",
+      "problem": "Người ta tưới cho cây nước chứa oxy nặng ¹⁸O (H₂¹⁸O). Oxy nặng sẽ xuất hiện trong **khí O₂** cây thải ra hay trong **glucose**? Giải thích.",
+      "time": 180,
+      "hints": [
+        "O₂ của quang hợp sinh ra ở pha nào, từ chất nào?"
+      ],
+      "solution": [
+        "Pha sáng quang phân li nước: $\\ce{2H2O -> 4H+ + 4e- + O2}$",
+        "Vậy oxy của nước đi vào khí O₂ thải ra",
+        "Oxy trong glucose lại đến từ CO₂ (qua chu trình Calvin)"
+      ],
+      "answer": "Oxy nặng xuất hiện trong **khí O₂** thải ra.",
+      "notes": "Đây chính là thí nghiệm của Ruben và Kamen (1941) dùng đồng vị ¹⁸O để chứng minh O₂ của quang hợp đến từ nước."
+    },
+    {
+      "type": "quiz",
+      "question": "Khí nào được giải phóng trong pha sáng?",
+      "options": [
+        "CO₂",
+        {
+          "text": "O₂",
+          "explain": "Sinh ra khi quang phân li nước."
+        },
+        "N₂",
+        "H₂"
+      ],
+      "answer": 1,
+      "explanation": "O₂ đến từ **quang phân li nước**: $\\ce{2H2O -> 4H+ + 4e- + O2}$."
+    },
+    {
+      "type": "quiz",
+      "question": "Chu trình Calvin diễn ra ở đâu?",
+      "options": [
+        "Màng thylakoid",
+        "Chất nền stroma",
+        "Ti thể",
+        "Nhân tế bào"
+      ],
+      "answer": 1,
+      "explanation": "Chu trình Calvin cần các enzyme trong **stroma**; màng thylakoid là nơi diễn ra pha sáng."
+    },
+    {
+      "type": "palace",
+      "from": "pha-sang",
+      "mode": "recall",
+      "notes": "Đi lại sáu trạm. Ở mỗi trạm, cố nhớ bước đã cất ở đó rồi mới nhấn → để kiểm tra, sau đó tự chấm Nhớ / Chưa nhớ (phím 1 / 2)."
+    },
+    {
+      "type": "cloze",
+      "title": "Điền vào chỗ trống",
+      "text": "Pha sáng diễn ra trên màng [[thylakoid]], còn chu trình Calvin diễn ra trong [[chất nền stroma]]. Sản phẩm của pha sáng là [[ATP]] và [[NADPH]].",
+      "hint": "Nghĩ về cấu trúc bên trong lục lạp."
+    },
+    {
+      "type": "flashcards",
+      "title": "Lật thẻ để ôn",
+      "cards": [
+        {
+          "front": "Diệp lục a",
+          "back": "Sắc tố chính, hấp thụ mạnh ánh sáng đỏ (~680 nm) và xanh lam.",
+          "icon": "ph:leaf-duotone"
+        },
+        {
+          "front": "RuBisCO",
+          "back": "Enzyme cố định CO₂, có lẽ là protein nhiều nhất Trái Đất.",
+          "icon": "ph:atom-duotone"
+        },
+        {
+          "front": "Stroma",
+          "back": "Chất nền của lục lạp, nơi diễn ra chu trình Calvin.",
+          "icon": "ph:drop-duotone"
+        }
+      ]
+    },
+    {
+      "type": "summary",
+      "title": "Ghi nhớ",
+      "items": [
+        "Quang hợp: ánh sáng + nước + CO₂ → glucose + O₂",
+        "Diễn ra trong lục lạp của tế bào lá",
+        "Pha sáng trên thylakoid tạo ATP, NADPH và O₂",
+        "Chu trình Calvin trong stroma biến CO₂ thành đường",
+        "O₂ thải ra đến từ nước"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,318 @@
+{
+  "$schema": "../../../deck.schema.json",
+  "title": "Cổng lượng tử",
+  "lang": "vi",
+  "slides": [
+    {
+      "type": "title",
+      "eyebrow": "Máy tính lượng tử · Bài 2",
+      "title": "Cổng\n++lượng tử++",
+      "subtitle": "Những phép xoay biến đổi qubit: X, Z, Hadamard và CNOT",
+      "meta": "20 phút · cần nắm Bài 1",
+      "icon": "ph:circuitry-duotone"
+    },
+    {
+      "type": "palace",
+      "mode": "recall",
+      "eyebrow": "Ôn bài 1",
+      "title": "Đi lại nhà của qubit",
+      "subtitle": "Bảy trạm từ bài trước, các ý đã bị che đi",
+      "image": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1600 1000\"> <defs> <radialGradient id=\"vig\" cx=\"50%\" cy=\"48%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#0b1220\"/><stop offset=\"1\" stop-color=\"#05080f\"/></radialGradient> <radialGradient id=\"warm\" r=\"50%\"><stop offset=\"0\" stop-color=\"#ffcf7a\" stop-opacity=\".42\"/><stop offset=\"1\" stop-color=\"#ffcf7a\" stop-opacity=\"0\"/></radialGradient> <radialGradient id=\"cool\" r=\"50%\"><stop offset=\"0\" stop-color=\"#5cc8ff\" stop-opacity=\".34\"/><stop offset=\"1\" stop-color=\"#5cc8ff\" stop-opacity=\"0\"/></radialGradient> <radialGradient id=\"leaf\" cx=\"40%\" cy=\"35%\" r=\"65%\"><stop offset=\"0\" stop-color=\"#57d08f\"/><stop offset=\"1\" stop-color=\"#17603f\"/></radialGradient> <linearGradient id=\"fridge\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#e8eef7\"/><stop offset=\"1\" stop-color=\"#9fb0c7\"/></linearGradient> <linearGradient id=\"sofa\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3f7f86\"/><stop offset=\"1\" stop-color=\"#2a5a61\"/></linearGradient> <linearGradient id=\"wood\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6a4a33\"/><stop offset=\"1\" stop-color=\"#47301f\"/></linearGradient> <pattern id=\"planks\" width=\"160\" height=\"40\" patternUnits=\"userSpaceOnUse\"><rect width=\"160\" height=\"40\" fill=\"#111a2b\"/><path d=\"M0 39.5h160M100 0v40\" stroke=\"#16223a\" stroke-width=\"2\"/></pattern> <pattern id=\"tiles\" width=\"60\" height=\"60\" patternUnits=\"userSpaceOnUse\"><rect width=\"60\" height=\"60\" fill=\"#121b2c\"/><path d=\"M0 59.5h60M59.5 0v60\" stroke=\"#1a263c\" stroke-width=\"2\"/></pattern> <pattern id=\"deck\" width=\"36\" height=\"200\" patternUnits=\"userSpaceOnUse\"><rect width=\"36\" height=\"200\" fill=\"#10201c\"/><path d=\"M35 0v200\" stroke=\"#18302a\" stroke-width=\"3\"/></pattern> <filter id=\"soft\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feDropShadow dx=\"0\" dy=\"10\" stdDeviation=\"10\" flood-color=\"#000\" flood-opacity=\".45\"/></filter> </defs> <rect width=\"1600\" height=\"1000\" fill=\"url(#vig)\"/>  <rect x=\"90\" y=\"70\" width=\"670\" height=\"860\" fill=\"url(#planks)\"/> <rect x=\"760\" y=\"70\" width=\"750\" height=\"570\" fill=\"url(#tiles)\"/> <rect x=\"1140\" y=\"640\" width=\"370\" height=\"290\" fill=\"url(#deck)\"/> <rect x=\"760\" y=\"640\" width=\"380\" height=\"290\" fill=\"#0c1220\"/>  <circle cx=\"430\" cy=\"150\" r=\"260\" fill=\"url(#cool)\"/> <circle cx=\"970\" cy=\"300\" r=\"300\" fill=\"url(#warm)\"/> <circle cx=\"690\" cy=\"560\" r=\"220\" fill=\"url(#warm)\"/> <circle cx=\"1330\" cy=\"790\" r=\"230\" fill=\"url(#cool)\" opacity=\".7\"/>  <rect x=\"220\" y=\"330\" width=\"430\" height=\"290\" rx=\"26\" fill=\"#1a2740\" stroke=\"#273754\" stroke-width=\"3\"/> <rect x=\"250\" y=\"360\" width=\"370\" height=\"230\" rx=\"18\" fill=\"none\" stroke=\"#22314c\" stroke-width=\"2\" stroke-dasharray=\"8 10\"/> <rect x=\"365\" y=\"420\" width=\"150\" height=\"100\" rx=\"16\" fill=\"url(#wood)\" filter=\"url(#soft)\"/> <circle cx=\"440\" cy=\"470\" r=\"18\" fill=\"#2b7a5a\"/><circle cx=\"433\" cy=\"463\" r=\"7\" fill=\"#4fd394\"/> <g filter=\"url(#soft)\"> <rect x=\"215\" y=\"640\" width=\"450\" height=\"96\" rx=\"28\" fill=\"url(#sofa)\"/> <rect x=\"215\" y=\"700\" width=\"450\" height=\"36\" rx=\"18\" fill=\"#22484e\"/> <rect x=\"215\" y=\"640\" width=\"46\" height=\"96\" rx=\"20\" fill=\"#2f666d\"/> <rect x=\"619\" y=\"640\" width=\"46\" height=\"96\" rx=\"20\" fill=\"#2f666d\"/> <rect x=\"272\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> <rect x=\"388\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> <rect x=\"504\" y=\"652\" width=\"104\" height=\"52\" rx=\"16\" fill=\"#4b939a\"/> </g> <rect x=\"300\" y=\"96\" width=\"260\" height=\"38\" rx=\"10\" fill=\"#1d283b\" filter=\"url(#soft)\"/> <rect x=\"318\" y=\"84\" width=\"224\" height=\"16\" rx=\"5\" fill=\"#0a0f18\" stroke=\"#6fd0ff\" stroke-width=\"3\"/> <circle cx=\"690\" cy=\"560\" r=\"20\" fill=\"#3a3326\" stroke=\"#ffcf7a\" stroke-width=\"3\"/>  <rect x=\"104\" y=\"520\" width=\"58\" height=\"150\" rx=\"10\" fill=\"#33435e\" stroke=\"#4d6285\" stroke-width=\"3\" filter=\"url(#soft)\"/> <path d=\"M112 560h42M112 600h42M112 640h42\" stroke=\"#4d6285\" stroke-width=\"3\" stroke-linecap=\"round\"/> <rect x=\"110\" y=\"712\" width=\"62\" height=\"76\" rx=\"10\" fill=\"#1f6b52\"/> <path d=\"M96 700 L196 700\" stroke=\"#c9d6e8\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M196 700 A100 100 0 0 1 96 800\" fill=\"none\" stroke=\"#5f7393\" stroke-width=\"3\" stroke-dasharray=\"6 9\"/>  <g filter=\"url(#soft)\"> <rect x=\"896\" y=\"190\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/><rect x=\"986\" y=\"190\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/> <rect x=\"896\" y=\"376\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/><rect x=\"986\" y=\"376\" width=\"58\" height=\"34\" rx=\"12\" fill=\"#2c3a52\"/> <rect x=\"870\" y=\"230\" width=\"200\" height=\"140\" rx=\"24\" fill=\"url(#wood)\"/> </g> <circle cx=\"970\" cy=\"300\" r=\"26\" fill=\"#ffe2a8\" opacity=\".85\"/> <circle cx=\"930\" cy=\"268\" r=\"12\" fill=\"#d9c08f\" opacity=\".6\"/><circle cx=\"1012\" cy=\"334\" r=\"12\" fill=\"#d9c08f\" opacity=\".6\"/>  <rect x=\"1150\" y=\"84\" width=\"346\" height=\"64\" rx=\"10\" fill=\"#26334a\"/> <rect x=\"1432\" y=\"148\" width=\"64\" height=\"330\" rx=\"10\" fill=\"#26334a\"/> <rect x=\"1270\" y=\"92\" width=\"120\" height=\"50\" rx=\"8\" fill=\"#141c2b\"/> <g fill=\"none\" stroke=\"#ff8a5c\" stroke-width=\"3\"><circle cx=\"1300\" cy=\"108\" r=\"11\"/><circle cx=\"1360\" cy=\"108\" r=\"11\"/><circle cx=\"1300\" cy=\"128\" r=\"8\"/><circle cx=\"1360\" cy=\"128\" r=\"8\"/></g> <rect x=\"1444\" y=\"280\" width=\"40\" height=\"80\" rx=\"12\" fill=\"#18212f\" stroke=\"#6b82a6\" stroke-width=\"3\"/> <rect x=\"1160\" y=\"168\" width=\"92\" height=\"124\" rx=\"12\" fill=\"url(#fridge)\" filter=\"url(#soft)\"/> <path d=\"M1160 214h92\" stroke=\"#8a9bb3\" stroke-width=\"3\"/><path d=\"M1240 180v24M1240 226v44\" stroke=\"#6b7c94\" stroke-width=\"5\" stroke-linecap=\"round\"/>  <rect x=\"810\" y=\"690\" width=\"260\" height=\"200\" rx=\"22\" fill=\"#141d2f\" stroke=\"#1d2a42\" stroke-width=\"3\"/> <rect x=\"830\" y=\"706\" width=\"100\" height=\"48\" rx=\"14\" fill=\"#1d2940\"/><rect x=\"950\" y=\"706\" width=\"100\" height=\"48\" rx=\"14\" fill=\"#1d2940\"/>  <g filter=\"url(#soft)\"> <circle cx=\"1300\" cy=\"780\" r=\"52\" fill=\"url(#leaf)\"/> <circle cx=\"1392\" cy=\"836\" r=\"40\" fill=\"url(#leaf)\"/> <circle cx=\"1220\" cy=\"860\" r=\"34\" fill=\"url(#leaf)\"/> <rect x=\"1380\" y=\"700\" width=\"70\" height=\"60\" rx=\"16\" fill=\"#3b4a62\"/> </g> <path d=\"M1500 652 V918 H1152\" fill=\"none\" stroke=\"#6b82a6\" stroke-width=\"4\" stroke-dasharray=\"3 12\" stroke-linecap=\"round\"/>  <g fill=\"none\" stroke=\"#33445f\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M96 700 V76 H1504 V924 H96 V800\" stroke-width=\"14\"/> <path d=\"M1140 76 V262\" stroke-width=\"10\"/> <path d=\"M760 640 H1100 M1140 640 V924 M760 640 V924\" stroke-width=\"10\"/> <path d=\"M1140 640 H1230 M1420 640 H1504\" stroke-width=\"10\"/> </g> <path d=\"M1236 640 H1414\" stroke=\"#6fd0ff\" stroke-width=\"4\" opacity=\".7\"/> </svg>",
+        "alt": "Sơ đồ một căn hộ nhìn từ trên xuống: cửa, kệ giày, sofa, ti vi, bàn ăn, tủ lạnh, ban công"
+      },
+      "stations": [
+        {
+          "place": "Cửa ra vào",
+          "item": "Bit: chỉ 0 hoặc 1",
+          "hook": "Cửa nhà bạn chỉ có hai kiểu: đóng hẳn là 0, mở toang là 1, không bao giờ khép hờ",
+          "icon": "ph:door-open-duotone",
+          "x": 8.8,
+          "y": 75
+        },
+        {
+          "place": "Kệ giày",
+          "item": "Qubit ở chồng chập",
+          "hook": "Trên kệ có một chiếc giày lạ: vừa là giày trái vừa là giày phải, chỉ khi xỏ chân vào mới biết",
+          "icon": "ph:sneaker-duotone",
+          "x": 8.3,
+          "y": 59.5
+        },
+        {
+          "place": "Ghế sofa",
+          "item": "Biên độ α và β",
+          "hook": "Hai chú mèo tên α và β tranh nhau chỗ ngồi; con nào to hơn thì dễ giành được chỗ hơn",
+          "icon": "ph:cat-duotone",
+          "x": 27.5,
+          "y": 69
+        },
+        {
+          "place": "Ti vi",
+          "item": "Xác suất là |α|²",
+          "hook": "Ti vi phóng to chú mèo α rồi bình phương nó lên: chỉ con số đó mới là cơ hội ra 0",
+          "icon": "ph:television-simple-duotone",
+          "x": 26.9,
+          "y": 9.5
+        },
+        {
+          "place": "Bàn ăn",
+          "item": "|α|² + |β|² = 1",
+          "hook": "Trên bàn chỉ có đúng một chiếc pizza; hai chú mèo chia nhau, cộng lại vẫn vừa đủ một chiếc",
+          "icon": "ph:pizza-duotone",
+          "x": 60.6,
+          "y": 30
+        },
+        {
+          "place": "Tủ lạnh",
+          "item": "Đo làm trạng thái sụp đổ",
+          "hook": "Vừa mở cửa tủ lạnh, đèn bật sáng và mọi thứ bên trong đông cứng lại thành đúng một kết quả",
+          "icon": "ph:snowflake-duotone",
+          "x": 75.4,
+          "y": 23
+        },
+        {
+          "place": "Ban công",
+          "item": "Quả cầu Bloch",
+          "hook": "Ngoài ban công buộc một quả bóng bay hình địa cầu, mũi tên trên đó chỉ trạng thái của qubit",
+          "icon": "ph:globe-hemisphere-east-duotone",
+          "x": 81.3,
+          "y": 78
+        }
+      ],
+      "notes": "Mở đầu mỗi bài bằng một vòng ôn bài trước: nhớ lại sau một quãng nghỉ giúp kiến thức bám lâu hơn nhiều so với đọc lại."
+    },
+    {
+      "type": "statement",
+      "kicker": "Nhắc lại Bài 1",
+      "text": "Qubit là một điểm trên quả cầu Bloch. Cổng lượng tử là các phép ++xoay++ điểm đó, và luôn ==đảo ngược được==."
+    },
+    {
+      "type": "section",
+      "title": "Cổng một qubit",
+      "subtitle": "Đảo bit, đảo pha, tạo chồng chập",
+      "icon": "ph:arrows-clockwise-duotone"
+    },
+    {
+      "type": "table",
+      "title": "Ba cổng nền tảng",
+      "headers": [
+        "Cổng",
+        "Với |0⟩",
+        "Với |1⟩",
+        "Ý nghĩa"
+      ],
+      "rows": [
+        [
+          "X",
+          "|1⟩",
+          "|0⟩",
+          "Đảo bit (NOT)"
+        ],
+        [
+          "Z",
+          "|0⟩",
+          "−|1⟩",
+          "Đảo pha"
+        ],
+        [
+          "H",
+          "(|0⟩ + |1⟩)/√2",
+          "(|0⟩ − |1⟩)/√2",
+          "Tạo chồng chập"
+        ]
+      ],
+      "highlight": 3
+    },
+    {
+      "type": "formula",
+      "title": "Cổng Hadamard",
+      "formula": "H = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 & 1 \\\\ 1 & -1 \\end{pmatrix}",
+      "legend": [
+        {
+          "symbol": "H|0\\rangle = |+\\rangle",
+          "meaning": "Chồng chập cân bằng"
+        },
+        {
+          "symbol": "H|1\\rangle = |-\\rangle",
+          "meaning": "Cân bằng, pha ngược"
+        },
+        {
+          "symbol": "HH = I",
+          "meaning": "Áp hai lần thì về như cũ"
+        }
+      ],
+      "text": "Hadamard đưa qubit từ cực bắc xuống xích đạo của quả cầu Bloch."
+    },
+    {
+      "type": "mnemonic",
+      "title": "Hadamard biến 0 và 1 thành gì?",
+      "phrase": "**Kh**ông **c**ộng, **M**ột **tr**ừ",
+      "items": [
+        {
+          "cue": "**Kh**ông **c**ộng",
+          "text": "$H|0\\rangle = |+\\rangle = \\dfrac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$"
+        },
+        {
+          "cue": "**M**ột **tr**ừ",
+          "text": "$H|1\\rangle = |-\\rangle = \\dfrac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$"
+        }
+      ],
+      "notes": "Không (|0⟩) đi với dấu cộng, Một (|1⟩) đi với dấu trừ. Hai trạng thái |+⟩ và |−⟩ cùng là chồng chập 50/50, chỉ khác nhau ở dấu của biên độ."
+    },
+    {
+      "type": "section",
+      "title": "Cổng hai qubit",
+      "subtitle": "CNOT nối hai qubit với nhau",
+      "icon": "ph:link-duotone"
+    },
+    {
+      "type": "steps",
+      "eyebrow": "CNOT",
+      "title": "Một qubit điều khiển qubit kia",
+      "items": [
+        {
+          "title": "Điều khiển = 0",
+          "text": "Qubit mục tiêu giữ nguyên",
+          "icon": "ph:pause-duotone"
+        },
+        {
+          "title": "Điều khiển = 1",
+          "text": "Qubit mục tiêu bị đảo",
+          "icon": "ph:swap-duotone"
+        },
+        {
+          "title": "Điều khiển chồng chập",
+          "text": "Hai qubit trở nên rối với nhau",
+          "icon": "ph:link-duotone"
+        }
+      ],
+      "steps": true
+    },
+    {
+      "type": "code",
+      "eyebrow": "Thử bằng Qiskit",
+      "title": "Mạch H rồi CNOT",
+      "lang": "python",
+      "filename": "bell.py",
+      "code": "from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(2, 2)\nqc.h(0)        # chồng chập trên qubit 0\nqc.cx(0, 1)    # CNOT: 0 điều khiển, 1 mục tiêu\nqc.measure([0, 1], [0, 1])\nprint(qc)",
+      "steps": [
+        {
+          "lines": "3",
+          "text": "Mạch có 2 qubit và 2 bit cổ điển để lưu kết quả."
+        },
+        {
+          "lines": "4",
+          "text": "**Hadamard** đặt qubit 0 vào chồng chập."
+        },
+        {
+          "lines": "5",
+          "text": "**CNOT** lan chồng chập sang qubit 1: hai qubit rối với nhau."
+        },
+        {
+          "lines": "6",
+          "text": "Đo cả hai qubit: chỉ ra **00** hoặc **11**."
+        }
+      ]
+    },
+    {
+      "type": "diagram",
+      "eyebrow": "Từng bước",
+      "title": "Mạch tạo trạng thái Bell",
+      "code": "flowchart LR\n  A([\"|00⟩\"]) -->|\"H lên qubit 1\"| B[\"(|00⟩ + |10⟩) / √2\"]\n  B -->|CNOT| C([\"(|00⟩ + |11⟩) / √2\"])\n  C -->|đo| D{\"00 hoặc 11\"}",
+      "caption": "Sau CNOT hai qubit rối với nhau: đo một qubit là biết ngay qubit kia.",
+      "steps": true,
+      "notes": "Nhấn → để đi từng bước: trạng thái ban đầu, sau cổng H, sau CNOT và cuối cùng là phép đo. Đây chính là mạch bạn vừa viết bằng Qiskit."
+    },
+    {
+      "type": "notebook",
+      "title": "Các cổng lượng tử cơ bản",
+      "page": "Bài 2",
+      "lines": [
+        "# Cổng một qubit",
+        {
+          "term": "X",
+          "def": "đảo |0⟩ ↔ |1⟩ (NOT lượng tử)"
+        },
+        {
+          "term": "Z",
+          "def": "giữ |0⟩, đổi dấu |1⟩ thành −|1⟩"
+        },
+        {
+          "term": "H",
+          "def": "|0⟩ → (|0⟩+|1⟩)/√2 và |1⟩ → (|0⟩−|1⟩)/√2"
+        },
+        "# Cổng hai qubit",
+        {
+          "term": "CNOT",
+          "def": "đảo qubit mục tiêu khi qubit điều khiển là 1"
+        },
+        "! Mọi cổng lượng tử đều đảo ngược được (ma trận unita)",
+        "@ Hadamard: không cộng, một trừ"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Thực hành",
+      "subtitle": "Lần theo trạng thái qua từng cổng",
+      "icon": "ph:pencil-simple-line-duotone"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 1",
+      "level": "easy",
+      "problem": "Bắt đầu từ |0⟩, áp dụng **X** rồi **H**. Trạng thái cuối là gì?",
+      "time": 90,
+      "hints": [
+        "Làm từng cổng một, theo thứ tự."
+      ],
+      "solution": [
+        "X|0⟩ = |1⟩",
+        "H|1⟩ = (|0⟩ − |1⟩)/√2"
+      ],
+      "answer": "$|-\\rangle = \\frac{1}{\\sqrt{2}}(|0\\rangle - |1\\rangle)$"
+    },
+    {
+      "type": "exercise",
+      "title": "Bài 2",
+      "level": "medium",
+      "problem": "Bắt đầu từ |00⟩, áp dụng **H** lên qubit đầu rồi **CNOT** (qubit đầu điều khiển). Viết trạng thái cuối và các kết quả đo có thể.",
+      "time": 180,
+      "hints": [
+        "Viết kết quả sau H trước, rồi áp CNOT cho từng thành phần."
+      ],
+      "solution": [
+        "Sau H: $\\frac{1}{\\sqrt{2}}(|00\\rangle + |10\\rangle)$",
+        "CNOT đảo qubit thứ hai khi qubit đầu là 1: $\\frac{1}{\\sqrt{2}}(|00\\rangle + |11\\rangle)$",
+        "Đo chỉ ra 00 hoặc 11, mỗi khả năng 50%"
+      ],
+      "answer": "Trạng thái Bell $\\frac{1}{\\sqrt{2}}(|00\\rangle + |11\\rangle)$; đo ra 00 hoặc 11"
+    },
+    {
+      "type": "quiz",
+      "question": "Cổng nào biến |0⟩ thành một chồng chập cân bằng?",
+      "options": [
+        "X",
+        "Z",
+        "H",
+        "CNOT"
+      ],
+      "answer": 2,
+      "explanation": "H|0⟩ = (|0⟩ + |1⟩)/√2. X chỉ đảo bit, Z chỉ đổi pha của |1⟩."
+    },
+    {
+      "type": "cloze",
+      "title": "Điền vào chỗ trống",
+      "text": "Cổng [[X]] đảo bit, cổng [[Z]] đảo pha, cổng [[Hadamard]] tạo chồng chập. CNOT đảo qubit mục tiêu khi qubit điều khiển bằng [[1]]."
+    },
+    {
+      "type": "summary",
+      "title": "Ghi nhớ",
+      "items": [
+        "X đảo bit, Z đảo pha, H tạo chồng chập",
+        "Cổng lượng tử là phép xoay, luôn đảo ngược được",
+        "CNOT nối hai qubit và có thể tạo rối",
+        "H rồi CNOT từ |00⟩ cho trạng thái Bell"
+      ]
+    }
+  ]
+}

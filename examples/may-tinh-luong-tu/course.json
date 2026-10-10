@@ -1,0 +1,14 @@
+{
+  "title": "Máy tính lượng tử",
+  "subtitle": "Từ qubit đầu tiên đến chiếc máy thật, mỗi bài một mảnh ghép nhỏ",
+  "author": "Aurora Slides",
+  "lang": "vi",
+  "theme": "midnight",
+  "lessons": [
+    { "title": "Lý thuyết lượng tử", "summary": "Qubit, chồng chập, đo lường và quả cầu Bloch", "dir": "01-ly-thuyet-luong-tu", "theme": "aurora", "icon": "ph:atom-duotone", "minutes": 20 },
+    { "title": "Cổng lượng tử", "summary": "X, Z, Hadamard và CNOT: những phép biến đổi qubit", "dir": "02-cong-luong-tu", "theme": "titanium", "icon": "ph:circuitry-duotone", "minutes": 20 },
+    { "title": "Rối lượng tử", "summary": "Trạng thái Bell và mối tương quan không thể giải thích cổ điển", "dir": "03-roi-luong-tu", "theme": "ocean", "icon": "ph:link-duotone", "minutes": 18 },
+    { "title": "Mạch và thuật toán đầu tiên", "summary": "Viết mạch bằng Qiskit, thuật toán Deutsch–Jozsa", "dir": "04-mach-va-thuat-toan", "theme": "liquid", "icon": "ph:code-duotone", "minutes": 25 },
+    { "title": "Phần cứng lượng tử", "summary": "Qubit siêu dẫn, tủ lạnh pha loãng và nhiễu", "dir": "05-phan-cung-luong-tu", "theme": "sunset", "icon": "ph:cpu-duotone", "minutes": 15 }
+  ]
+}

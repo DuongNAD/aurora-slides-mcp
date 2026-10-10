@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../deck.schema.json",
+  "title": "Phần cứng lượng tử",
+  "lang": "vi",
+  "slides": [
+    {
+      "type": "title",
+      "eyebrow": "Máy tính lượng tử · Bài 5",
+      "title": "Bên trong\n++chiếc đèn chùm++",
+      "subtitle": "Vì sao máy tính lượng tử phải lạnh hơn cả vũ trụ?",
+      "meta": "15 phút",
+      "image": { "query": "quantum computer dilution refrigerator", "alt": "Tủ lạnh pha loãng của máy tính lượng tử" }
+    },
+    {
+      "type": "stats",
+      "title": "Lạnh đến mức nào?",
+      "stats": [
+        { "value": 15, "suffix": " mK", "label": "tầng đặt chip qubit", "detail": "chỉ trên độ không tuyệt đối 0,015 độ", "icon": "ph:thermometer-cold-duotone" },
+        { "value": 2.7, "decimals": 1, "suffix": " K", "label": "nhiệt độ nền của vũ trụ", "icon": "ph:planet-duotone" },
+        { "value": 5, "label": "tầng làm lạnh chính", "detail": "từ nhiệt độ phòng xuống mK", "icon": "ph:stack-duotone" }
+      ]
+    },
+    {
+      "type": "explode",
+      "eyebrow": "Nhìn vào bên trong",
+      "title": "Từng tầng của tủ lạnh pha loãng",
+      "image": { "query": "IBM quantum computer cryostat", "alt": "Máy tính lượng tử nhìn từ ngoài" },
+      "layers": [
+        { "label": "Tầng 50 K", "text": "Ống xung làm lạnh bước đầu", "icon": "ph:snowflake-duotone" },
+        { "label": "Tầng 4 K", "text": "Lạnh như heli lỏng", "icon": "ph:thermometer-cold-duotone" },
+        { "label": "Tầng still, khoảng 0,8 K", "text": "Heli-3 bắt đầu bay hơi khỏi hỗn hợp", "icon": "ph:drop-duotone" },
+        { "label": "Tấm lạnh, khoảng 0,1 K", "text": "Lọc nhiễu trên các đường cáp", "icon": "ph:waves-duotone" },
+        { "label": "Buồng trộn, khoảng 10 mK", "text": "Chip qubit siêu dẫn nằm ở đây", "icon": "ph:cpu-duotone" }
+      ],
+      "notes": "Tủ lạnh pha loãng dùng hỗn hợp đồng vị heli-3 và heli-4. Khi heli-3 \"hoà tan\" vào phần giàu heli-4 trong buồng trộn, nó hấp thụ nhiệt, đưa nhiệt độ xuống chỉ vài phần nghìn kelvin."
+    },
+    {
+      "type": "split",
+      "eyebrow": "Trái tim của máy",
+      "title": "Qubit siêu dẫn",
+      "text": "Một mạch điện nhỏ có **mối nối Josephson**. Ở nhiệt độ cực thấp, dòng điện chạy không điện trở và chỉ có những mức năng lượng rời rạc: mức thấp nhất là **|0⟩**, mức kế tiếp là **|1⟩**.",
+      "image": { "query": "superconducting qubit chip", "alt": "Chip qubit siêu dẫn" }
+    },
+    {
+      "type": "compare",
+      "title": "Kẻ thù số một: nhiễu",
+      "columns": [
+        { "title": "Nguồn nhiễu", "icon": "ph:warning-duotone", "tone": "bad", "items": ["Dao động nhiệt", "Bức xạ điện từ", "Rung động cơ học"] },
+        { "title": "Cách chống", "icon": "ph:shield-check-duotone", "tone": "good", "items": ["Làm lạnh tới mK", "Che chắn và lọc tín hiệu", "Mã sửa lỗi lượng tử"] }
+      ]
+    },
+    {
+      "type": "notebook",
+      "title": "Phần cứng siêu dẫn",
+      "page": "Bài 5",
+      "lines": [
+        "# Qubit siêu dẫn",
+        "Mạch có mối nối Josephson, hai mức năng lượng thấp nhất là |0⟩ và |1⟩",
+        "Chip đặt trong buồng trộn của tủ lạnh pha loãng, khoảng 10–15 mK",
+        "# Nhiễu",
+        { "term": "Decoherence", "def": "môi trường làm chồng chập mất dần" },
+        "! Càng lạnh và càng cách ly, qubit giữ trạng thái càng lâu"
+      ]
+    },
+    {
+      "type": "quiz",
+      "question": "Vì sao chip qubit phải lạnh tới vài mK?",
+      "options": ["Để chạy nhanh hơn", "Để giảm nhiễu nhiệt phá huỷ trạng thái lượng tử", "Để tiết kiệm điện", "Vì silicon chỉ dẫn điện khi lạnh"],
+      "answer": 1,
+      "explanation": "Năng lượng nhiệt đủ lớn sẽ đẩy qubit ra khỏi |0⟩ và |1⟩ và làm mất chồng chập; ở vài mK, nhiễu nhiệt gần như biến mất."
+    },
+    {
+      "type": "summary",
+      "title": "Ghi nhớ",
+      "items": ["Qubit siêu dẫn là mạch điện có mối nối Josephson", "Chip nằm ở buồng trộn, khoảng 10 mK", "Tủ lạnh pha loãng gồm nhiều tầng lạnh dần", "Nhiễu (decoherence) là thách thức lớn nhất"]
+    }
+  ]
+}
