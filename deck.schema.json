@@ -5271,6 +5271,265 @@
             "properties": {
               "type": {
                 "type": "string",
+                "const": "srs"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "card": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Vega card id (spaced repetition card id)"
+              },
+              "front": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Front of the card (prompt / question)"
+              },
+              "back": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Back of the card (answer)"
+              },
+              "hint": {
+                "description": "Hint",
+                "type": "string"
+              },
+              "hook": {
+                "description": "Memory anchor line, shown with the back",
+                "type": "string"
+              },
+              "origin": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source label, e.g. 'AI Agents 101 · bài 1a · slide 8'"
+                  },
+                  "href": {
+                    "description": "Relative path to the lesson",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "label"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "card",
+              "front",
+              "back"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
                 "const": "cloze"
               },
               "id": {

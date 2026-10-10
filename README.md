@@ -12,7 +12,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.6.2**. Author: **DuongNAD**.
+Current version: **0.7.0**. Author: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -31,8 +31,8 @@ flowchart LR
     PR --> P2
 ```
 
-- **Live progress recording**: while studying under `aurora_preview`, quiz answers (with chosen and correct option texts and explanation), predict ratings, and memory palace recall ratings automatically append to `<course folder>/progress.jsonl`.
-- **Progress summary** (`aurora_progress`): summarizes quiz accuracy (with chosen and correct texts for wrong answers), right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
+- **Live progress recording**: while studying under `aurora_preview`, quiz answers (with chosen and correct option texts and explanation), predict ratings, memory palace recall ratings, and spaced repetition card ratings automatically append to `<course folder>/progress.jsonl` (or `<deck folder>/progress.jsonl`).
+- **Progress summary** (`aurora_progress`): summarizes quiz accuracy (with chosen and correct texts for wrong answers), right vs different predictions, missed memory palace stations, spaced repetition review counts (again, hard, good, easy), completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
 - **Export control**: "Xuất tiến độ" / "Export progress" button in the help panel (`?`) and on the course page downloads `aurora-progress-<slug>.jsonl`.
 
 The canonical, versioned definition with JSON Schema and fixtures lives in Constellation's [contracts/aurora-progress-event.v1](https://github.com/DuongNAD/constellation-mcp/tree/main/contracts); this README summarizes it.
@@ -43,6 +43,7 @@ The canonical, versioned definition with JSON Schema and fixtures lives in Const
 |---|---|
 | [Polaris](https://github.com/DuongNAD/polaris-mcp) | Course architect |
 | Aurora Slides (this repo) | Lessons, practice and progress |
+| [Vega](https://github.com/DuongNAD/vega-mcp) | Spaced repetition memory engine (FSRS), review session generator |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | SSD governance, learning-aware search, protection of course folders, post-write index hook |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | One manifest, registration into Claude Code / Antigravity / Cursor / Codex, health checks, drift doctor, updates |
 
@@ -64,9 +65,10 @@ Aurora Slides automatically coordinates with sister project [SmartDrive-OS](http
   are written in English so agents follow them precisely, but they require the lesson content and the agent's replies to use the
   language you wrote the request in (ask in Vietnamese and you get Vietnamese slides with `lang: "vi"`). Image prompts, ids and
   Mermaid keywords stay in English.
-- **35 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
+- **36 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
   code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
-  cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+- **Spaced repetition review sessions** (`srs`): sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS engine) generates review decks composed of `srs` slides (front → hint → flip to back → 1–4 rating "Again / Hard / Good / Easy"), emitting `card` progress events to reschedule cards.
 - **Predict-then-run practice** (`predict`): the learner writes their prediction into a persisted input box, runs the real code in an
   animated macOS terminal, compares the real output, self-rates with keys 1/2 ("As predicted" / "Different"), and logs gaps into their error log.
 - **Verbatim code quoting** (`code`, `split`, `exercise`, `predict`): quote real source files with `file` + `lines` (and `dedent`),
@@ -228,14 +230,16 @@ Tools the agent uses:
 
 | Key | Action |
 |---|---|
-| → / Space / scroll down | Next (one point, one notebook line, one solution step, one exploded-view stage at a time) |
+| → / Space / scroll down | Next (one point, one notebook line, one solution step, one exploded-view stage, flip SRS card) |
 | ← / scroll up | Back |
 | N | The slide's detailed notes |
 | O / Esc | Overview of the whole lesson |
 | F | Fullscreen |
 | T | Start/pause the exercise timer |
 | 1–6 | Pick a quiz answer |
+| 1–4 | Rate spaced repetition card (Again / Hard / Good / Easy) on `srs` slides |
 | 1 / 2 | Got it / Missed during memory palace review; As predicted / Different on predict slides |
+| H | Reveal/toggle hint on `srs` slides |
 
 On exploded-view and memory palace slides, the mouse wheel or trackpad scrubs the animation continuously, like an Apple page.
 Lessons remember where you stopped; the course page shows each lesson's progress and which lessons are due for review.
@@ -291,6 +295,13 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.7.0** (2026-10-11):
+  - Spaced repetition review sessions (`srs` slide type) produced by sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS memory engine).
+  - Apple-style frosted glass card layout with front prompt, optional hint reveal (`H`), flip to back (→ / Space / click) with memory hook, origin link, and 1–4 rating row ("Again / Hard / Good / Easy").
+  - New `card` progress event emitted on rating, capturing `card` id, `rating`, and `ms` elapsed review duration.
+  - Summary slide score card displays review counts (`Đã ôn x/y thẻ · Quên a`).
+  - Preview server accepts `card` events with contract validation, and `aurora_progress` summarizes rating counts per deck.
+  - Pedagogy lint skips non-review notes when ≥ 80% of slides are `srs`.
 - **0.6.2** (2026-10-11):
   - SmartDrive-OS integration: automatically trigger incremental index updates (`smart-drive update <dir> --quiet`) after writing decks, courses, images, and progress events so `smart-drive search --kind slide ...` finds new and edited lessons at once. Coalesced per folder within 2 seconds, non-blocking. Configurable via `AURORA_SMARTDRIVE=off` and `AURORA_SMARTDRIVE_CMD`.
 - **0.6.1** (2026-10-11):

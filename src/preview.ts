@@ -79,9 +79,20 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     } catch {
       return send(res, 400, "invalid json");
     }
-    const KNOWN_TYPES = new Set(["quiz", "predict", "recall", "complete"]);
+    const KNOWN_TYPES = new Set(["quiz", "predict", "recall", "complete", "card"]);
     if (!obj || typeof obj !== "object" || obj.v !== 1 || !KNOWN_TYPES.has(obj.type) || typeof obj.t !== "string" || !obj.t) {
       return send(res, 400, "invalid event payload");
+    }
+    if (obj.type === "card") {
+      const VALID_RATINGS = new Set(["again", "hard", "good", "easy"]);
+      if (typeof obj.card !== "string" || !obj.card || !VALID_RATINGS.has(obj.rating)) {
+        return send(res, 400, "invalid card event payload");
+      }
+      if (obj.ms !== undefined) {
+        if (typeof obj.ms !== "number" || !Number.isInteger(obj.ms) || obj.ms < 0 || obj.ms > 86400000) {
+          return send(res, 400, "invalid card ms payload");
+        }
+      }
     }
 
     const deckId = url.searchParams.get("deck") || url.searchParams.get("id") || (req.headers["x-aurora-deck"] as string) || (req.headers["x-deck"] as string);
@@ -102,7 +113,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
     // Keep only contract fields, with bounded lengths.
     const cap = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : v);
-    for (const [k, n] of [["question", 200], ["explanation", 300], ["prediction", 2000], ["output", 300], ["title", 200], ["place", 200], ["item", 200], ["palace", 100], ["deck", 200], ["lesson", 200], ["course", 200], ["slideId", 100], ["t", 40], ["quiz", 20], ["predictions", 20], ["rating", 20]] as const) {
+    for (const [k, n] of [["question", 200], ["explanation", 300], ["prediction", 2000], ["output", 300], ["title", 200], ["place", 200], ["item", 200], ["palace", 100], ["deck", 200], ["lesson", 200], ["course", 200], ["slideId", 100], ["card", 100], ["t", 40], ["quiz", 20], ["predictions", 20], ["rating", 20]] as const) {
       if (obj[k] !== undefined) obj[k] = cap(obj[k], n);
     }
     const capArr = (v: unknown, maxItems: number, maxLen: number) =>

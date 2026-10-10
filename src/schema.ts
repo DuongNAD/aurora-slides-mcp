@@ -380,6 +380,23 @@ const FlashcardsSlide = z.strictObject({
     .max(6),
 });
 
+const SrsSlide = z.strictObject({
+  type: z.literal("srs"),
+  ...base,
+  eyebrow,
+  card: z.string().min(1).max(100).describe("Vega card id (spaced repetition card id)"),
+  front: md("Front of the card (prompt / question)"),
+  back: md("Back of the card (answer)"),
+  hint: optMd("Hint"),
+  hook: optMd("Memory anchor line, shown with the back"),
+  origin: z
+    .strictObject({
+      label: md("Source label, e.g. 'AI Agents 101 · bài 1a · slide 8'"),
+      href: z.string().min(1).optional().describe("Relative path to the lesson"),
+    })
+    .optional(),
+});
+
 const ClozeSlide = z.strictObject({
   type: z.literal("cloze"),
   ...base,
@@ -711,6 +728,7 @@ export const SlideSchema = z.discriminatedUnion("type", [
   TableSlide,
   QuizSlide,
   FlashcardsSlide,
+  SrsSlide,
   ClozeSlide,
   ChartSlide,
   FormulaSlide,

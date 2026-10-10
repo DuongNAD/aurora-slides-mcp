@@ -12,7 +12,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.6.2**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.7.0**. Tác giả: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -31,8 +31,8 @@ flowchart LR
     PR --> P2
 ```
 
-- **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz (kèm văn bản phương án đã chọn, đáp án đúng và giải thích), tự chấm predict và đánh giá cung điện ký ức tự động ghi nối vào `<thư mục khoá học>/progress.jsonl`.
-- **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz (kèm phương án đã chọn và đáp án đúng cho các câu sai), dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
+- **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz (kèm văn bản phương án đã chọn, đáp án đúng và giải thích), tự chấm predict, đánh giá cung điện ký ức và đánh giá thẻ ôn tập ngắt quãng tự động ghi nối vào `<thư mục khoá học>/progress.jsonl` (hoặc `<thư mục bài học>/progress.jsonl`).
+- **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz (kèm phương án đã chọn và đáp án đúng cho các câu sai), dự đoán đúng/lệch, các trạm cung điện chưa nhớ, số lượt ôn thẻ ngắt quãng (quên, khó, nhớ, dễ), ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
 - **Nút xuất tiến độ**: nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp (`?`) và trên trang chủ khoá học cho phép tải file `aurora-progress-<slug>.jsonl`.
 
 Định nghĩa phiên bản chuẩn tắc kèm JSON Schema và dữ liệu mẫu (fixtures) nằm tại [contracts/aurora-progress-event.v1](https://github.com/DuongNAD/constellation-mcp/tree/main/contracts) của Constellation; tài liệu README này tóm tắt lại cấu trúc đó.
@@ -43,6 +43,7 @@ flowchart LR
 |---|---|
 | [Polaris](https://github.com/DuongNAD/polaris-mcp) | Kiến trúc sư khoá học |
 | Aurora Slides (repo này) | Bài học, luyện tập và tiến độ |
+| [Vega](https://github.com/DuongNAD/vega-mcp) | Động cơ ghi nhớ ngắt quãng (FSRS), tạo phiên ôn tập hàng ngày |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | Quản trị SSD, tìm kiếm tối ưu cho học tập, bảo vệ thư mục khoá học, hook cập nhật chỉ mục sau khi ghi |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | Một manifest duy nhất, đăng ký vào Claude Code / Antigravity / Cursor / Codex, kiểm tra sức khoẻ, drift doctor, cập nhật |
 
@@ -62,9 +63,10 @@ Aurora Slides tự động đồng bộ với dự án song hành [SmartDrive-OS
 - **Đúng ngôn ngữ của bạn**: hướng dẫn gửi cho agent (system prompt của MCP, hai prompt `lesson`/`course`, `aurora_guide`) viết
   bằng tiếng Anh cho agent hiểu chính xác, nhưng bắt buộc nội dung bài học và câu trả lời của agent dùng ngôn ngữ bạn viết yêu cầu
   (hỏi bằng tiếng Việt thì ra slide tiếng Việt, `lang: "vi"`). Prompt tạo ảnh, id và từ khoá Mermaid vẫn giữ tiếng Anh.
-- **35 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
+- **36 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
   code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
-  cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+- **Phiên ôn tập ngắt quãng** (`srs`): dự án song hành [Vega](https://github.com/DuongNAD/vega-mcp) (động cơ FSRS) tạo deck ôn tập hàng ngày gồm các slide `srs` (mặt trước → gợi ý → lật mặt sau → hàng phím 1–4 "Quên / Khó / Nhớ / Dễ"), phát sự kiện `card` để dời lịch thẻ.
 - **Luyện tập đoán rồi chạy** (`predict`): người học ghi dự đoán vào ô nhập (tự lưu theo bài), chạy code thật trong cửa sổ Terminal
   macOS hoạt hoạ, đối chiếu kết quả thật, tự chấm Đúng như dự đoán / Lệch (phím 1/2) và ghi chỗ lệch vào Sổ lỗi.
 - **Trích dẫn code nguyên văn** (`code`, `split`, `exercise`, `predict`): trích code thật từ file bằng `file` + `lines` (kèm `dedent`),
@@ -225,14 +227,16 @@ Các tool agent dùng:
 
 | Thao tác | Việc |
 |---|---|
-| → / Space / cuộn xuống | Tiếp theo (từng ý, từng dòng vở, từng bước lời giải, từng nấc exploded view) |
+| → / Space / cuộn xuống | Tiếp theo (từng ý, từng dòng vở, từng bước lời giải, từng nấc exploded view, lật thẻ SRS) |
 | ← / cuộn lên | Quay lại |
 | N | Ghi chú chi tiết của slide |
 | O / Esc | Tổng quan toàn bài |
 | F | Toàn màn hình |
 | T | Bật/tạm dừng đồng hồ bài tập |
 | 1–6 | Chọn đáp án quiz |
+| 1–4 | Đánh giá thẻ ôn tập ngắt quãng (Quên / Khó / Nhớ / Dễ) trên slide `srs` |
 | 1 / 2 | Nhớ / Chưa nhớ khi ôn cung điện; Đúng như dự đoán / Lệch khi học slide predict |
+| H | Hiện/ẩn gợi ý trên slide `srs` |
 
 Trên slide exploded view và cung điện ký ức, cuộn chuột/trackpad sẽ "tua" hiệu ứng liên tục như trang Apple. Bài học nhớ
 chỗ đang học, trang khoá học hiện tiến độ từng bài và những bài đến hạn ôn.
@@ -285,6 +289,13 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.7.0** (11/10/2026):
+  - Phiên ôn tập ngắt quãng (loại slide `srs`) tạo bởi dự án song hành [Vega](https://github.com/DuongNAD/vega-mcp) (động cơ FSRS).
+  - Bố cục thẻ kính mờ kiểu Apple: mặt trước (câu hỏi/khái niệm), nút mở gợi ý (`H`), lật mặt sau (→ / Space / click) kèm móc nhớ, link nguồn gốc bài học, và hàng phím đánh giá 1–4 ("Quên / Khó / Nhớ / Dễ").
+  - Sự kiện tiến độ `card` mới phát ra khi đánh giá thẻ, ghi nhận `card` id, `rating`, và thời gian ôn `ms`.
+  - Thẻ điểm trên slide tổng kết hiển thị số lượng thẻ đã ôn (`Đã ôn x/y thẻ · Quên a`).
+  - Preview server tiếp nhận sự kiện `card` theo đúng contract và `aurora_progress` tóm tắt số lượng đánh giá theo từng bài.
+  - Lint sư phạm tự động bỏ qua các lưu ý không áp dụng cho deck ôn tập khi có ≥ 80% slide `srs`.
 - **0.6.2** (11/10/2026):
   - Tích hợp SmartDrive-OS: tự động kích hoạt cập nhật chỉ mục (`smart-drive update <dir> --quiet`) sau khi ghi bài học, khoá học, ảnh và tiến độ để `smart-drive search --kind slide ...` tìm thấy ngay bài học mới và chỉnh sửa. Chạy ngầm không chặn luồng build, tự gom lệnh trong 2 giây. Tuỳ biến qua `AURORA_SMARTDRIVE=off` và `AURORA_SMARTDRIVE_CMD`.
 - **0.6.1** (11/10/2026):

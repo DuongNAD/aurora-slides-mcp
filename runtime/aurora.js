@@ -356,8 +356,11 @@
   }
   function maxStep(s) {
     if (s._max === undefined) {
-      const sc = s.querySelector(".xp, .pl");
-      s._max = sc ? Math.max(0, (+sc.dataset.stages || 1) - 1) : stepEls(s).reduce((m, el) => Math.max(m, +el.dataset.step || 0), 0);
+      if (s.dataset.type === "srs") s._max = 1;
+      else {
+        const sc = s.querySelector(".xp, .pl");
+        s._max = sc ? Math.max(0, (+sc.dataset.stages || 1) - 1) : stepEls(s).reduce((m, el) => Math.max(m, +el.dataset.step || 0), 0);
+      }
     }
     return s._max;
   }
@@ -372,6 +375,10 @@
       if (el.classList.contains("blank")) el.classList.toggle("on", shown || !!el._open);
       else if (shown && !was && animate) revealStep(el);
       if (el.classList.contains("fb-zcap")) el.classList.toggle("cur", k === n);
+    }
+    if (s.dataset.type === "srs") {
+      const card = s.querySelector(".srs-card");
+      if (card) card.setAttribute("aria-pressed", n >= 1 ? "true" : "false");
     }
     if (s._hasXp === undefined) s._hasXp = !!s.querySelector(".xp");
     if (s._hasXp) {
@@ -1141,6 +1148,16 @@
     idx = target;
     transition(from === target ? null : prev, next, fwd, !!o.instant);
     if (!STATIC) activateMedia(next);
+    if (next.dataset.type === "srs") {
+      next._showTime = performance.now();
+      const cardId = (next.querySelector(".srs") && next.querySelector(".srs").dataset.card) || "";
+      const rates = store.get("srsRate") || {};
+      const saved = rates[cardId || String(target)];
+      if (saved) {
+        next.classList.add("rated");
+        next.querySelectorAll(".srs-r").forEach((b) => b.classList.toggle("sel", b.dataset.r === saved));
+      }
+    }
     if (next.classList.contains("t-summary")) renderScore(next);
     updateHud();
     if (!o.keepHash) writeHash();
@@ -1536,11 +1553,19 @@
     const predAnswered = Object.keys(predRates).length;
     const predGot = Object.values(predRates).reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
 
+    const srsRates = store.get("srsRate") || {};
+    const srsTotal = CFG.srsCards || 0;
+    const srsReviewed = Object.keys(srsRates).length;
+    let srsAgain = 0;
+    Object.values(srsRates).forEach((r) => { if (r === "again") srsAgain++; });
+
     const fill = box.querySelector(".sm-fill");
     const num = box.querySelector(".sm-got");
     const msg = box.querySelector(".sm-msg");
     const label = box.querySelector(".sm-label");
     const predEl = box.querySelector(".sm-pred");
+    const srsEl = box.querySelector(".sm-srs");
+    const srsText = (T.srsReview || "Đã ôn") + " " + srsReviewed + "/" + srsTotal + " " + (T.cardsUnit || "thẻ") + " · " + (T.forgotten || T.srsAgain || "Quên") + " " + srsAgain;
 
     if (total > 0) {
       const pct = got / total;
@@ -1555,6 +1580,10 @@
         predEl.textContent = (T.predictionsRight || "Predictions right") + " " + predGot + "/" + predTotal;
         predEl.hidden = false;
       }
+      if (srsEl && srsTotal > 0) {
+        srsEl.textContent = srsText;
+        srsEl.hidden = false;
+      }
     } else if (predTotal > 0) {
       const pct = predGot / predTotal;
       if (num) num.textContent = String(predGot);
@@ -1566,7 +1595,66 @@
         if (pct > 0) requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.strokeDasharray = (pct * 100).toFixed(1) + " 100")));
       }
       if (predEl) predEl.hidden = true;
+      if (srsEl && srsTotal > 0) {
+        srsEl.textContent = srsText;
+        srsEl.hidden = false;
+      }
+    } else if (srsTotal > 0) {
+      const pct = srsTotal > 0 ? srsReviewed / srsTotal : 0;
+      if (num) num.textContent = String(srsReviewed);
+      if (label) label.textContent = T.srsReview || "Đã ôn";
+      if (msg) msg.textContent = srsText;
+      if (fill) {
+        fill.style.strokeDasharray = "0 100";
+        fill.style.opacity = pct > 0 ? "1" : "0";
+        if (pct > 0) requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.strokeDasharray = (pct * 100).toFixed(1) + " 100")));
+      }
+      if (predEl) predEl.hidden = true;
+      if (srsEl) {
+        srsEl.textContent = srsText;
+        srsEl.hidden = false;
+      }
     }
+  }
+
+  function srsToggleHint(s) {
+    if (!s || s.dataset.type !== "srs") return false;
+    const btn = s.querySelector(".srs-hint-btn");
+    if (!btn) return false;
+    btn.classList.toggle("revealed");
+    btn.setAttribute("aria-expanded", btn.classList.contains("revealed") ? "true" : "false");
+    return true;
+  }
+
+  function srsRate(s, rating) {
+    if (!s || s.dataset.type !== "srs") return false;
+    const card = s.querySelector(".srs-card");
+    if (card && card.getAttribute("aria-pressed") !== "true") {
+      setStep(s, 1, true);
+      updateHud();
+    }
+    const cardId = (s.querySelector(".srs") && s.querySelector(".srs").dataset.card) || "";
+    const sIdx = slides.indexOf(s);
+    const rates = store.get("srsRate") || {};
+    rates[cardId || String(sIdx)] = rating;
+    store.set("srsRate", rates);
+
+    s.querySelectorAll(".srs-r").forEach((b) => b.classList.toggle("sel", b.dataset.r === rating));
+    s.classList.add("rated");
+
+    const now = performance.now();
+    const ms = Math.min(86400000, Math.max(0, Math.round(now - (s._showTime || now))));
+
+    emitEvent("card", {
+      card: cardId,
+      rating: rating,
+      ms: ms,
+    }, sIdx);
+
+    setTimeout(() => {
+      if (slides[idx] === s) next();
+    }, 320);
+    return true;
   }
 
   function predRate(s, r) {
@@ -1652,6 +1740,24 @@
     const predBtn = e.target.closest(".pred-r");
     if (predBtn) {
       predRate(predBtn.closest(".slide"), +predBtn.dataset.r);
+      return;
+    }
+    const srsBtn = e.target.closest(".srs-r");
+    if (srsBtn) {
+      srsRate(srsBtn.closest(".slide"), srsBtn.dataset.r);
+      return;
+    }
+    const srsHint = e.target.closest(".srs-hint-btn");
+    if (srsHint) {
+      srsToggleHint(srsHint.closest(".slide"));
+      return;
+    }
+    const srsCard = e.target.closest(".srs-card");
+    if (srsCard && !e.target.closest("a")) {
+      const s = srsCard.closest(".slide");
+      const isPressed = srsCard.getAttribute("aria-pressed") === "true";
+      setStep(s, isPressed ? 0 : 1, true);
+      updateHud();
       return;
     }
     const pin = e.target.closest(".hs-pin");
@@ -1765,7 +1871,11 @@
         break;
       case "n": case "N": toggleNotes(); break;
       case "f": case "F": toggleFull(); break;
-      case "?": case "h": case "H": toggleHelp(); break;
+      case "?": toggleHelp(); break;
+      case "h": case "H":
+        if (slides[idx] && srsToggleHint(slides[idx])) break;
+        toggleHelp();
+        break;
       case "t": case "T": {
         const tm = slides[idx] && slides[idx].querySelector(".ex-timer");
         if (!tm) return;
@@ -1773,6 +1883,7 @@
         break;
       }
       default:
+        if ((k === "1" || k === "2" || k === "3" || k === "4") && srsRate(slides[idx], ({ "1": "again", "2": "hard", "3": "good", "4": "easy" })[k])) break;
         if ((k === "1" || k === "2") && plRate(slides[idx], k === "1" ? 1 : 0)) break;
         if ((k === "1" || k === "2") && predRate(slides[idx], k === "1" ? 1 : 0)) break;
         if (/^[1-6]$/.test(k) && answerKey(+k - 1)) break;
@@ -1783,8 +1894,8 @@
   });
 
   /* ───────────── QA: audit ───────────── */
-  const TEXTY = "h1,h2,h3,p,li,blockquote,figcaption,dt,dd,td,th,.it-text,.it-detail,.card-t,.card-p,.st-label,.cy-title,.cy-text,.qz-text,.fc-term,.fc-ans,.hs-label,.hs-text,.tl-title,.tl-text,.pr-title,.pr-text,.cmp-t,.lead,.eyebrow";
-  const BLOCKS = "h1,h2,h3,p,li,blockquote,.card,.cmp-col,.window,.media,table,.st,.tl-ev,.pr-item,.cy-label,.cy-badge,.qz-opt,.fcard,.hs-img,.hs-item,.ag-item,.sm-score,.dn-ring,.dn-legend,.chart-svg,.hbars,.fm-main,.fm-legend,.vd-frame,.df-rel";
+  const TEXTY = "h1,h2,h3,p,li,blockquote,figcaption,dt,dd,td,th,.it-text,.it-detail,.card-t,.card-p,.st-label,.cy-title,.cy-text,.qz-text,.fc-term,.fc-ans,.srs-term,.srs-ans,.srs-eb,.srs-hook,.srs-origin,.hs-label,.hs-text,.tl-title,.tl-text,.pr-title,.pr-text,.cmp-t,.lead,.eyebrow";
+  const BLOCKS = "h1,h2,h3,p,li,blockquote,.card,.cmp-col,.window,.media,table,.st,.tl-ev,.pr-item,.cy-label,.cy-badge,.qz-opt,.fcard,.srs-card,.hs-img,.hs-item,.ag-item,.sm-score,.dn-ring,.dn-legend,.chart-svg,.hbars,.fm-main,.fm-legend,.vd-frame,.df-rel";
   function rectIn(el, base, k) {
     const r = el.getBoundingClientRect();
     return { l: (r.left - base.left) / k, t: (r.top - base.top) / k, r: (r.right - base.left) / k, b: (r.bottom - base.top) / k, w: r.width / k, h: r.height / k };
@@ -1812,7 +1923,7 @@
         if (out > 4) { issues.push({ level: "error", msg: "Element extends " + Math.round(out) + "px beyond the slide: " + label(el) }); break; }
       }
     }
-    for (const el of s.querySelectorAll(".card-in, .fc-face, .cmp-col, .pr-item, .qz-opt, .tb-wrap, .hs-list")) {
+    for (const el of s.querySelectorAll(".card-in, .fc-face, .srs-face, .cmp-col, .pr-item, .qz-opt, .tb-wrap, .hs-list")) {
       if (el.scrollHeight > el.clientHeight + 2) issues.push({ level: "error", msg: "Text is clipped inside " + label(el) });
     }
     const pre = s.querySelector(".code-pre");
@@ -1847,7 +1958,7 @@
     let minEl = null;
     s.querySelectorAll(TEXTY).forEach((el) => {
       // Diagram labels are scaled with their SVG; the diagram check above measures them at their real size.
-      if (!el.textContent.trim() || el.closest(".credit,.fc-tap,.win-bar,.term-bar,.qz-why,.qz-expl,.vd-open,.dg-svg")) return;
+      if (!el.textContent.trim() || el.closest(".credit,.fc-tap,.srs-tap,.win-bar,.term-bar,.qz-why,.qz-expl,.vd-open,.dg-svg")) return;
       const fs = parseFloat(getComputedStyle(el).fontSize);
       if (fs < minFs) { minFs = fs; minEl = el; }
     });

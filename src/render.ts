@@ -59,7 +59,8 @@ export const STRINGS = {
     recalled: "Bạn nhớ được", stopsUnit: "trạm", reviewMissed: "Ôn lại các trạm màu cam rồi đi thêm một vòng nhé.",
     allRecalled: "Tuyệt vời, không sót trạm nào!", anchors: "Neo trí nhớ", reviewTag: "Ôn lại", analogy: "Neo vào điều đã biết",
     limit: "Chỗ không giống", mnemonic: "Mẹo nhớ", diagramFailed: "Chưa vẽ được sơ đồ", exportProgress: "Xuất tiến độ",
-    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
+    srsAgain: "Quên", srsHard: "Khó", srsGood: "Nhớ", srsEasy: "Dễ", srsReview: "Đã ôn", cardsUnit: "thẻ", forgotten: "Quên",
+    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["1–4", "Đánh giá thẻ (Quên / Khó / Nhớ / Dễ)"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
   },
   en: {
     prev: "Previous", next: "Next", overview: "Overview", notes: "Notes", fullscreen: "Fullscreen", help: "Shortcuts",
@@ -86,7 +87,8 @@ export const STRINGS = {
     recalled: "You recalled", stopsUnit: "stops", reviewMissed: "Review the orange stops, then walk it once more.",
     allRecalled: "Perfect, not a single stop missed!", anchors: "Memory anchors", reviewTag: "Review", analogy: "Anchor it to what you know",
     limit: "Where it breaks", mnemonic: "Mnemonic", diagramFailed: "Could not draw the diagram", exportProgress: "Export progress",
-    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
+    srsAgain: "Again", srsHard: "Hard", srsGood: "Good", srsEasy: "Easy", srsReview: "Reviewed", cardsUnit: "cards", forgotten: "Again",
+    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["1–4", "Card rating (Again / Hard / Good / Easy)"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
   },
 };
 type Strings = (typeof STRINGS)["vi"];
@@ -173,6 +175,7 @@ interface Ctx {
   sections: Array<{ index: number; title: string; number: string }>;
   quizTotal: number;
   predictTotal: number;
+  srsTotal: number;
   quizNo: number;
   slideIndex: number;
   domId: string;
@@ -927,6 +930,36 @@ const layouts: Layouts = {
     return { cls: `n-${s.cards.length}`, html: `<div class="fc">${h.html}<div class="fc-grid">${cards}</div></div>` };
   },
 
+  srs(s, c) {
+    const eb = s.eyebrow ? `<div class="srs-eb"${A("rise", 0)}>${inl(c, s.eyebrow)}</div>` : "";
+    const hint = s.hint
+      ? `<button class="srs-hint-btn" type="button" aria-expanded="false"${A("fade", 180)}><span class="srs-hint-tag">${SVG.bulb}<span>${esc(c.t.hint)}</span></span><span class="srs-hint-text">${inl(c, s.hint)}</span></button>`
+      : "";
+    const origin = s.origin
+      ? `<div class="srs-origin"${A("fade", 0)}>${s.origin.href ? `<a href="${esc(s.origin.href)}" target="_blank" rel="noopener">${SVG.prev}<span>${inl(c, s.origin.label)}</span></a>` : `<span>${inl(c, s.origin.label)}</span>`}</div>`
+      : "";
+    const hook = s.hook
+      ? `<div class="srs-hook"${A("fade", 100)}><i class="srs-hook-ic">${SVG.anchor}</i><span>${inl(c, s.hook)}</span></div>`
+      : "";
+    const rateRow =
+      `<div class="srs-rate-row"${A("rise", 140)}>` +
+      `<button type="button" class="srs-r r-again" data-r="again"><kbd>1</kbd> <span>${esc(c.t.srsAgain)}</span></button>` +
+      `<button type="button" class="srs-r r-hard" data-r="hard"><kbd>2</kbd> <span>${esc(c.t.srsHard)}</span></button>` +
+      `<button type="button" class="srs-r r-good" data-r="good"><kbd>3</kbd> <span>${esc(c.t.srsGood)}</span></button>` +
+      `<button type="button" class="srs-r r-easy" data-r="easy"><kbd>4</kbd> <span>${esc(c.t.srsEasy)}</span></button>` +
+      `</div>`;
+
+    return {
+      cls: "has-srs",
+      html:
+        `<div class="srs" data-card="${esc(s.card)}">` +
+        `<div class="srs-card" aria-pressed="false"${A("tilt", 0)}><div class="srs-in">` +
+        `<div class="srs-face srs-front">${eb}<div class="srs-term">${blk(c, s.front)}</div>${hint}<div class="srs-tap">${SVG.flip}<span>${esc(c.t.flip)}</span></div></div>` +
+        `<div class="srs-face srs-back">${origin}<div class="srs-ans">${blk(c, s.back)}</div>${hook}${rateRow}</div>` +
+        `</div></div></div>`,
+    };
+  },
+
   cloze(s, c) {
     const h = head(c, s.eyebrow, s.title);
     const counter = { n: 0 };
@@ -1030,16 +1063,19 @@ const layouts: Layouts = {
 
   summary(s, c) {
     const h = head(c, s.eyebrow, s.title);
-    if (s.score && !c.quizTotal && !c.predictTotal) warn(c, `Summary on slide ${slideNo(c)} asks for a score but the deck has no quiz or predict slides.`);
-    const showScore = (s.score ?? true) && (c.quizTotal > 0 || c.predictTotal > 0);
+    if (s.score && !c.quizTotal && !c.predictTotal && !c.srsTotal) warn(c, `Summary on slide ${slideNo(c)} asks for a score but the deck has no quiz, predict or srs slides.`);
+    const showScore = (s.score ?? true) && (c.quizTotal > 0 || c.predictTotal > 0 || c.srsTotal > 0);
     const list = s.items
       .map((it, k) => `<li class="sm-item"${A("rise", h.d + k * 90)}><i class="sm-ck">${SVG.check}</i><span>${inl(c, it)}</span></li>`)
       .join("");
+    const totalCount = c.quizTotal || c.predictTotal || c.srsTotal;
+    const scoreLabel = c.quizTotal ? c.t.score : c.predictTotal ? c.t.predictionsRight : c.t.srsReview;
     const score = showScore
       ? `<div class="sm-score"${A("scale", h.d + 200)}><div class="sm-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="sm-track" cx="100" cy="100" r="84"/>` +
-        `<circle class="sm-fill" cx="100" cy="100" r="84" pathLength="100"/></svg><div class="sm-num"><b class="sm-got">0</b><span>/${c.quizTotal || c.predictTotal}</span></div></div>` +
-        `<div class="sm-label">${esc(c.quizTotal ? c.t.score : c.t.predictionsRight)}</div><div class="sm-msg">${esc(c.t.none)}</div>` +
+        `<circle class="sm-fill" cx="100" cy="100" r="84" pathLength="100"/></svg><div class="sm-num"><b class="sm-got">0</b><span>/${totalCount}</span></div></div>` +
+        `<div class="sm-label">${esc(scoreLabel)}</div><div class="sm-msg">${esc(c.t.none)}</div>` +
         (c.quizTotal > 0 && c.predictTotal > 0 ? `<div class="sm-pred" hidden></div>` : "") +
+        (c.srsTotal > 0 ? `<div class="sm-srs" hidden></div>` : "") +
         `</div>`
       : "";
     return {
@@ -1465,6 +1501,8 @@ export function titleOf(s: Slide): string {
       return s.quote;
     case "quiz":
       return s.question;
+    case "srs":
+      return s.front;
     case "definition":
       return s.term;
     case "image":
@@ -1647,6 +1685,7 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     needIcons: new Set(), needImages: new Map(), needCode: new Map(), needCodeFiles: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), warnings: [], sections,
     quizTotal: deck.slides.filter((s) => s.type === "quiz").length,
     predictTotal: deck.slides.filter((s) => s.type === "predict").length,
+    srsTotal: deck.slides.filter((s) => s.type === "srs").length,
     quizNo: 0, slideIndex: 0, domId: "", backdrops: new Map(), css: [],
   });
 
@@ -1767,11 +1806,13 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     },
     quizzes: c.quizTotal,
     predicts: c.predictTotal,
+    srsCards: c.srsTotal,
     t: {
       correct: c.t.correct, wrong: c.t.wrong, answerIs: c.t.answerIs, resume: c.t.resume, resumeYes: c.t.resumeYes, restart: c.t.restart,
       great: c.t.great, good: c.t.good, review: c.t.review, none: c.t.none, noNotes: c.t.noNotes, notes: c.t.notes,
       asPredicted: c.t.asPredicted, different: c.t.different, gapLesson: c.t.gapLesson, predictionsRight: c.t.predictionsRight,
       exportProgress: c.t.exportProgress,
+      srsAgain: c.t.srsAgain, srsHard: c.t.srsHard, srsGood: c.t.srsGood, srsEasy: c.t.srsEasy, srsReview: c.t.srsReview, cardsUnit: c.t.cardsUnit, forgotten: c.t.forgotten,
     },
     slides: deck.slides.map((s, i) => ({ id: s.id ?? String(i + 1), rawId: s.id ?? null, type: s.type, title: plain(titleOf(s)).slice(0, 140) })),
   };

@@ -53,6 +53,8 @@ function stepsOf(s: Slide, deck: Deck): number {
       return (s.hints?.length ?? 0) + (s.solution?.length ?? 0) + (s.answer ? 1 : 0);
     case "predict":
       return (s.hints?.length ?? 0) + 2;
+    case "srs":
+      return 1;
     case "explode":
       return (s.image ? 2 : 1) + (s.focus === false ? 0 : s.layers.length);
     case "image":
@@ -139,6 +141,10 @@ export function lintDeck(deck: Deck): string[] {
           if (words(c.back) > 30) out.push(`${where}: card ${k + 1} answer has ${words(c.back)} words; keep backs ≤ 25.`);
         });
         break;
+      case "srs":
+        if (words(s.back) > 40) out.push(`${where}: card answer has ${words(s.back)} words; keep backs concise (≤ 30).`);
+        if (s.hook && words(s.hook) > 20) out.push(`${where}: hook has ${words(s.hook)} words; one vivid line (≤ 16) sticks better.`);
+        break;
       case "cycle":
         s.items.forEach((it, k) => {
           if (words(it.title) > 5 || words(it.text) > 12) out.push(`${where}: item ${k + 1} is long; cycle labels may collide (title ≤ 4 words, text ≤ 10).`);
@@ -216,13 +222,16 @@ export function lintDeck(deck: Deck): string[] {
   let run = 1;
   for (let i = 1; i < deck.slides.length; i++) {
     const t = deck.slides[i]!.type;
-    if (t === deck.slides[i - 1]!.type && !["quiz", "image", "section", "html", "exercise", "predict"].includes(t)) {
+    if (t === deck.slides[i - 1]!.type && !["quiz", "image", "section", "html", "exercise", "predict", "srs"].includes(t)) {
       run++;
       if (run === 3) out.push(`slides ${i - 1}–${i + 1}: three "${t}" slides in a row; vary layouts (statement, bento, split, image) for rhythm.`);
     } else run = 1;
   }
 
   const n = deck.slides.length;
+  const srsCount = deck.slides.filter((s) => s.type === "srs").length;
+  if (n > 0 && srsCount / n >= 0.8) return out;
+
   const types = new Set(deck.slides.map((s) => s.type));
   if (n >= 12 && !types.has("section")) out.push(`The deck has ${n} slides but no "section" dividers; add chapters every 4–7 slides.`);
   if (n >= 8 && !types.has("quiz") && !types.has("flashcards") && !types.has("cloze") && !types.has("exercise") && !types.has("predict"))

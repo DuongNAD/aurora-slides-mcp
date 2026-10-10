@@ -226,6 +226,22 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
       ],
     },
   },
+  srs: {
+    use: "Spaced-repetition review card produced by Vega (FSRS memory engine). Centered glass card: front with optional hint -> flip to back with memory hook and origin -> rate Quên / Khó / Nhớ / Dễ (keys 1-4) to emit a card event and advance.",
+    example: {
+      type: "srs",
+      card: "card-qa-101",
+      eyebrow: "Ôn tập FSRS",
+      front: "Lục lạp thực hiện quá trình gì trong tế bào thực vật?",
+      back: "**Quang hợp**: Biến ánh sáng, nước và CO₂ thành glucose và oxy.",
+      hint: "Quá trình này tạo ra màu xanh của lá cây.",
+      hook: "Nhà máy năng lượng mặt trời thu nhỏ đặt trong lá cây.",
+      origin: {
+        label: "Sinh học 10 · Bài 12 · slide 3",
+        href: "01-quang-hop/index.html#/3",
+      },
+    },
+  },
   cloze: {
     use: "Fill-in-the-blank: write [[answer]] inside the text. Each → reveals the next blank; learners can also tap a blank.",
     example: {
@@ -471,7 +487,7 @@ export const SHOWCASE_ORDER: SlideType[] = [
   "title", "agenda", "section", "statement", "bullets", "split", "image", "explode", "bento", "stats", "definition",
   "section", "steps", "diagram", "compare", "cycle", "formula", "code", "chart", "table", "timeline", "hotspots",
   "section", "palace", "analogy", "anchors", "mnemonic", "notebook",
-  "section", "exercise", "predict", "quiz", "palace", "flashcards", "cloze", "quote", "video", "html", "summary",
+  "section", "exercise", "predict", "quiz", "palace", "flashcards", "srs", "cloze", "quote", "video", "html", "summary",
 ];
 
 export function showcaseDeck(theme = "aurora"): Record<string, unknown> {

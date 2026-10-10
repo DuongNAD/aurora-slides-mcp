@@ -322,6 +322,7 @@ Aurora records interactive learning events during self-study:
 - `quiz`: submitted answer with question (plain text, max 200 chars), chosen option indices (`chosen`), chosen option texts (`chosenText`, string array, max 160 chars each, optional), correct answer indices (`answer`), correct answer texts (`answerText`, string array, max 160 chars each, optional), explanation (`explanation`, plain text, max 300 chars, optional), and boolean `correct`.
 - `predict`: prediction title, learner's typed prediction text (max 2000 chars), self-rating ("right" or "different"), and real terminal output snippet (max 300 chars).
 - `recall`: memory palace id, station index, place, item, and rating ("got" or "missed").
+- `card`: spaced repetition review card id (`card`, max 100 chars), rating ("again", "hard", "good", or "easy"), and review duration in milliseconds (`ms`, integer 0..86400000, optional).
 - `complete`: total slide count, quiz accuracy (`x/y` or null), prediction accuracy (`x/y` or null) — sent once per visit on the last slide.
 
 ### Where events are saved
@@ -335,7 +336,9 @@ Call `aurora_progress {"dir": "<course or deck folder>", "file"?: "<optional exp
 - Quiz accuracy percentage and wrong answers with chosen vs correct texts.
 - Predictions (counts of right vs different, listing different predictions with snippets).
 - Missed memory palace stations (`place -> item`).
+- Spaced repetition reviews (counts per rating: again, hard, good, easy).
 - Completed lessons with completion dates and spaced reviews due (+1, +3, +7, +16, +35 days).
 
-### Sister project Polaris
-Polaris (https://github.com/DuongNAD/polaris-mcp) reads Aurora's `progress.jsonl` via `polaris_progress_sync` to automatically populate the learner's error log ("Sổ lỗi") and update the spaced review schedule.
+### Sister projects
+- **Polaris** (https://github.com/DuongNAD/polaris-mcp) reads Aurora's `progress.jsonl` via `polaris_progress_sync` to automatically populate the learner's error log ("Sổ lỗi") and update the spaced review schedule.
+- **Vega** (https://github.com/DuongNAD/vega-mcp, FSRS memory engine) generates daily review decks (`deck.json` composed of `srs` slides) and reads `card` progress events via `vega_sync` to reschedule each card with FSRS.

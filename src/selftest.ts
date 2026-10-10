@@ -104,6 +104,26 @@ const SCRIPT = String.raw`(async () => {
         check("palace recall shows the score", (sl.querySelector(".pl-score").textContent || "").length > 0, sl.querySelector(".pl-score").textContent);
       }
     }
+    if (s.type === "srs") {
+      const sl = document.querySelector(".slide.on");
+      const card = sl && sl.querySelector(".srs-card");
+      if (card && !sl._srsTested) {
+        sl._srsTested = true;
+        const hintBtn = sl.querySelector(".srs-hint-btn");
+        if (hintBtn) {
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: "h", code: "KeyH", bubbles: true }));
+          await wait(50);
+          check("srs hint toggles with key H", hintBtn.classList.contains("revealed"));
+        }
+        card.click();
+        await wait(60);
+        check("srs card flips to back", card.getAttribute("aria-pressed") === "true");
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "3", code: "Digit3", bubbles: true }));
+        await wait(360);
+        const goodBtn = sl.querySelector(".srs-r.r-good");
+        check("srs rating 3 marks good", goodBtn && goodBtn.classList.contains("sel"));
+      }
+    }
     if (s.slide === s.total && s.step >= s.steps) break;
     A.next();
     await wait(140);
@@ -135,6 +155,8 @@ const SCRIPT = String.raw`(async () => {
   check("quiz event recorded in buffer with contract fields", quizEv && quizEv.v === 1 && typeof quizEv.t === "string" && quizEv.correct === true && Array.isArray(quizEv.chosen) && Array.isArray(quizEv.answer) && Array.isArray(quizEv.chosenText) && Array.isArray(quizEv.answerText));
   const predEv = events.find((e) => e.type === "predict");
   check("predict event recorded in buffer with contract fields", predEv && predEv.v === 1 && typeof predEv.t === "string" && predEv.rating === "right" && typeof predEv.output === "string");
+  const cardEv = events.find((e) => e.type === "card");
+  check("card event recorded in buffer with contract fields", cardEv && cardEv.v === 1 && typeof cardEv.t === "string" && typeof cardEv.card === "string" && cardEv.rating === "good" && typeof cardEv.ms === "number");
   const completeEv = events.find((e) => e.type === "complete");
   check("complete event recorded in buffer with contract fields", completeEv && completeEv.v === 1 && typeof completeEv.slides === "number");
 

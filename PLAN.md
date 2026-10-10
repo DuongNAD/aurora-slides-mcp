@@ -3,14 +3,15 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-10): v0.6.0 complete
-- Close the learning loop with sister project Polaris (https://github.com/DuongNAD/polaris-mcp):
-  - Learning event contract: `quiz`, `predict`, `recall`, `complete` events recorded in a localStorage ring buffer (1000 items) and streamed via POST `/__aurora/progress` to `<course dir>/progress.jsonl` when previewing.
-  - New MCP tool `aurora_progress {dir, file?}` (tool count is now 15): summarizes quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedule (+1, 3, 7, 16, 35 days).
-  - Export progress control in lesson help sheet and course home page downloading `aurora-progress-<slug>.jsonl`.
-  - Polaris lesson outline detection: `buildDeck` detects `<subject>/polaris/lessons/<lesson>.outline.md` and prompts citing sources in `source`.
-  - Comprehensive guide topic `progress` and "Aurora + Polaris" sections in README.md & README.vi.md with Mermaid architecture flow.
-- 35 slide types: `predict` slide type for predict-then-run practice (question, optional quoted code, prediction textarea with localStorage persistence, macOS terminal with animated line output print, hints, explanation, self-rating with keys 1/2, error log guidance line, summary score card display).
+## Status (2026-10-11): v0.7.0 complete
+- Spaced-repetition review sessions (`srs` slide type, 36 slide types total) produced by sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS memory engine):
+  - Apple-style frosted glass card layout: front question/prompt, optional hint reveal (`H`), flip to back (→ / Space / click) with memory hook, origin link, and 1–4 rating row ("Quên / Khó / Nhớ / Dễ" / "Again / Hard / Good / Easy").
+  - New `card` progress event emitted on rating, recording `card` id, `rating`, and `ms` elapsed review duration.
+  - Summary slide score card displays review counts (`Đã ôn x/y thẻ · Quên a`).
+  - Preview server validates and accepts `card` progress events, and `aurora_progress` summarizes rating counts per deck.
+  - Pedagogy lint skips non-review notes when ≥ 80% of slides are `srs`.
+- v0.6.2: SmartDrive-OS auto-indexing integration.
+- v0.6.0: Polaris closed-loop progress events (`quiz`, `predict`, `recall`, `complete`) and `aurora_progress`.
 - Verbatim code quoting: quote real source files with `file` + `lines` (and `dedent`), real gutter line numbers, gap rows `⋯`, localized error cards.
 - Common `source` field on every slide: short citations rendered as a muted footnote at the bottom-left with tooltip.
 - Course lesson `when` scheduling label shown on lesson cards.

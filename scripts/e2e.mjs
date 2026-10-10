@@ -449,7 +449,7 @@ try {
       : [];
     ok("progress.jsonl written to course folder with 2 valid lines", progLines.length === 2, `${progLines.length} lines`);
 
-    // 3. Create a fixture .jsonl with recall missed and complete events
+    // 3. Create a fixture .jsonl with recall missed, card event, and complete events
     const fixFile = join(base, "e2e", "extra-progress.jsonl");
     const ev3 = {
       v: 1,
@@ -466,6 +466,18 @@ try {
       item: "Chìa khoá vàng",
       rating: "missed",
     };
+    const evCard = {
+      v: 1,
+      t: "2026-10-10T10:12:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 4,
+      type: "card",
+      card: "card-srs-001",
+      rating: "good",
+      ms: 2500,
+    };
     const ev4 = {
       v: 1,
       t: "2026-10-10T10:15:00+07:00",
@@ -479,13 +491,51 @@ try {
       quiz: "0/1",
       predictions: "0/1",
     };
-    writeFileSync(fixFile, [JSON.stringify(ev3), JSON.stringify(ev4)].join("\n") + "\n", "utf8");
+    writeFileSync(fixFile, [JSON.stringify(ev3), JSON.stringify(evCard), JSON.stringify(ev4)].join("\n") + "\n", "utf8");
+
+    // Test card event via preview server endpoint
+    const postCardValid = {
+      v: 1,
+      t: "2026-10-10T10:20:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 5,
+      type: "card",
+      card: "card-srs-002",
+      rating: "again",
+      ms: 4100,
+    };
+    const cardRes = await fetch(progEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(postCardValid),
+    });
+    ok("card progress event accepted with 204", cardRes.status === 204);
+
+    const postCardInvalid = {
+      v: 1,
+      t: "2026-10-10T10:21:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 5,
+      type: "card",
+      card: "card-srs-002",
+      rating: "super_easy",
+    };
+    const badCardRes = await fetch(progEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(postCardInvalid),
+    });
+    ok("invalid card rating rejected with 400", badCardRes.status === 400);
 
     // 4. Test aurora_progress tool on PROG_COURSE + fixture file
     r = await call("aurora_progress", { dir: PROG_COURSE, file: fixFile });
     const progSummary = textOf(r);
     ok(
-      "aurora_progress summarizes accuracy, predictions, missed stations, and review schedule",
+      "aurora_progress summarizes accuracy, predictions, missed stations, card reviews, and review schedule",
       !r.isError &&
         progSummary.includes("01-bai-1") &&
         progSummary.includes("0/1 (0%)") &&
@@ -494,13 +544,56 @@ try {
         progSummary.includes("0 right, 1 different") &&
         progSummary.includes("Tôi nghĩ nó in 42") &&
         progSummary.includes("Cửa chính -> Chìa khoá vàng") &&
+        progSummary.includes("Spaced repetition reviews") &&
+        progSummary.includes("1 again") &&
+        progSummary.includes("1 good") &&
         progSummary.includes("Completed on: 2026-10-10") &&
         progSummary.includes("+1d (2026-10-11)") &&
         progSummary.includes("+35d (2026-11-14)") &&
         progSummary.includes("polaris_progress_sync"),
-      progSummary.split("\n").slice(0, 5).join(" | "),
+      progSummary.split("\n").slice(0, 6).join(" | "),
     );
   }
+
+  // 5. Build an SRS review deck (Vega style)
+  const SRS_DIR = join(base, "e2e", "srs_deck");
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Phiên ôn tập FSRS",
+      slides: [
+        {
+          type: "srs",
+          card: "card-srs-001",
+          eyebrow: "Ôn tập hàng ngày",
+          front: "Ohm's law formula?",
+          back: "**I = U / R**",
+          hint: "Liên hệ giữa cường độ dòng điện, hiệu điện thế và điện trở.",
+          hook: "Dòng điện I chảy qua chiếc cầu U bị cản bởi R.",
+          origin: {
+            label: "Điện học · Bài 1 · slide 3",
+            href: "01-dong-dien/index.html#/3",
+          },
+        },
+        {
+          type: "summary",
+          title: "Hoàn thành ôn tập",
+          items: ["Đã hoàn thành phiên ôn tập FSRS."],
+        },
+      ],
+    },
+    dir: SRS_DIR,
+  });
+  const srsHtml = existsSync(join(SRS_DIR, "index.html")) ? readFileSync(join(SRS_DIR, "index.html"), "utf8") : "";
+  ok(
+    "create srs review deck",
+    !r.isError &&
+      srsHtml.includes("srs-card") &&
+      srsHtml.includes("card-srs-001") &&
+      srsHtml.includes("srs-rate-row") &&
+      srsHtml.includes("Quên") &&
+      srsHtml.includes("Nhớ"),
+    textOf(r).split("\n")[0],
+  );
 } catch (e) {
   failed++;
   console.log(`FAIL unexpected: ${e?.stack ?? e}`);

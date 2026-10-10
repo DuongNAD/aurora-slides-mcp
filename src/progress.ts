@@ -14,7 +14,7 @@ export interface ProgressEvent {
   deck: string;
   slide: number;
   slideId?: string | null;
-  type: "quiz" | "predict" | "recall" | "complete";
+  type: "quiz" | "predict" | "recall" | "complete" | "card";
   // quiz
   question?: string;
   chosen?: number[];
@@ -26,13 +26,16 @@ export interface ProgressEvent {
   // predict
   title?: string;
   prediction?: string;
-  rating?: "right" | "different" | "got" | "missed";
+  rating?: "right" | "different" | "got" | "missed" | "again" | "hard" | "good" | "easy";
   output?: string;
   // recall
   palace?: string;
   station?: number;
   place?: string;
   item?: string;
+  // card (srs)
+  card?: string;
+  ms?: number;
   // complete
   slides?: number;
   quiz?: string | null;
@@ -40,7 +43,7 @@ export interface ProgressEvent {
 }
 
 function eventKey(e: ProgressEvent): string {
-  return `${e.t}|${e.type}|${e.lesson ?? ""}|${e.slide}|${e.question ?? e.title ?? e.place ?? e.palace ?? e.slides ?? ""}`;
+  return `${e.t}|${e.type}|${e.lesson ?? ""}|${e.slide}|${e.question ?? e.title ?? e.place ?? e.palace ?? e.card ?? e.slides ?? ""}`;
 }
 
 function parseEvents(text: string): ProgressEvent[] {
@@ -128,6 +131,10 @@ export interface LessonSummary {
   predictDifferent: number;
   differentPredictions: Array<{ title: string; snippet: string }>;
   missedStations: Array<{ place: string; item: string }>;
+  cardAgain: number;
+  cardHard: number;
+  cardGood: number;
+  cardEasy: number;
   completedDate?: string;
   reviewDates: string[];
 }
@@ -162,6 +169,10 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
     let predictDifferent = 0;
     const diffPreds: Array<{ title: string; snippet: string }> = [];
     const missedStationsMap = new Map<string, { place: string; item: string }>();
+    let cardAgain = 0;
+    let cardHard = 0;
+    let cardGood = 0;
+    let cardEasy = 0;
     let completedDate: string | undefined;
     let completeTime: Date | undefined;
 
@@ -196,6 +207,11 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
             missedStationsMap.set(k, { place: ev.place, item: ev.item || "" });
           }
         }
+      } else if (ev.type === "card") {
+        if (ev.rating === "again") cardAgain++;
+        else if (ev.rating === "hard") cardHard++;
+        else if (ev.rating === "good") cardGood++;
+        else if (ev.rating === "easy") cardEasy++;
       } else if (ev.type === "complete") {
         completedDate = ev.t.split("T")[0] || ev.t;
         completeTime = new Date(ev.t);
@@ -222,6 +238,10 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
       predictDifferent,
       differentPredictions: diffPreds,
       missedStations: Array.from(missedStationsMap.values()),
+      cardAgain,
+      cardHard,
+      cardGood,
+      cardEasy,
       completedDate,
       reviewDates,
     });
@@ -273,6 +293,11 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
       s.missedStations.forEach((m) => {
         lines.push(`  • ${m.place} -> ${m.item}`);
       });
+    }
+
+    const totalCards = s.cardAgain + s.cardHard + s.cardGood + s.cardEasy;
+    if (totalCards > 0) {
+      lines.push(`- Spaced repetition reviews (${totalCards} card(s)): ${s.cardAgain} again, ${s.cardHard} hard, ${s.cardGood} good, ${s.cardEasy} easy`);
     }
 
     if (s.completedDate) {
