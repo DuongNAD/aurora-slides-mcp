@@ -7,7 +7,7 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import {
 } from "./store.js";
 import { appDir, errMsg, VERSION } from "./util.js";
 import { lintDeck } from "./lint.js";
+import { loadProgressEvents, summarizeProgress } from "./progress.js";
 import { selfTest } from "./selftest.js";
 
 type Content = { type: "text"; text: string } | { type: "image"; data: string; mimeType: string };
@@ -100,7 +101,7 @@ const DONE_RULE =
 const INSTRUCTIONS = `Aurora Slides builds Apple-keynote-style, animated, interactive HTML lessons for self-study from deck JSON.
 
 Workflow
-1. Call aurora_guide once (overview), then the topics you need: "pedagogy", "memory", "accuracy", "media", "course", "diagram".
+1. Call aurora_guide once (overview), then the topics you need: "pedagogy", "memory", "accuracy", "media", "course", "diagram", "progress".
 2. Big subject: aurora_create_course first (small lessons, each with its own theme), then one aurora_create_deck per lesson folder.
 3. Collect visuals in few calls: aurora_search_icons for icons; pictures as described below.
 4. Build with aurora_create_deck. Fix every validation error it lists and call again; fill the pictures it lists.
@@ -112,6 +113,7 @@ Rules
 - Teach for memory: theory → memory anchors (palace walk, anchors, analogy, mnemonic) → notebook page → practice (exercises easy → hard) → recall walk → summary.
 - One idea per slide, short lines, varied layouts; the full explanation goes in "notes".
 - Processes, structures and overviews (flowcharts, mind maps, sequence, state, timelines…): a "diagram" slide with Mermaid code.
+- Polaris outlines: follow <subject>/polaris/lessons/<lesson>.outline.md if present and cite sources in \`source\`.
 - ${PICTURE_RULE}
 
 ${DONE_RULE}`;
@@ -543,6 +545,25 @@ async function startMcp(): Promise<void> {
         } catch (e) {
           return text(browserError(e), true);
         }
+      }),
+  );
+
+  server.registerTool(
+    "aurora_progress",
+    {
+      title: "Learning progress summary",
+      description:
+        "Summarize learning events (quiz accuracy, predictions, missed palace stations, spaced review schedule) from a course/deck progress.jsonl or an exported .jsonl file.",
+      inputSchema: {
+        dir: dirArg,
+        file: z.string().optional().describe("Optional path to an exported aurora-progress-*.jsonl file"),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async ({ dir, file }) =>
+      safe(async () => {
+        const events = await loadProgressEvents(dir, file);
+        return text(summarizeProgress(events, basename(resolve(dir))));
       }),
   );
 

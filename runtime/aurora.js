@@ -22,11 +22,100 @@
     get(k) { try { return JSON.parse(localStorage.getItem(KEY + ":" + k)); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(KEY + ":" + k, JSON.stringify(v)); } catch { /* private mode */ } },
   };
+  const eventsKey = CFG.course && CFG.course.key ? "aurora:course:" + CFG.course.key + ":events" : KEY + ":events";
+  const sentKey = eventsKey + ":sent";
+
+  function isoNow() {
+    const d = new Date();
+    const pad = (n) => String(Math.floor(Math.abs(n))).padStart(2, "0");
+    const tzMin = -d.getTimezoneOffset();
+    const tzSign = tzMin >= 0 ? "+" : "-";
+    const tzStr = tzSign + pad(tzMin / 60) + ":" + pad(tzMin % 60);
+    return (
+      d.getFullYear() + "-" +
+      pad(d.getMonth() + 1) + "-" +
+      pad(d.getDate()) + "T" +
+      pad(d.getHours()) + ":" +
+      pad(d.getMinutes()) + ":" +
+      pad(d.getSeconds()) + tzStr
+    );
+  }
+
+  function flushEvents() {
+    if (STATIC) return;
+    const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    if (!isLocal || !window.AURORA_LIVE) return;
+    const deckKey = window.AURORA_LIVE.split("/").pop() || "";
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(eventsKey)) || []; } catch { return; }
+    let sentIdx = 0;
+    try { sentIdx = +(localStorage.getItem(sentKey) || 0); } catch {}
+    if (sentIdx < 0 || sentIdx > list.length) sentIdx = 0;
+    if (sentIdx >= list.length) return;
+    const unsent = list.slice(sentIdx);
+    unsent.forEach((ev, i) => {
+      fetch("/__aurora/progress?deck=" + encodeURIComponent(deckKey), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ev),
+        keepalive: true,
+      }).then((res) => {
+        if (res.ok) {
+          try {
+            const cur = +(localStorage.getItem(sentKey) || 0);
+            if (sentIdx + i + 1 > cur) localStorage.setItem(sentKey, String(sentIdx + i + 1));
+          } catch {}
+        }
+      }).catch(() => {});
+    });
+  }
+
+  function emitEvent(type, payload, sIdx) {
+    if (STATIC) return;
+    sIdx = sIdx !== undefined ? sIdx : idx;
+    const meta = (CFG.slides || [])[sIdx] || {};
+    const ev = Object.assign({
+      v: 1,
+      t: isoNow(),
+      course: CFG.course ? CFG.course.title || null : null,
+      lesson: CFG.course ? CFG.course.lesson || null : null,
+      deck: CFG.deck || CFG.title || "",
+      slide: sIdx + 1,
+      slideId: meta.rawId !== undefined ? meta.rawId : null,
+      type,
+    }, payload);
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(eventsKey)) || []; } catch { list = []; }
+    list.push(ev);
+    if (list.length > 1000) list = list.slice(list.length - 1000);
+    try { localStorage.setItem(eventsKey, JSON.stringify(list)); } catch {}
+    flushEvents();
+  }
+
+  function exportProgress() {
+    let events = [];
+    try { events = JSON.parse(localStorage.getItem(eventsKey)) || []; } catch {}
+    const text = events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : "");
+    const title = (CFG.course && CFG.course.title) || CFG.title || "progress";
+    const slug = title
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "progress";
+    const blob = new Blob([text], { type: "application/x-jsonlines;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = doc.createElement("a");
+    a.href = url;
+    a.download = "aurora-progress-" + slug + ".jsonl";
+    doc.body.append(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   if (STATIC) root.classList.add("static");
   let idx = -1;
   let ov = false;
   let sheetOn = false;
   let printing = false;
+  let completeSent = false;
 
   /* ───────────── Springs ───────────── */
   // SwiftUI-style spring (response, dampingFraction) sampled into a CSS linear() easing.
@@ -759,6 +848,21 @@
     x.pins[S.card].classList.toggle("miss", r === 0);
     x.cards[S.card].classList.toggle("rated-ok", r === 1);
     x.cards[S.card].classList.toggle("rated-miss", r === 0);
+
+    const sIdx = slides.indexOf(s);
+    const cardEl = x.cards[S.card];
+    const pinEl = x.pins[S.card];
+    const place = (cardEl && cardEl.dataset.place) || (pinEl && pinEl.dataset.place) || "";
+    const item = (cardEl && cardEl.dataset.item) || (pinEl && pinEl.dataset.item) || "";
+    const palaceId = (x.el && x.el.dataset.palace) || (s && s.dataset.palace) || "palace";
+    emitEvent("recall", {
+      palace: palaceId,
+      station: S.card + 1,
+      place: place,
+      item: item,
+      rating: r === 1 ? "got" : "missed",
+    }, sIdx);
+
     setTimeout(() => { if (slides[idx] === s && Math.round(x.p) === st && s._step === st) next(); }, 420);
     return true;
   }
@@ -1045,6 +1149,25 @@
     const pr = store.get("progress") || {};
     store.set("progress", Object.assign({}, pr, { max: Math.max(pr.max || 0, idx + 1), total: N, done: !!pr.done || idx === N - 1, t: Date.now() }));
     if (nextLessonEl) nextLessonEl.hidden = idx !== N - 1 || STATIC;
+
+    if (!completeSent && idx === N - 1) {
+      completeSent = true;
+      const scores = store.get("quiz") || {};
+      const totalQ = CFG.quizzes || 0;
+      const gotQ = Object.values(scores).reduce((a, b) => a + (b ? 1 : 0), 0);
+      const quizStr = totalQ > 0 ? gotQ + "/" + totalQ : null;
+
+      const predRates = store.get("predRate") || {};
+      const totalP = CFG.predicts || 0;
+      const gotP = Object.values(predRates).reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
+      const predStr = totalP > 0 ? gotP + "/" + totalP : null;
+
+      emitEvent("complete", {
+        slides: N,
+        quiz: quizStr,
+        predictions: predStr,
+      }, idx);
+    }
   }
   function next() {
     const s = slides[idx];
@@ -1190,6 +1313,7 @@
       else if (a === "notes") toggleNotes();
       else if (a === "fullscreen") toggleFull();
       else if (a === "help") toggleHelp();
+      else if (a === "export-progress") exportProgress();
     });
   }
   // Auto-hide the control pill while the learner reads.
@@ -1327,6 +1451,17 @@
       const scores = store.get("quiz") || {};
       scores[quiz.dataset.quiz] = right ? 1 : 0;
       store.set("quiz", scores);
+
+      const qEl = quiz.querySelector(".qz-q");
+      const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
+      const chosenIndices = chosen.map((o) => +o.dataset.k);
+      const correctIndices = Array.from(quiz.querySelectorAll('.qz-opt[data-ok="1"]')).map((o) => +o.dataset.k);
+      emitEvent("quiz", {
+        question: qText,
+        chosen: chosenIndices,
+        answer: correctIndices,
+        correct: right,
+      });
     }
   }
   function answerKey(k) {
@@ -1435,6 +1570,20 @@
 
     const gapMsg = s.querySelector(".pred-gap-msg");
     if (gapMsg) gapMsg.hidden = r !== 0;
+
+    const meta = (CFG.slides || [])[sIdx] || {};
+    const predInput = s.querySelector(".pred-input");
+    const predText = (predInput ? predInput.value : store.get("pred:" + sIdx) || "").slice(0, 2000);
+    const termOut = s.querySelector(".term-output");
+    const outText = (termOut ? (termOut.dataset.raw || termOut.textContent) : "").slice(0, 300);
+    const titleText = (meta.title || (s.querySelector("h2, .sl-head h2") ? s.querySelector("h2, .sl-head h2").textContent : "") || "").trim();
+    emitEvent("predict", {
+      title: titleText,
+      prediction: predText,
+      rating: r === 1 ? "right" : "different",
+      output: outText,
+    }, sIdx);
+
     return true;
   }
   deckEl.addEventListener("click", (e) => {
@@ -1763,6 +1912,7 @@
       if (animating(s)) await Promise.all(s.getAnimations({ subtree: true }).filter(isOwn).map((a) => a.finished.catch(() => null)));
       fitSlide(s);
     }
+    flushEvents();
     readyResolve();
   }
 

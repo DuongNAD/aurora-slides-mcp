@@ -58,7 +58,7 @@ export const STRINGS = {
     recallAsk: "Ở đây bạn đã đặt gì?", gotIt: "Nhớ", missed: "Chưa nhớ", walkAgain: "Nhắm mắt lại, đi một vòng trong đầu:",
     recalled: "Bạn nhớ được", stopsUnit: "trạm", reviewMissed: "Ôn lại các trạm màu cam rồi đi thêm một vòng nhé.",
     allRecalled: "Tuyệt vời, không sót trạm nào!", anchors: "Neo trí nhớ", reviewTag: "Ôn lại", analogy: "Neo vào điều đã biết",
-    limit: "Chỗ không giống", mnemonic: "Mẹo nhớ", diagramFailed: "Chưa vẽ được sơ đồ",
+    limit: "Chỗ không giống", mnemonic: "Mẹo nhớ", diagramFailed: "Chưa vẽ được sơ đồ", exportProgress: "Xuất tiến độ",
     keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
   },
   en: {
@@ -85,7 +85,7 @@ export const STRINGS = {
     recallAsk: "What did you leave here?", gotIt: "Got it", missed: "Missed", walkAgain: "Close your eyes and walk it once in your head:",
     recalled: "You recalled", stopsUnit: "stops", reviewMissed: "Review the orange stops, then walk it once more.",
     allRecalled: "Perfect, not a single stop missed!", anchors: "Memory anchors", reviewTag: "Review", analogy: "Anchor it to what you know",
-    limit: "Where it breaks", mnemonic: "Mnemonic", diagramFailed: "Could not draw the diagram",
+    limit: "Where it breaks", mnemonic: "Mnemonic", diagramFailed: "Could not draw the diagram", exportProgress: "Export progress",
     keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
   },
 };
@@ -1231,13 +1231,14 @@ const layouts: Layouts = {
     const ar = svgRatio(input) ?? 16 / 9;
     const h = head(c, s.eyebrow ?? (recall ? c.t.reviewTag : c.t.palace), s.title ?? (recall ? c.t.palaceRecall : src?.title), s.subtitle);
     const hint = `<p class="pl-hint"${A("fade", h.d + 260)}>${SVG.next}<span>${esc(recall ? c.t.recallIntro : c.t.walkStart)}</span></p>`;
+    const pid = s.from ?? s.id ?? String(slideNo(c));
     const pins = stations
       .map((st, k) => {
         const [x, y] = pts[k]!;
         // A recall walk shows numbers only: an icon on the map would give the idea away.
         const mark = st.icon && !recall ? icon(c, st.icon, "pl-ic") : `<b>${k + 1}</b>`;
         return (
-          `<li class="pl-pin${x > 76 ? " tag-l" : ""}" data-k="${k}" data-x="${x.toFixed(2)}" data-y="${y.toFixed(2)}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">` +
+          `<li class="pl-pin${x > 76 ? " tag-l" : ""}" data-k="${k}" data-place="${esc(plain(st.place))}" data-item="${esc(plain(st.item))}" data-x="${x.toFixed(2)}" data-y="${y.toFixed(2)}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">` +
           `<span class="pl-dot">${mark}</span><span class="pl-tag"><span class="pl-tp">${inl(c, st.place)}</span><span class="pl-ti">${inl(c, st.item)}</span></span></li>`
         );
       })
@@ -1250,12 +1251,12 @@ const layouts: Layouts = {
         const place = `<div class="pl-place"><span class="pl-no">${esc(c.t.station)} ${k + 1}/${n}</span><span class="pl-pn">${SVG.pin}<span>${inl(c, st.place)}</span></span></div>`;
         const item = `<div class="pl-item">${ic}<span class="pl-it">${inl(c, st.item)}</span></div>`;
         const hook = st.hook ? `<p class="pl-hook"><b>${esc(c.t.imagine)}</b>${inl(c, st.hook)}</p>` : "";
-        if (!recall) return `<li class="pl-card" data-k="${k}">${pic}${place}${item}${hook}</li>`;
+        if (!recall) return `<li class="pl-card" data-k="${k}" data-place="${esc(plain(st.place))}" data-item="${esc(plain(st.item))}">${pic}${place}${item}${hook}</li>`;
         const rate =
           `<div class="pl-rate"><button type="button" class="pl-r ok" data-r="1"><kbd>1</kbd>${esc(c.t.gotIt)}</button>` +
           `<button type="button" class="pl-r miss" data-r="0"><kbd>2</kbd>${esc(c.t.missed)}</button></div>`;
         return (
-          `<li class="pl-card recall" data-k="${k}">${place}<div class="pl-ask"><span class="pl-q">?</span><span>${esc(c.t.recallAsk)}</span></div>` +
+          `<li class="pl-card recall" data-k="${k}" data-place="${esc(plain(st.place))}" data-item="${esc(plain(st.item))}">${place}<div class="pl-ask"><span class="pl-q">?</span><span>${esc(c.t.recallAsk)}</span></div>` +
           `<div class="pl-ans">${pic}${item}${hook}${rate}</div></li>`
         );
       })
@@ -1274,7 +1275,7 @@ const layouts: Layouts = {
       cls: `${recall ? "pl-recall" : "pl-learn"}${im ? " has-img" : " no-img"}`,
       under,
       html:
-        `<div class="pl" data-mode="${recall ? "recall" : "learn"}" data-n="${n}" data-z="${zoom}" data-stages="${recall ? 2 * n + 2 : n + 2}" data-at="intro">` +
+        `<div class="pl" data-mode="${recall ? "recall" : "learn"}" data-palace="${esc(pid)}" data-n="${n}" data-z="${zoom}" data-stages="${recall ? 2 * n + 2 : n + 2}" data-at="intro">` +
         `${h.html.replace("</header>", `${hint}</header>`)}<ol class="pl-cards">${cards}</ol>${end}` +
         `<svg class="pl-lead" viewBox="0 0 1920 1080" aria-hidden="true"><path d="M0 0"/><circle r="7" cx="0" cy="0"/></svg></div>`,
     };
@@ -1541,7 +1542,7 @@ function hud(c: Ctx, total: number, course?: CourseNav): string {
     `<aside class="notes-panel" aria-label="${esc(t.notes)}" hidden><header><span class="np-t">${esc(t.notes)}</span><span class="np-n"></span>${btn("notes", t.notes, SVG.close)}</header><div class="np-body"></div></aside>` +
     `<div class="help-sheet" role="dialog" aria-label="${esc(t.help)}" hidden><div class="help-card"><h3>${esc(t.help)}</h3><dl>` +
     t.keys.map(([k, v]) => `<div><dt>${k!.split(" / ").map((x) => `<kbd>${esc(x)}</kbd>`).join("")}</dt><dd>${esc(v)}</dd></div>`).join("") +
-    `</dl></div></div><div class="toast" role="status" hidden></div></div>`
+    `</dl><div class="help-foot"><button type="button" class="help-export" data-act="export-progress">${esc(t.exportProgress)}</button></div></div></div><div class="toast" role="status" hidden></div></div>`
   );
 }
 
@@ -1588,6 +1589,7 @@ export interface CourseNav {
   n: number;
   total: number;
   next?: { title: string; href: string };
+  lesson?: string;
 }
 
 export interface RenderOptions {
@@ -1746,7 +1748,16 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
   const cfg = {
     v: VERSION,
     id: opts.course?.key ?? hash(`${deck.title}|${deck.author ?? ""}`, 10),
-    course: opts.course ? { n: opts.course.n, total: opts.course.total } : undefined,
+    course: opts.course
+      ? {
+          title: plain(opts.course.title),
+          lesson: opts.course.lesson ?? basename(dir),
+          n: opts.course.n,
+          total: opts.course.total,
+          key: hash(opts.course.title, 10),
+        }
+      : undefined,
+    deck: plain(deck.title),
     title: plain(deck.title),
     lang: deck.lang,
     transition: deck.transition,
@@ -1760,8 +1771,9 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
       correct: c.t.correct, wrong: c.t.wrong, answerIs: c.t.answerIs, resume: c.t.resume, resumeYes: c.t.resumeYes, restart: c.t.restart,
       great: c.t.great, good: c.t.good, review: c.t.review, none: c.t.none, noNotes: c.t.noNotes, notes: c.t.notes,
       asPredicted: c.t.asPredicted, different: c.t.different, gapLesson: c.t.gapLesson, predictionsRight: c.t.predictionsRight,
+      exportProgress: c.t.exportProgress,
     },
-    slides: deck.slides.map((s, i) => ({ id: s.id ?? String(i + 1), type: s.type, title: plain(titleOf(s)).slice(0, 140) })),
+    slides: deck.slides.map((s, i) => ({ id: s.id ?? String(i + 1), rawId: s.id ?? null, type: s.type, title: plain(titleOf(s)).slice(0, 140) })),
   };
   const theme = deck.theme;
   const html =

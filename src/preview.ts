@@ -2,10 +2,10 @@
  * Local preview server (127.0.0.1 only) with live reload: every rebuild of a
  * registered deck pushes a "reload" event and the page restores its slide.
  */
-import { createReadStream } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
+import { createReadStream, existsSync } from "node:fs";
+import { appendFile, readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { basename, extname, join, normalize, resolve, sep } from "node:path";
+import { basename, dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { builds } from "./store.js";
 import { esc, hash } from "./util.js";
 
@@ -39,6 +39,77 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (parts.length === 0) {
     const rows = [...decks.values()].map((d) => `<li><a href="/d/${d.id}/${encodeURIComponent(d.page)}">${esc(basename(d.dir))}</a> <small>${esc(d.dir)}</small></li>`).join("");
     return send(res, 200, `<!doctype html><meta charset="utf-8"><title>Aurora previews</title><body style="font:16px system-ui;padding:40px;background:#0b0b0d;color:#eee"><h1>Aurora Slides</h1><ul>${rows || "<li>No decks yet.</li>"}</ul>`, TYPES[".html"]);
+  }
+  if (parts[0] === "__aurora" && parts[1] === "progress" && req.method === "POST") {
+    const ip = req.socket.remoteAddress || "";
+    const isLocal = ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+    if (!isLocal) return send(res, 403, "forbidden");
+    // Only the preview page itself may write progress: a JSON content type forces a CORS preflight for other sites,
+    // and a present Origin must be this server (another page could otherwise plant text that agents later read).
+    const ctype = String(req.headers["content-type"] ?? "").toLowerCase();
+    if (!ctype.startsWith("application/json")) return send(res, 415, "expected application/json");
+    const origin = req.headers.origin;
+    if (origin) {
+      let own = false;
+      try {
+        own = ["127.0.0.1", "localhost", "[::1]"].includes(new URL(origin).hostname);
+      } catch {
+        own = false;
+      }
+      if (!own) return send(res, 403, "forbidden origin");
+    }
+
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of req) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += buf.length;
+      if (size > 16384) {
+        res.writeHead(413, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+        res.end("payload too large");
+        return;
+      }
+      chunks.push(buf);
+    }
+    const bodyStr = Buffer.concat(chunks).toString("utf8");
+    let obj: any;
+    try {
+      obj = JSON.parse(bodyStr);
+    } catch {
+      return send(res, 400, "invalid json");
+    }
+    const KNOWN_TYPES = new Set(["quiz", "predict", "recall", "complete"]);
+    if (!obj || typeof obj !== "object" || obj.v !== 1 || !KNOWN_TYPES.has(obj.type) || typeof obj.t !== "string" || !obj.t) {
+      return send(res, 400, "invalid event payload");
+    }
+
+    const deckId = url.searchParams.get("deck") || url.searchParams.get("id") || (req.headers["x-aurora-deck"] as string) || (req.headers["x-deck"] as string);
+    let entry = deckId ? decks.get(deckId) : undefined;
+    if (!entry && deckId) {
+      entry = [...decks.values()].find((d) => d.id === deckId || d.dir.toLowerCase().includes(deckId.toLowerCase()));
+    }
+    if (!entry && obj.lesson) {
+      entry = [...decks.values()].find((d) => d.dir.toLowerCase().includes(String(obj.lesson).toLowerCase()));
+    }
+    if (!entry && obj.course) {
+      entry = [...decks.values()].find((d) => basename(d.dir) === obj.course || d.dir.toLowerCase().includes(String(obj.course).toLowerCase()));
+    }
+    if (!entry && decks.size > 0) {
+      entry = [...decks.values()][decks.size - 1];
+    }
+    if (!entry) return send(res, 404, "unknown deck");
+
+    // Keep only contract fields, with bounded lengths.
+    const cap = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : v);
+    for (const [k, n] of [["question", 200], ["prediction", 2000], ["output", 300], ["title", 200], ["place", 200], ["item", 200], ["palace", 100], ["deck", 200], ["lesson", 200], ["course", 200], ["slideId", 100], ["t", 40], ["quiz", 20], ["predictions", 20], ["rating", 20]] as const) obj[k] = cap(obj[k], n);
+    const parentCourseJson = join(dirname(entry.dir), "course.json");
+    const targetDir = existsSync(parentCourseJson) ? dirname(entry.dir) : entry.dir;
+    const progressFile = join(targetDir, "progress.jsonl");
+
+    await appendFile(progressFile, JSON.stringify(obj) + "\n", "utf8");
+    res.writeHead(204, { "Cache-Control": "no-store" });
+    res.end();
+    return;
   }
   if (parts[0] === "__live" && parts[1]) {
     const entry = decks.get(parts[1]);

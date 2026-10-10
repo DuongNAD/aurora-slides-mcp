@@ -220,6 +220,7 @@ entered a new chapter.
    printable reference → paper or daylight. Repeat a theme only when lessons are far apart.
 4. Each lesson still follows theory → notebook → practice → summary (topic "pedagogy"), and recalls the previous lesson in 1–2 slides.
 5. `aurora_preview {"dir": "<course folder>"}` serves the whole course; `aurora_build` on the course folder rebuilds everything.
+6. Polaris lesson outlines: when building a lesson in a course and `<subject>/polaris/lessons/<lesson>.outline.md` exists, follow it and cite its sources in `source`.
 
 ## pedagogy
 Default learner: the user, a self-learner who **studies theory first, copies the key points into a paper notebook, then practises**.
@@ -315,3 +316,26 @@ Before you report a deck as done:
    - Broken image → a different query or src.
 4. Content notes from the build (pedagogy, rhythm, word counts) are advice: follow them unless you have a reason not to.
 5. Tell the learner how to study with it: → / Space next, ← back, N notes, O overview, F fullscreen, T timer on exercises, 1–6 answers quizzes.
+
+## progress
+Aurora records interactive learning events during self-study:
+- `quiz`: submitted answer with question (plain text, max 200 chars), chosen option indices, correct answer indices, and boolean `correct`.
+- `predict`: prediction title, learner's typed prediction text (max 2000 chars), self-rating ("right" or "different"), and real terminal output snippet (max 300 chars).
+- `recall`: memory palace id, station index, place, item, and rating ("got" or "missed").
+- `complete`: total slide count, quiz accuracy (`x/y` or null), prediction accuracy (`x/y` or null) — sent once per visit on the last slide.
+
+### Where events are saved
+1. **LocalStorage buffer**: ring buffer of the last 1000 events (`aurora:course:<key>:events` or `aurora:<deck>:events`).
+2. **Export button**: "Xuất tiến độ" / "Export progress" in the help panel (`?`) and on the course home page downloads `aurora-progress-<slug>.jsonl`.
+3. **Live preview server**: when running under `aurora_preview`, events POST to `/__aurora/progress` and append to `<course folder>/progress.jsonl` (or `<deck folder>/progress.jsonl`).
+
+### Progress summary (`aurora_progress`)
+Call `aurora_progress {"dir": "<course or deck folder>", "file"?: "<optional exported .jsonl>"}`:
+- Last activity timestamp per lesson.
+- Quiz accuracy percentage.
+- Predictions (counts of right vs different, listing different predictions with snippets).
+- Missed memory palace stations (`place -> item`).
+- Completed lessons with completion dates and spaced reviews due (+1, +3, +7, +16, +35 days).
+
+### Sister project Polaris
+Polaris (https://github.com/DuongNAD/polaris-mcp) reads Aurora's `progress.jsonl` via `polaris_progress_sync` to automatically populate the learner's error log ("Sổ lỗi") and update the spaced review schedule.

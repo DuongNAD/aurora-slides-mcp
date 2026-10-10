@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const VERSION = "0.5.0";
+export const VERSION = "0.6.0";
 /** Package root (works from dist/aurora.mjs and from src/*.ts). */
 export const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const UA = `AuroraSlides/${VERSION} (self-study slide builder; Model Context Protocol server) Node.js/${process.versions.node}`;

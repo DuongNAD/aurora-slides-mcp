@@ -11,7 +11,7 @@ import { THEME_META } from "./render.js";
 import { ACCENTS, BACKGROUNDS, deckJsonSchema, SLIDE_TYPES, SlideSchema, THEMES, TRANSITIONS, type SlideType } from "./schema.js";
 import { PKG_ROOT } from "./util.js";
 
-export const TOPICS = ["overview", "workflow", "types", "themes", "markup", "media", "diagram", "course", "pedagogy", "memory", "qa", "accuracy", "schema"] as const;
+export const TOPICS = ["overview", "workflow", "types", "themes", "markup", "media", "diagram", "course", "pedagogy", "memory", "qa", "accuracy", "progress", "schema"] as const;
 export type Topic = (typeof TOPICS)[number];
 
 let sections: Map<string, string> | undefined;

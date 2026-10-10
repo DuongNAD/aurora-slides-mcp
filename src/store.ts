@@ -103,7 +103,16 @@ export async function buildDeck(
     builds.emit("built", p.dir);
     if (ctx && !opts.skipHub) await buildCourseHub(ctx.ref, ctx.course).catch(() => undefined);
   }
-  const extra = ctx ? [`This deck is lesson ${ctx.nav.n}/${ctx.nav.total} of the course "${ctx.course.title}" (course page: ${ctx.ref.html}).`] : [];
+  const extra: string[] = [];
+  if (ctx) {
+    extra.push(`This deck is lesson ${ctx.nav.n}/${ctx.nav.total} of the course "${ctx.course.title}" (course page: ${ctx.ref.html}).`);
+    const courseDir = ctx.ref.dir;
+    const subjectDir = dirname(dirname(courseDir));
+    const outlinePath = join(subjectDir, "polaris", "lessons", `${basename(p.dir)}.outline.md`);
+    if (existsSync(outlinePath)) {
+      extra.push(`Polaris outline for this lesson: ${outlinePath} — follow it and cite its sources in \`source\`.`);
+    }
+  }
   return { ok: true, errors: [], warnings: [...extra, ...result.warnings], lint: lintDeck(v.deck), paths: p, deck: v.deck, result, outline: outline(v.deck) };
 }
 
@@ -158,6 +167,7 @@ async function courseContext(deckDir: string) {
     n: i + 1,
     total: course.lessons.length,
     next: course.lessons[i + 1] ? { title: course.lessons[i + 1]!.title, href: `../${dirs[i + 1]}/index.html` } : undefined,
+    lesson: dirs[i]!,
   };
   return { ref, course, lesson: course.lessons[i]!, theme: lessonTheme(course, i), nav };
 }

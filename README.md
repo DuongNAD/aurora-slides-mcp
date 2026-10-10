@@ -12,7 +12,27 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.5.0**. Author: **DuongNAD**.
+Current version: **0.6.0**. Author: **DuongNAD**.
+
+## Aurora + Polaris
+
+Aurora Slides pairs with sister project [Polaris](https://github.com/DuongNAD/polaris-mcp), the learner's AI course architect.
+Polaris creates the learner profile, conducts deep research with sources, designs roadmaps, schedules lessons, and exports `course.json` plus lesson outlines to `<subject>/polaris/lessons/<lesson>.outline.md`.
+Aurora renders the interactive slides and records the learner's self-study progress into `progress.jsonl`.
+Polaris reads `progress.jsonl` via `polaris_progress_sync` to populate the learner's error log ("Sổ lỗi") and plan spaced reviews.
+
+```mermaid
+flowchart LR
+    P["Polaris<br>profile, research, roadmap, schedule"] --> C["course.json +<br>lesson outlines"]
+    C --> A["Aurora<br>decks, preview"]
+    A --> L["Learner"]
+    L --> PR["progress.jsonl"]
+    PR --> P2["Polaris<br>error log, spaced review, next lesson"]
+```
+
+- **Live progress recording**: while studying under `aurora_preview`, quiz answers, predict ratings, and memory palace recall ratings automatically append to `<course folder>/progress.jsonl`.
+- **Progress summary** (`aurora_progress`): summarizes quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, +3, +7, +16, +35 days).
+- **Export control**: "Xuất tiến độ" / "Export progress" button in the help panel (`?`) and on the course page downloads `aurora-progress-<slug>.jsonl`.
 
 ## Highlights
 
@@ -177,6 +197,7 @@ Tools the agent uses:
 | `aurora_generate_image` | Fallback for agents that cannot make pictures (free Pollinations) |
 | `aurora_screenshot`, `aurora_audit` | The agent looks at its slides (down to single animation steps) and checks the layout |
 | `aurora_preview` | Preview server on 127.0.0.1 with live reload (a deck or a whole course) |
+| `aurora_progress` | Summarize progress events (quiz accuracy, predictions, missed palace stops, spaced reviews) |
 | `aurora_export_pdf` | Export a 16:9 PDF |
 
 ## While studying
@@ -246,6 +267,11 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.6.0** (2026-10-10):
+  - Close the learning loop with sister project [Polaris](https://github.com/DuongNAD/polaris-mcp): runtime emits learning events (`quiz`, `predict`, `recall`, `complete`) into a localStorage ring buffer and live preview server writes `<course folder>/progress.jsonl`.
+  - New MCP tool `aurora_progress`: compact per-lesson summary with quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedules (+1, 3, 7, 16, 35 days).
+  - "Xuất tiến độ" / "Export progress" button in the help panel and course page to download `aurora-progress-<slug>.jsonl`.
+  - Polaris outline detection in `buildDeck`: prints outline path and prompts citing sources in `source`.
 - **0.5.0** (2026-10-10):
   - Predict-then-run slides (`predict`): learner types prediction in a persisted textarea, runs code in a macOS terminal, self-rates with keys 1/2 ("As predicted" / "Different"), and copies gaps to their error log.
   - Verbatim code quotes: quote source files with `file` + `lines` (and `dedent`), real gutter line numbers, and error cards.

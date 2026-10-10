@@ -1169,6 +1169,9 @@ html[data-tone="light"] .hud { --hud-fg: #1d1d1f; --hud-bg: rgba(255, 255, 255, 
 .help-card dt { display: flex; gap: 6px; }
 .help-card dd { margin: 0; opacity: .75; }
 .help-card kbd { min-width: 28px; padding: 3px 8px; border-radius: 7px; text-align: center; font: 600 13px var(--font); border: 1px solid var(--hud-brd); background: color-mix(in oklab, var(--hud-fg) 8%, transparent); }
+.help-foot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hud-brd); display: flex; justify-content: flex-end; }
+.help-export { all: unset; cursor: pointer; padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 13px; color: var(--hud-fg); background: color-mix(in oklab, var(--hud-fg) 10%, transparent); border: 1px solid var(--hud-brd); transition: background .2s; }
+.help-export:hover { background: color-mix(in oklab, var(--hud-fg) 18%, transparent); }
 .toast {
   position: absolute; left: 50%; top: max(18px, env(safe-area-inset-top)); transform: translateX(-50%);
   display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 22px; border-radius: 999px; pointer-events: auto; white-space: nowrap;
@@ -1574,6 +1577,8 @@ html[lang^="vi"] .c-title { line-height: 1.15; }
 .cp-track { fill: none; stroke: color-mix(in oklab, var(--fg) 12%, transparent); stroke-width: 4; }
 .cp-fill { opacity: 0; fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 0 100; transition: stroke-dasharray 1.4s var(--ease-out); }
 .c-progress b { font-weight: 700; color: var(--fg); }
+.c-export { all: unset; cursor: pointer; display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--fg2); background: color-mix(in oklab, var(--fg) 8%, transparent); border: 1px solid var(--glass-brd); transition: background .2s, color .2s; }
+.c-export:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 14%, transparent); }
 .c-lessons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr)); gap: 22px; }
 .c-card {
   position: relative; overflow: hidden; border-radius: 30px; color: var(--fg); background: var(--bg);

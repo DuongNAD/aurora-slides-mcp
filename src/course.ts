@@ -89,6 +89,26 @@ const HUB_JS = `(() => {
     }
     dueEl.hidden = false;
   }
+  const exp = document.querySelector('[data-act="export-progress"]');
+  if (exp) {
+    exp.addEventListener("click", () => {
+      const key = "aurora:course:" + (T.courseKey || "course") + ":events";
+      let events = [];
+      try { events = JSON.parse(localStorage.getItem(key)) || []; } catch {}
+      const text = events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : "");
+      const slug = (T.title || "course")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "course";
+      const blob = new Blob([text], { type: "application/x-jsonlines;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "aurora-progress-" + slug + ".jsonl";
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  }
   window.addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); });
 })();`;
 
@@ -121,7 +141,10 @@ export async function renderCourse(course: Course, lessons: LessonCard[]): Promi
   const theme = course.theme;
   const kind = THEME_META[theme].bg;
   const [css, fonts] = await Promise.all([asset("aurora.min.css", "runtime/aurora.css"), fontCss(course.font === "system" ? "" : course.font)]);
-  const strings = { done: t.statusDone, doing: t.statusDoing, cont: t.continueAt, review: t.reviewAll, due: t.statusDue, today: t.reviewToday, lesson: t.lesson };
+  const strings = {
+    done: t.statusDone, doing: t.statusDoing, cont: t.continueAt, review: t.reviewAll, due: t.statusDue, today: t.reviewToday, lesson: t.lesson,
+    exportProgress: t.exportProgress, courseKey: hash(course.title, 10), title: plain(course.title),
+  };
   const html =
     `<!doctype html>\n<html lang="${esc(course.lang)}" data-theme="${theme}" data-tone="${THEME_META[theme].tone}" class="f-${course.font} hub">\n<head>\n` +
     `<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n` +
@@ -132,7 +155,8 @@ export async function renderCourse(course: Course, lessons: LessonCard[]): Promi
     `<h1 class="c-title">${inline(course.title)}</h1>${course.subtitle ? `<p class="c-sub">${inline(course.subtitle)}</p>` : ""}` +
     `<div class="c-actions">${built[0] ? `<a class="c-cta" href="${esc(built[0].href!)}" data-cta><span>${esc(t.startLearning)}</span>${SVG.next}</a>` : ""}` +
     `<div class="c-progress"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="cp-track" cx="22" cy="22" r="18"/><circle class="cp-fill" cx="22" cy="22" r="18" pathLength="100"/></svg>` +
-    `<span><b class="cp-n">0</b>/${built.length} ${esc(t.learned)}</span></div></div><p class="c-due" hidden></p></header>\n` +
+    `<span><b class="cp-n">0</b>/${built.length} ${esc(t.learned)}</span></div>` +
+    `<button type="button" class="c-export" data-act="export-progress">${esc(t.exportProgress)}</button></div><p class="c-due" hidden></p></header>\n` +
     `<ol class="c-lessons">${cards}</ol>\n<footer class="c-foot">${course.author && course.author !== "Aurora Slides" ? `${esc(plain(course.author))} · ` : ""}Aurora Slides</footer></main>\n` +
     `<div class="grain" aria-hidden="true"></div>\n` +
     `<script>window.AURORA_HUB=${JSON.stringify(strings).replace(/</g, "\\u003c")}</script>\n<script>${HUB_JS}</script>\n</body>\n</html>\n`;

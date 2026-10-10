@@ -42,7 +42,7 @@ try {
 
   const { tools } = await client.listTools();
   const names = tools.map((t) => t.name).sort();
-  ok("14 tools listed", names.length === 14, names.join(", "));
+  ok("15 tools listed", names.length === 15, names.join(", "));
   const toolJson = JSON.stringify(tools).length;
   ok("tool definitions stay compact", toolJson < 20000, `${toolJson} chars`);
   const { prompts } = await client.listPrompts();
@@ -60,6 +60,8 @@ try {
   ok("guide pedagogy section", textOf(r).includes("notebook") && textOf(r).includes("Thực hành"));
   r = await call("aurora_guide", { topic: "accuracy" });
   ok("guide accuracy section", !r.isError && textOf(r).includes("source of truth") && textOf(r).includes("Quote, never retype"));
+  r = await call("aurora_guide", { topic: "progress" });
+  ok("guide progress section", !r.isError && textOf(r).includes("quiz") && textOf(r).includes("Polaris"));
 
   r = await call("aurora_create_deck", { deck: { title: "Bad", slides: [{ type: "bulets", items: ["x"] }, { type: "quiz", question: "Q?", options: ["a"], answr: 0 }] }, dir: DIR });
   const bad = textOf(r);
@@ -314,6 +316,147 @@ try {
     /Slide 2: cannot quote missing_file\.py/.test(codeWarn) &&
       codeHtml.includes("code-err"),
   );
+
+  // Progress tracking & aurora_progress e2e tests
+  const PROG_COURSE = join(base, "e2e", "prog_course");
+  r = await call("aurora_create_course", {
+    course: {
+      title: "Khoá học tiến độ",
+      lessons: [{ title: "Bài 1", summary: "Bài học thử nghiệm" }],
+    },
+    dir: PROG_COURSE,
+  });
+  const progLessonDir = /dir: (.*01-bai-1)/.exec(textOf(r))?.[1]?.trim();
+  await call("aurora_create_deck", {
+    deck: { title: "Bài 1", slides: [{ type: "title", title: "Bài 1" }] },
+    dir: progLessonDir,
+  });
+
+  r = await call("aurora_preview", { dir: PROG_COURSE });
+  const progUrl = /(?:Course preview|Preview):\s*(\S+)/i.exec(textOf(r))?.[1];
+  ok("progress course preview starts", !!progUrl, progUrl);
+
+  if (progUrl) {
+    const origin = new URL(progUrl).origin;
+    const progEndpoint = `${origin}/__aurora/progress`;
+
+    // 1. Oversized payload (> 16 KB)
+    const bigPayload = {
+      v: 1,
+      t: new Date().toISOString(),
+      type: "quiz",
+      question: "x".repeat(20000),
+    };
+    const bigRes = await fetch(progEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bigPayload),
+    });
+    ok("oversized progress payload rejected with 413", bigRes.status === 413);
+    const okEvent = JSON.stringify({ v: 1, t: "2026-10-10T10:00:00+07:00", type: "quiz", question: "q", chosen: [0], answer: [1], correct: false });
+    const plainRes = await fetch(progEndpoint, { method: "POST", headers: { "Content-Type": "text/plain" }, body: okEvent });
+    ok("progress post with text/plain rejected with 415", plainRes.status === 415);
+    const foreignRes = await fetch(progEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Origin: "https://evil.example" }, body: okEvent });
+    ok("progress post from a foreign origin rejected with 403", foreignRes.status === 403);
+
+    // 2. Post two valid events: quiz wrong and predict different
+    const ev1 = {
+      v: 1,
+      t: "2026-10-10T10:00:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 2,
+      slideId: "s-2",
+      type: "quiz",
+      question: "1 + 1 = ?",
+      chosen: [0],
+      answer: [1],
+      correct: false,
+    };
+    const ev2 = {
+      v: 1,
+      t: "2026-10-10T10:05:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 3,
+      slideId: null,
+      type: "predict",
+      title: "Dự đoán kết quả",
+      prediction: "Tôi nghĩ nó in 42",
+      rating: "different",
+      output: "100",
+    };
+
+    const res1 = await fetch(progEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ev1),
+    });
+    const res2 = await fetch(progEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ev2),
+    });
+    ok("progress events accepted with 204", res1.status === 204 && res2.status === 204);
+
+    const progFile = join(PROG_COURSE, "progress.jsonl");
+    const progLines = existsSync(progFile)
+      ? readFileSync(progFile, "utf8").trim().split("\n").filter(Boolean)
+      : [];
+    ok("progress.jsonl written to course folder with 2 valid lines", progLines.length === 2, `${progLines.length} lines`);
+
+    // 3. Create a fixture .jsonl with recall missed and complete events
+    const fixFile = join(base, "e2e", "extra-progress.jsonl");
+    const ev3 = {
+      v: 1,
+      t: "2026-10-10T10:10:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 4,
+      slideId: "palace-1",
+      type: "recall",
+      palace: "living-room",
+      station: 1,
+      place: "Cửa chính",
+      item: "Chìa khoá vàng",
+      rating: "missed",
+    };
+    const ev4 = {
+      v: 1,
+      t: "2026-10-10T10:15:00+07:00",
+      course: "Khoá học tiến độ",
+      lesson: "01-bai-1",
+      deck: "Bài 1",
+      slide: 5,
+      slideId: null,
+      type: "complete",
+      slides: 5,
+      quiz: "0/1",
+      predictions: "0/1",
+    };
+    writeFileSync(fixFile, [JSON.stringify(ev3), JSON.stringify(ev4)].join("\n") + "\n", "utf8");
+
+    // 4. Test aurora_progress tool on PROG_COURSE + fixture file
+    r = await call("aurora_progress", { dir: PROG_COURSE, file: fixFile });
+    const progSummary = textOf(r);
+    ok(
+      "aurora_progress summarizes accuracy, predictions, missed stations, and review schedule",
+      !r.isError &&
+        progSummary.includes("01-bai-1") &&
+        progSummary.includes("0/1 (0%)") &&
+        progSummary.includes("0 right, 1 different") &&
+        progSummary.includes("Tôi nghĩ nó in 42") &&
+        progSummary.includes("Cửa chính -> Chìa khoá vàng") &&
+        progSummary.includes("Completed on: 2026-10-10") &&
+        progSummary.includes("+1d (2026-10-11)") &&
+        progSummary.includes("+35d (2026-11-14)") &&
+        progSummary.includes("polaris_progress_sync"),
+      progSummary.split("\n").slice(0, 5).join(" | "),
+    );
+  }
 } catch (e) {
   failed++;
   console.log(`FAIL unexpected: ${e?.stack ?? e}`);

@@ -3,8 +3,14 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-10): v0.5.0 complete
-- 35 slide types: new `predict` slide type for predict-then-run practice (question, optional quoted code, prediction textarea with localStorage persistence, macOS terminal with animated line output print, hints, explanation, self-rating with keys 1/2, error log guidance line, summary score card display).
+## Status (2026-10-10): v0.6.0 complete
+- Close the learning loop with sister project Polaris (https://github.com/DuongNAD/polaris-mcp):
+  - Learning event contract: `quiz`, `predict`, `recall`, `complete` events recorded in a localStorage ring buffer (1000 items) and streamed via POST `/__aurora/progress` to `<course dir>/progress.jsonl` when previewing.
+  - New MCP tool `aurora_progress {dir, file?}` (tool count is now 15): summarizes quiz accuracy, right vs different predictions, missed memory palace stations, completion dates, and spaced review schedule (+1, 3, 7, 16, 35 days).
+  - Export progress control in lesson help sheet and course home page downloading `aurora-progress-<slug>.jsonl`.
+  - Polaris lesson outline detection: `buildDeck` detects `<subject>/polaris/lessons/<lesson>.outline.md` and prompts citing sources in `source`.
+  - Comprehensive guide topic `progress` and "Aurora + Polaris" sections in README.md & README.vi.md with Mermaid architecture flow.
+- 35 slide types: `predict` slide type for predict-then-run practice (question, optional quoted code, prediction textarea with localStorage persistence, macOS terminal with animated line output print, hints, explanation, self-rating with keys 1/2, error log guidance line, summary score card display).
 - Verbatim code quoting: quote real source files with `file` + `lines` (and `dedent`), real gutter line numbers, gap rows `⋯`, localized error cards.
 - Common `source` field on every slide: short citations rendered as a muted footnote at the bottom-left with tooltip.
 - Course lesson `when` scheduling label shown on lesson cards.

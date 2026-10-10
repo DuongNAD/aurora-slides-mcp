@@ -12,7 +12,27 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.5.0**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.6.0**. Tác giả: **DuongNAD**.
+
+## Aurora + Polaris
+
+Aurora Slides kết hợp chặt chẽ với dự án song hành [Polaris](https://github.com/DuongNAD/polaris-mcp), kiến trúc sư khoá học AI của người học.
+Polaris xây dựng hồ sơ người học, nghiên cứu sâu tài liệu kèm nguồn, thiết kế lộ trình, lên lịch học và xuất `course.json` cùng dàn ý bài học tại `<chủ-đề>/polaris/lessons/<tên-bài>.outline.md`.
+Aurora dựng slide tương tác và ghi nhận tiến độ tự học vào `progress.jsonl`.
+Polaris đọc `progress.jsonl` qua `polaris_progress_sync` để tự động điền Sổ lỗi và lên kế hoạch ôn tập ngắt quãng.
+
+```mermaid
+flowchart LR
+    P["Polaris<br>hồ sơ, nghiên cứu, lộ trình, lịch học"] --> C["course.json +<br>dàn ý bài học"]
+    C --> A["Aurora<br>slide, xem trước"]
+    A --> L["Người học"]
+    L --> PR["progress.jsonl"]
+    PR --> P2["Polaris<br>sổ lỗi, ôn ngắt quãng, bài tiếp theo"]
+```
+
+- **Ghi tiến độ tự động**: khi học dưới `aurora_preview`, các câu trả lời quiz, tự chấm predict và đánh giá cung điện ký ức tự động ghi nối vào `<thư mục khoá học>/progress.jsonl`.
+- **Tóm tắt tiến độ** (`aurora_progress`): tóm tắt độ chính xác quiz, dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, +3, +7, +16, +35 ngày).
+- **Nút xuất tiến độ**: nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp (`?`) và trên trang chủ khoá học cho phép tải file `aurora-progress-<slug>.jsonl`.
 
 ## Điểm nổi bật
 
@@ -174,6 +194,7 @@ Các tool agent dùng:
 | `aurora_generate_image` | Dự phòng cho agent không tự tạo được ảnh (Pollinations miễn phí) |
 | `aurora_screenshot`, `aurora_audit` | Agent tự nhìn slide (cả từng nấc hiệu ứng) và kiểm tra lỗi bố cục |
 | `aurora_preview` | Server xem trước 127.0.0.1 có live reload (deck hoặc cả khoá học) |
+| `aurora_progress` | Tóm tắt tiến độ học tập (độ chính xác quiz, dự đoán đúng/lệch, cung điện ký ức, lịch ôn) |
 | `aurora_export_pdf` | Xuất PDF 16:9 |
 
 ## Khi học
@@ -240,6 +261,11 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.6.0** (10/10/2026):
+  - Khép kín vòng lặp học tập với dự án song hành [Polaris](https://github.com/DuongNAD/polaris-mcp): runtime phát sự kiện học tập (`quiz`, `predict`, `recall`, `complete`) vào bộ đệm localStorage và preview server ghi file `progress.jsonl` trong thư mục khoá học.
+  - MCP tool mới `aurora_progress`: tóm tắt tiến độ từng bài với độ chính xác quiz, dự đoán đúng/lệch, các trạm cung điện chưa nhớ, ngày hoàn thành và lịch ôn ngắt quãng (+1, 3, 7, 16, 35 ngày).
+  - Nút "Xuất tiến độ" / "Export progress" trong bảng trợ giúp và trang chủ khoá học để tải `aurora-progress-<slug>.jsonl`.
+  - Nhận diện dàn ý bài học Polaris trong `buildDeck`: in đường dẫn dàn ý và nhắc trích nguồn trong `source`.
 - **0.5.0** (10/10/2026):
   - Luyện tập đoán rồi chạy (`predict`): người học ghi dự đoán vào ô nhập (tự lưu theo bài), chạy code thật trong Terminal macOS, tự chấm bằng phím 1/2 ("Đúng như dự đoán" / "Lệch") và chép chỗ lệch vào Sổ lỗi.
   - Trích dẫn code nguyên văn: trích file thật với `file` + `lines` (kèm `dedent`), giữ đúng số dòng nguồn thực tế và thẻ báo lỗi nếu thiếu file.

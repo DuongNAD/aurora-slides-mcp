@@ -125,6 +125,19 @@ const SCRIPT = String.raw`(async () => {
   check("overview closes", !document.documentElement.classList.contains("ov"));
   A.go(0); await wait(200);
   check("go(0)", A.state().slide === 1);
+
+  let events = [];
+  try {
+    const k = Object.keys(localStorage).find((x) => x.startsWith("aurora:") && x.endsWith(":events"));
+    if (k) events = JSON.parse(localStorage.getItem(k)) || [];
+  } catch {}
+  const quizEv = events.find((e) => e.type === "quiz");
+  check("quiz event recorded in buffer with contract fields", quizEv && quizEv.v === 1 && typeof quizEv.t === "string" && quizEv.correct === true && Array.isArray(quizEv.chosen) && Array.isArray(quizEv.answer));
+  const predEv = events.find((e) => e.type === "predict");
+  check("predict event recorded in buffer with contract fields", predEv && predEv.v === 1 && typeof predEv.t === "string" && predEv.rating === "right" && typeof predEv.output === "string");
+  const completeEv = events.find((e) => e.type === "complete");
+  check("complete event recorded in buffer with contract fields", completeEv && completeEv.v === 1 && typeof completeEv.slides === "number");
+
   return { checks, visited: seen.length };
 })()`;
 
