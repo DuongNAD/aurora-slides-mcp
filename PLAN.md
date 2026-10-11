@@ -3,7 +3,8 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-11): v0.7.0 complete
+## Status (2026-10-11): v0.7.1 complete
+- v0.7.1: accept `eyebrow` on `statement` slides as an alias of `kicker` (every other slide type uses `eyebrow`). If both are given, `kicker` wins and a content note is emitted; render treats them identically; guide and catalog document `kicker` with "(alias: eyebrow)"; strict unknown-field validation and typo suggestions preserved.
 - Spaced-repetition review sessions (`srs` slide type, 36 slide types total) produced by sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS memory engine):
   - Apple-style frosted glass card layout: front question/prompt, optional hint reveal (`H`), flip to back (→ / Space / click) with memory hook, origin link, and 1–4 rating row ("Quên / Khó / Nhớ / Dễ" / "Again / Hard / Good / Easy").
   - New `card` progress event emitted on rating, recording `card` id, `rating`, and `ms` elapsed review duration.

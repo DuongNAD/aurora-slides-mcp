@@ -12,7 +12,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.7.0**. Author: **DuongNAD**.
+Current version: **0.7.1**. Author: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -295,6 +295,11 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.7.1** (2026-10-11):
+  - Accept `eyebrow` on `statement` slides as an alias of `kicker` (every other slide type uses `eyebrow`).
+  - When both `kicker` and `eyebrow` are provided, `kicker` takes precedence and a content note is emitted.
+  - Renderer treats `kicker` and `eyebrow` identically; guide and catalog document `kicker` with "(alias: eyebrow)".
+  - Corrective validation errors for unknown fields and real typos continue to work as expected.
 - **0.7.0** (2026-10-11):
   - Spaced repetition review sessions (`srs` slide type) produced by sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS memory engine).
   - Apple-style frosted glass card layout with front prompt, optional hint reveal (`H`), flip to back (→ / Space / click) with memory hook, origin link, and 1–4 rating row ("Again / Hard / Good / Easy").

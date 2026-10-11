@@ -30,7 +30,7 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
     example: { type: "section", title: "Pha sáng", subtitle: "Lá cây thu năng lượng từ ánh sáng", icon: "solar:sun-2-bold-duotone" },
   },
   statement: {
-    use: "One big idea in one sentence (≤ 20 words). Use after a section, as a hook, or to state a rule. effect: spotlight lights words up in reading order.",
+    use: "One big idea in one sentence (≤ 20 words). kicker (alias: eyebrow) for a lead-in line. Use after a section, as a hook, or to state a rule. effect: spotlight lights words up in reading order.",
     example: {
       type: "statement",
       kicker: "Ý chính",

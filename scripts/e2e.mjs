@@ -594,6 +594,71 @@ try {
       srsHtml.includes("Nhớ"),
     textOf(r).split("\n")[0],
   );
+
+  // 6. Statement slide accepts eyebrow as kicker alias
+  const STMT_DIR = join(base, "e2e", "statement_deck");
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Statement Slide Alias",
+      slides: [
+        {
+          type: "statement",
+          eyebrow: "Ý chính",
+          text: "Mọi slide đều dùng ++eyebrow++ đồng nhất.",
+        },
+      ],
+    },
+    dir: STMT_DIR,
+  });
+  const stmtHtml = existsSync(join(STMT_DIR, "index.html")) ? readFileSync(join(STMT_DIR, "index.html"), "utf8") : "";
+  ok(
+    "statement slide with eyebrow builds and HTML shows it",
+    !r.isError && stmtHtml.includes('<div class="kicker"') && stmtHtml.includes("Ý chính"),
+    textOf(r).split("\n")[0],
+  );
+
+  // When both kicker and eyebrow are given, kicker wins and content note says so
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Statement Both Kicker and Eyebrow",
+      slides: [
+        {
+          type: "statement",
+          kicker: "Kicker chính",
+          eyebrow: "Eyebrow phụ",
+          text: "Khi có cả hai thì ++kicker thắng++.",
+        },
+      ],
+    },
+    dryRun: true,
+  });
+  const bothNote = textOf(r);
+  ok(
+    "statement slide with both kicker and eyebrow: kicker wins and content note is emitted",
+    !r.isError && bothNote.includes('both "kicker" and "eyebrow" given; "kicker" wins'),
+    bothNote.split("\n").find((l) => l.includes("wins")) || "(no note)",
+  );
+
+  // Real typo on statement slide still produces corrective validation error
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Statement Typo",
+      slides: [
+        {
+          type: "statement",
+          eybro: "Typo field",
+          text: "Lỗi chính tả trường.",
+        },
+      ],
+    },
+    dryRun: true,
+  });
+  const typoErr = textOf(r);
+  ok(
+    "statement slide typo produces corrective validation error",
+    r.isError && /did you mean "eyebrow" for "eybro"/.test(typoErr),
+    typoErr.split("\n").slice(1, 3).join(" | "),
+  );
 } catch (e) {
   failed++;
   console.log(`FAIL unexpected: ${e?.stack ?? e}`);

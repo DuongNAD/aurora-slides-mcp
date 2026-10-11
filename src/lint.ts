@@ -91,6 +91,9 @@ export function lintDeck(deck: Deck): string[] {
     switch (s.type) {
       case "statement":
         if (words(s.text) > 24) out.push(`${where}: statement has ${words(s.text)} words; one idea in ≤ 20 words lands harder.`);
+        if (s.kicker && s.eyebrow) {
+          out.push(`${where}: both "kicker" and "eyebrow" given; "kicker" wins.`);
+        }
         break;
       case "bullets":
         if (s.items.length > 6) out.push(`${where}: ${s.items.length} bullets is a wall of text; split the slide or use bento/steps.`);

@@ -12,7 +12,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.7.0**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.7.1**. Tác giả: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -289,6 +289,11 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.7.1** (11/10/2026):
+  - Chấp nhận `eyebrow` trên slide `statement` như một bí danh của `kicker` (giúp đồng nhất cú pháp với toàn bộ các loại slide khác).
+  - Khi cung cấp cả `kicker` và `eyebrow`, `kicker` sẽ được ưu tiên và hệ thống xuất ghi chú nội dung (content note).
+  - Renderer xử lý `kicker` và `eyebrow` đồng nhất; guide và catalog tài liệu hóa `kicker` kèm "(alias: eyebrow)".
+  - Duy trì kiểm tra tính hợp lệ và cơ chế sửa lỗi gợi ý cho các trường lạ và lỗi chính tả.
 - **0.7.0** (11/10/2026):
   - Phiên ôn tập ngắt quãng (loại slide `srs`) tạo bởi dự án song hành [Vega](https://github.com/DuongNAD/vega-mcp) (động cơ FSRS).
   - Bố cục thẻ kính mờ kiểu Apple: mặt trước (câu hỏi/khái niệm), nút mở gợi ý (`H`), lật mặt sau (→ / Space / click) kèm móc nhớ, link nguồn gốc bài học, và hàng phím đánh giá 1–4 ("Quên / Khó / Nhớ / Dễ").

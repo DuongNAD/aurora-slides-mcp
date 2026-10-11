@@ -604,11 +604,12 @@ const layouts: Layouts = {
   statement(s, c) {
     const effect = s.effect ?? "words";
     const a = effect === "spotlight" ? "spot" : effect === "fade" ? "blur" : "words";
-    const d = s.kicker ? 200 : 60;
+    const kicker = s.kicker ?? s.eyebrow;
+    const d = kicker ? 200 : 60;
     return {
       cls: `size-${s.size ?? "lg"}`,
       html:
-        `<div class="stmt-wrap">${s.kicker ? `<div class="kicker"${A("rise", 0)}>${inl(c, s.kicker)}</div>` : ""}` +
+        `<div class="stmt-wrap">${kicker ? `<div class="kicker"${A("rise", 0)}>${inl(c, kicker)}</div>` : ""}` +
         `<p class="stmt"${morph(c, "t", s.text)} data-a="${a}" data-d="${d}">${inl(c, s.text, a !== "blur")}</p>` +
         `${s.by ? `<div class="by"${A("fade", d + wordsDur(s.text, a === "spot" ? 120 : 55) + 200)}>${inl(c, s.by)}</div>` : ""}</div>`,
     };

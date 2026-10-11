@@ -118,7 +118,8 @@ const SectionSlide = z.strictObject({
 const StatementSlide = z.strictObject({
   type: z.literal("statement"),
   ...base,
-  kicker: optMd("Small lead-in line above the statement"),
+  kicker: optMd("Small lead-in line above the statement (alias: eyebrow)"),
+  eyebrow: optMd("Small lead-in line above the statement (alias of kicker; if both are given, kicker wins)"),
   text: md("One big idea, ≤ 20 words. Highlight a key phrase with ++gradient++ or ==marker=="),
   by: optMd("Attribution or source"),
   effect: z

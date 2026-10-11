@@ -1071,7 +1071,11 @@
                 "type": "string"
               },
               "kicker": {
-                "description": "Small lead-in line above the statement",
+                "description": "Small lead-in line above the statement (alias: eyebrow)",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small lead-in line above the statement (alias of kicker; if both are given, kicker wins)",
                 "type": "string"
               },
               "text": {
