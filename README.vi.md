@@ -1,6 +1,10 @@
+[English](README.md) · **Tiếng Việt**
+
+<p align="center"><img src="docs/banner.jpg" alt="Aurora Slides MCP — cực quang phản chiếu trên mặt hồ phẳng lặng" width="100%"></p>
+
 # Aurora Slides MCP
 
-[English](README.md) · **Tiếng Việt**
+*Cực quang tựa như ánh sáng trên sân khấu bài giảng: thắp sáng tri thức bằng những dải sáng uyển chuyển giữa trời đêm.*
 
 MCP server để các AI coding agent (Google Antigravity, Claude Code, Cursor…) soạn **slide tự học đẹp như Apple Keynote**:
 chữ lớn, kính mờ, nền cực quang trôi chậm, hiệu ứng lò xo, Magic Move, **exploded view kiểu trang giới thiệu Mac**

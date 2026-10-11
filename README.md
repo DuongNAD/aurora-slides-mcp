@@ -1,6 +1,10 @@
+**English** · [Tiếng Việt](README.vi.md)
+
+<p align="center"><img src="docs/banner.jpg" alt="Aurora Slides MCP — aurora borealis over a still lake" width="100%"></p>
+
 # Aurora Slides MCP
 
-**English** · [Tiếng Việt](README.vi.md)
+*The aurora as light on a stage for lessons: illuminating ideas in vibrant waves across the night.*
 
 An MCP server that lets AI coding agents (Google Antigravity, Claude Code, Cursor…) build **self-study slides as beautiful as an
 Apple Keynote**: big type, frosted glass, slowly drifting aurora backgrounds, spring animations, Magic Move, an **exploded view like
