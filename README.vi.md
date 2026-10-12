@@ -16,7 +16,7 @@ Thiết kế theo cách học **lý thuyết → neo trí nhớ → chép vào v
 một chủ đề lớn (ví dụ Máy tính lượng tử) tách thành nhiều bài nhỏ, **mỗi bài một phong cách riêng**, có trang chủ khoá học
 theo dõi tiến độ.
 
-Phiên bản hiện tại: **0.7.1**. Tác giả: **DuongNAD**.
+Phiên bản hiện tại: **0.8.0**. Tác giả: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -50,6 +50,9 @@ flowchart LR
 | [Vega](https://github.com/DuongNAD/vega-mcp) | Động cơ ghi nhớ ngắt quãng (FSRS), tạo phiên ôn tập hàng ngày |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | Quản trị SSD, tìm kiếm tối ưu cho học tập, bảo vệ thư mục khoá học, hook cập nhật chỉ mục sau khi ghi |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | Một manifest duy nhất, đăng ký vào Claude Code / Antigravity / Cursor / Codex, kiểm tra sức khoẻ, drift doctor, cập nhật |
+| Orion | Phòng luyện tập chấm bằng test thật, gợi ý theo thang bậc, đoán rồi chạy, theo dõi các lần thử |
+| Mira | Trình dò mã: ghi lại quá trình chạy Python thật và dựng trình phát tự chứa mà Aurora nhúng bằng slide `trace`; dự đoán của người học chảy vào nhật ký tiến độ của Aurora |
+| Sirius | Vòng lặp thực thi: hạn chót, phân loại ưu tiên, chọn việc hôm nay, đồng hồ phiên học, tổng kết tuần |
 
 ## Aurora + SmartDrive-OS
 
@@ -59,6 +62,27 @@ Aurora Slides tự động đồng bộ với dự án song hành [SmartDrive-OS
 - **Tắt tính năng**: Đặt `AURORA_SMARTDRIVE=off` để tắt thông báo cập nhật chỉ mục SmartDrive-OS.
 - **Tuỳ biến lệnh**: Đặt `AURORA_SMARTDRIVE_CMD` (ví dụ `python -m smart_drive` hoặc đường dẫn `smart-drive`) để chỉ định lệnh cập nhật.
 
+## Aurora + Mira
+
+Dự án song hành Mira ghi lại **quá trình chạy Python thật** và dựng một trình phát tự chứa (một file `index.html` chạy offline) chạy từng dòng code bên cạnh phần minh hoạ trực quan, có **cổng dự đoán**: người học gõ điều sẽ xảy ra rồi mới sang bước kế tiếp.
+Aurora nhúng trình phát đó vào bài học bằng slide `trace` và chuyển các dự đoán vào cùng đường ống tiến độ với quiz và slide `predict`, nên Polaris (Sổ lỗi) và Vega (thẻ ôn) nhận được mà không cần sửa gì thêm.
+
+```json
+{
+  "type": "trace",
+  "id": "tim-kiem-nhi-phan",
+  "eyebrow": "Chạy từng dòng",
+  "title": "Tìm kiếm nhị phân qua từng bước",
+  "player": "mira/tim-kiem-nhi-phan/index.html",
+  "caption": "Ở mỗi điểm dừng, hãy đoán giá trị của mid trước khi bấm tiếp. Nhấn Esc để quay lại điều hướng slide."
+}
+```
+
+- **Build**: `player` là đường dẫn tới `index.html` của trình phát, tương đối so với thư mục bài hoặc tuyệt đối. Lúc build, Aurora chép file đó vào `assets/mira/<tên-thư-mục>-<6 ký tự hex của sha1(đường dẫn)>.html` trong thư mục bài (chỉ ghi lại khi nội dung đổi) và dựng một iframe tải lười (`assets/mira/….html?embed=1`) trong cửa sổ kiểu macOS. Thiếu file, hoặc trang không có `<meta name="mira-player">`, chỉ gây cảnh báo lúc build và hiện một thẻ thay thế nhẹ nhàng.
+- **Giao thức nhúng `mira-embed.v1`**: trình phát gửi các thông điệp `ready`, `event` và `blur` (`{source: "mira", v: 1, …}`) cho bài học. Aurora chỉ nhận từ các iframe trace của chính nó, trả lời `ready` bằng `hello` (theme và màu nhấn), chỉ chuyển tiếp các sự kiện `predict` hợp lệ (chuỗi bị cắt còn 200 / 2000 / 300 ký tự, `slideId` dạng `mira-stop-<k>`) thành `<id slide>:mira-stop-<k>`, bỏ qua `complete` của trình phát (Aurora tự gửi `complete` riêng) và trả bàn phím về cho bài học khi nhận `blur`, thông điệp mà trình phát gửi khi nhấn Esc bên trong nó.
+- **Tiến độ**: sự kiện đi vào bộ đệm localStorage, vào `progress.jsonl` dưới `aurora_preview` và vào nút xuất như mọi sự kiện khác; `aurora_progress` liệt kê chúng dưới mục `Dò code (Mira)`.
+- **In và PDF**: trình phát được thay bằng một khối tĩnh gồm tiêu đề, chú thích và dòng `Bản tương tác: assets/mira/….html`.
+
 ## Điểm nổi bật
 
 - **Agent tự vẽ ảnh, không tốn API key**: ảnh minh hoạ do chính agent tạo (Antigravity có công cụ tạo ảnh riêng) rồi nạp vào
@@ -67,9 +91,22 @@ Aurora Slides tự động đồng bộ với dự án song hành [SmartDrive-OS
 - **Đúng ngôn ngữ của bạn**: hướng dẫn gửi cho agent (system prompt của MCP, hai prompt `lesson`/`course`, `aurora_guide`) viết
   bằng tiếng Anh cho agent hiểu chính xác, nhưng bắt buộc nội dung bài học và câu trả lời của agent dùng ngôn ngữ bạn viết yêu cầu
   (hỏi bằng tiếng Việt thì ra slide tiếng Việt, `lang: "vi"`). Prompt tạo ảnh, id và từ khoá Mermaid vẫn giữ tiếng Anh.
-- **36 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
+- **40 loại slide**: title, section, agenda, statement, bullets, split, image (có camera zoom), explode, bento, stats, quote,
   code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
-  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram, order, match, sort, trace.
+- **Dò code từng dòng với Mira** (`trace`): trình phát do dự án song hành Mira dựng chạy Python thật từng dòng cạnh phần minh hoạ và dừng ở các cổng dự đoán; Aurora nhúng nó trong cửa sổ kiểu macOS và chuyển các dự đoán vào nhật ký tiến độ (xem Aurora + Mira).
+- **Cảnh nền theo bài học** (`scene`): nền và chuyển động khớp với chủ đề bài. 12 cảnh động (leaves – lá cây, cells – tế bào, dna,
+  quantum – lượng tử, waves – sóng, molecules – phân tử, circuit – mạch điện, network – mạng, code, orbits – quỹ đạo, geometry – hình
+  học, ink – mực tàu) vẽ bằng màu của theme, chạy offline và luôn dịu phía sau tiêu đề; `scene: "auto"` (mặc định) tự chọn theo tên
+  bài, khoá học có thể gán cảnh riêng cho từng bài, slide `section` có thể đổi cảnh cho cả chương. Icon lớn chuyển động theo nghĩa
+  (lá đung đưa, tia nắng xoay, electron quay quanh nguyên tử) và ảnh nền trôi chậm kiểu điện ảnh (Ken Burns). Lệnh `aurora scenes`
+  dựng bộ sưu tập để xem các cảnh.
+- **Luyện tập bằng tay** (`order`, `match`, `sort`, `cloze` gõ đáp án): kéo các bước vào đúng thứ tự, nối thuật ngữ với nghĩa bằng
+  đường cong, xếp các mục vào nhóm, hoặc gõ từ còn thiếu (không phân biệt dấu, có nhắc khi chỉ sai dấu). Tất cả đều dùng được bằng
+  chuột, bàn phím và cảm ứng; sau mỗi lần kiểm tra có "Làm lại" và "Xem đáp án"; lần làm đầu tiên được ghi bằng sự kiện `quiz` sẵn có
+  nên Polaris ghi lỗi sai mà không phải đổi hợp đồng. Quiz cũng có thêm "Làm lại".
+- **Giao diện Liquid Glass**: thẻ kính có viền sáng phía trên và ánh sáng mềm chạy theo chuột, nền trôi nhẹ qua từng slide và đổi sắc
+  theo chương, slide mở chương có số gradient và thanh chương, thanh tiến độ chia theo chương: rê chuột thấy tên slide, bấm để nhảy tới.
 - **Phiên ôn tập ngắt quãng** (`srs`): dự án song hành [Vega](https://github.com/DuongNAD/vega-mcp) (động cơ FSRS) tạo deck ôn tập hàng ngày gồm các slide `srs` (mặt trước → gợi ý → lật mặt sau → hàng phím 1–4 "Quên / Khó / Nhớ / Dễ"), phát sự kiện `card` để dời lịch thẻ.
 - **Luyện tập đoán rồi chạy** (`predict`): người học ghi dự đoán vào ô nhập (tự lưu theo bài), chạy code thật trong cửa sổ Terminal
   macOS hoạt hoạ, đối chiếu kết quả thật, tự chấm Đúng như dự đoán / Lệch (phím 1/2) và ghi chỗ lệch vào Sổ lỗi.
@@ -241,6 +278,7 @@ Các tool agent dùng:
 | 1–4 | Đánh giá thẻ ôn tập ngắt quãng (Quên / Khó / Nhớ / Dễ) trên slide `srs` |
 | 1 / 2 | Nhớ / Chưa nhớ khi ôn cung điện; Đúng như dự đoán / Lệch khi học slide predict |
 | H | Hiện/ẩn gợi ý trên slide `srs` |
+| Esc (trong trình phát Mira) | Trả bàn phím về cho bài học để → / ← lại chuyển được slide |
 
 Trên slide exploded view và cung điện ký ức, cuộn chuột/trackpad sẽ "tua" hiệu ứng liên tục như trang Apple. Bài học nhớ
 chỗ đang học, trang khoá học hiện tiến độ từng bài và những bài đến hạn ôn.
@@ -293,6 +331,15 @@ PLAN.md     trạng thái, ý tưởng tiếp theo, ràng buộc
 
 ## Lịch sử phiên bản
 
+- **0.8.0** (12/10/2026):
+  - Giao diện Liquid Glass: viền kính sáng và ánh sáng theo chuột trên thẻ, đáp án quiz, thẻ lật và thanh điều khiển; nền trôi theo slide, đổi sắc theo chương; slide section có số gradient và thanh chương; thanh tiến độ chia chương, rê chuột hiện tên slide, bấm để nhảy tới.
+  - Các slide luyện tập `order`, `match`, `sort` và `cloze` với `input: true` (đáp án thay thế `[[hiển thị|thay thế]]`): kéo-thả có chuyển động FLIP, kèm cách làm bằng chuột, bàn phím và cảm ứng; trộn cố định lúc build; lần làm đầu gửi bằng sự kiện `quiz`; "Làm lại" / "Xem đáp án"; quiz có thêm "Làm lại".
+  - Cảnh nền theo bài học: 12 cảnh động khớp chủ đề (`scene` cho bài, cho bài trong khoá học hoặc cho một chương; `auto` chọn theo tên bài bằng từ khoá tiếng Việt có phân biệt dấu và tiếng Anh), icon chuyển động theo nghĩa (`motion`), Ken Burns cho ảnh nền, xem trước cảnh trên thẻ bài của trang khoá học, lệnh `aurora scenes`.
+  - Slide `trace` mới nhúng trình phát do dự án song hành Mira dựng (`mira_build`): lúc build chép trình phát vào `assets/mira/` và dựng iframe tải lười trong cửa sổ kiểu macOS; thiếu trình phát hoặc trang không có thẻ meta `mira-player` chỉ gây cảnh báo và hiện thẻ thay thế.
+  - Giao thức nhúng `mira-embed.v1`: runtime chỉ nhận thông điệp `ready`, `event`, `blur` từ iframe trace của chính nó, trả lời `ready` bằng `hello` (theme, màu nhấn), chuyển các sự kiện `predict` hợp lệ vào đường ống tiến độ dưới dạng `<id slide>:mira-stop-<k>` (bộ đệm localStorage, `/__aurora/progress`, nút xuất), bỏ qua `complete` của trình phát và trả bàn phím về cho bài học khi nhận `blur`.
+  - `aurora_progress` liệt kê dự đoán của Mira dưới mục `Dò code (Mira)`; gợi ý sư phạm khi slide trace không có chú thích và không có slide `code` hay `predict` đứng trước; audit cảnh báo khi thiếu trình phát; khi in hoặc xuất PDF, trình phát được thay bằng một khối tĩnh.
+  - Hướng dẫn: loại `trace` (các trường, ví dụ tiếng Việt, khi nào dùng), phím Esc, và Mira, Orion, Sirius trong danh sách hệ sinh thái.
+  - e2e: schema, chép tài nguyên, phương án dự phòng, kiểm tra thông điệp và kiểm tra chuyển tiếp sự kiện trong trình duyệt thật.
 - **0.7.1** (11/10/2026):
   - Chấp nhận `eyebrow` trên slide `statement` như một bí danh của `kicker` (giúp đồng nhất cú pháp với toàn bộ các loại slide khác).
   - Khi cung cấp cả `kicker` và `eyebrow`, `kicker` sẽ được ưu tiên và hệ thống xuất ghi chú nội dung (content note).

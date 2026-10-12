@@ -946,14 +946,19 @@
     if (ov || sheetOn) layoutTiles();
     const cur = slides[idx];
     if (cur && cur._pl) plRender(cur);
+    if (cur && cur.querySelector(".match")) drawMatchCurves(cur.querySelector(".match"));
   }
   addEventListener("resize", scale);
   scale();
+  doc.addEventListener("visibilitychange", () => {
+    doc.documentElement.classList.toggle("doc-hidden", doc.hidden);
+  });
 
   // Real content only: decorative layers (orb, big section number, glows, arrows) may bleed on purpose.
   const CONTENT =
     "h1,h2,h3,p,li,blockquote,figure,table,dl,.card,.cmp-col,.window,.st,.pr-item,.tl-ev,.cy-label,.cy-badge,.qz-opt,.fcard,.hs-img," +
-    ".ag-item,.sm-score,.dn-ring,.dn-legend,.chart-svg,.hbars,.fm-main,.vd-frame,.eyebrow,.kicker,.meta,.source,.body,.cz-text,.cz-hint,.ch-legend";
+    ".ag-item,.sm-score,.dn-ring,.dn-legend,.chart-svg,.hbars,.fm-main,.vd-frame,.eyebrow,.kicker,.meta,.source,.body,.cz-text,.cz-hint,.ch-legend," +
+    ".order,.od-tile,.match,.mt-item,.sort,.st-chip,.st-bin,.st-tray,.cz-blank-wrap,.cz-in";
   const CLIP_BOXES = ".card-in, .fc-face, .cmp-col, .pr-item, .tb-wrap";
   function overflowing(s) {
     const stage = s.querySelector(".sl-stage");
@@ -982,6 +987,7 @@
       s.style.setProperty("--kt", String(kt));
     }
     s.dataset.kt = String(kt);
+    if (s && s.querySelector(".match")) drawMatchCurves(s.querySelector(".match"));
   }
 
   /* ───────────── Backdrops ───────────── */
@@ -1130,6 +1136,25 @@
   }
 
   /* ───────────── Navigation ───────────── */
+  function updateBackdropDrift() {
+    if (reduced || STATIC || OPT.parallax === false) return;
+    const bdEl = doc.querySelector(".backdrops");
+    if (!bdEl) return;
+    const p = N > 1 ? idx / (N - 1) : 0;
+    const bx = Math.sin(p * Math.PI * 1.6).toFixed(4);
+    const by = (0.6 * Math.cos(p * Math.PI * 1.1)).toFixed(4);
+    let secCount = 0;
+    for (let i = 0; i <= idx; i++) {
+      const s = slides[i];
+      if (s && (s.dataset.type === "section" || s.classList.contains("t-section"))) secCount++;
+    }
+    const k = Math.max(0, secCount - 1);
+    const angles = [0, 10, -8, 14, -12, 6];
+    const bh = angles[k % 6] + "deg";
+    bdEl.style.setProperty("--bx", bx);
+    bdEl.style.setProperty("--by", by);
+    bdEl.style.setProperty("--bh", bh);
+  }
   function go(target, o) {
     o = o || {};
     if (!N) return;
@@ -1146,6 +1171,17 @@
     setStep(next, st, false);
     const from = idx;
     idx = target;
+    updateBackdropDrift();
+    const bdEl = doc.querySelector(".backdrops");
+    if (bdEl && next) {
+      const type = next.dataset.type;
+      const hero = (type === "title" || type === "section" || type === "statement" || type === "quote")
+        ? "1"
+        : (type === "code" || type === "table" || type === "notebook" || type === "diagram" || type === "chart" || type === "predict" || type === "exercise")
+        ? "dense"
+        : "0";
+      bdEl.dataset.hero = hero;
+    }
     transition(from === target ? null : prev, next, fwd, !!o.instant);
     if (!STATIC) activateMedia(next);
     if (next.dataset.type === "srs") {
@@ -1159,6 +1195,8 @@
       }
     }
     if (next.classList.contains("t-summary")) renderScore(next);
+    if (next.querySelector(".match")) drawMatchCurves(next.querySelector(".match"));
+    if (next.querySelector(".sort")) requestAnimationFrame(() => lockSortTray(next.querySelector(".sort")));
     updateHud();
     if (!o.keepHash) writeHash();
     store.set("pos", idx);
@@ -1235,12 +1273,14 @@
     s.querySelectorAll("iframe[data-src]").forEach((f) => {
       if (location.protocol === "file:" && /youtube/.test(f.dataset.src)) return;
       if (!f.getAttribute("src")) f.setAttribute("src", f.dataset.src);
-      const fr = f.closest(".vd-frame");
+      const fr = f.closest(".vd-frame, .tr-frame");
       if (fr) fr.classList.add("live");
     });
   }
   function deactivateMedia(s) {
     s.querySelectorAll("iframe[data-src]").forEach((f) => {
+      // A Mira trace player stays loaded after the slide is left: the learner keeps their place in the trace.
+      if (f.closest(".trace")) return;
       f.removeAttribute("src");
       const fr = f.closest(".vd-frame");
       if (fr) fr.classList.remove("live");
@@ -1248,13 +1288,125 @@
     s.querySelectorAll("video").forEach((v) => { try { v.pause(); } catch { /* ignore */ } });
   }
 
+  /* ───────────── Mira trace players (mira-embed.v1) ─────────────
+     A `trace` slide embeds a self-contained Mira player in an iframe. Everything it sends carries {source:"mira", v:1}:
+       ready -> we answer with a hello (theme, accent);  event -> a predict event joins Aurora's own progress pipeline
+       (localStorage buffer, POST /__aurora/progress under the preview server, export button);  blur -> Esc inside the
+       player hands the keyboard back to the deck.  A player's own "complete" event is ignored: Aurora sends its own. */
+  // <pure:miraEventPayload>
+  // Pure on purpose (no DOM, no closure state): scripts/e2e.mjs runs this block on its own.
+  // Returns the payload for emitEvent("predict", …) or null for anything that is not a valid prediction from a Mira player.
+  function miraEventPayload(data, rawId, n) {
+    if (!data || typeof data !== "object" || data.source !== "mira" || data.v !== 1 || data.kind !== "event") return null;
+    const ev = data.event;
+    if (!ev || typeof ev !== "object" || ev.type !== "predict") return null;
+    if (ev.rating !== "right" && ev.rating !== "different") return null;
+    if (typeof ev.slideId !== "string" || !/^mira-stop-\d+$/.test(ev.slideId)) return null;
+    // A string up to `max` characters (longer ones are cut, never in the middle of a surrogate pair); absent optional -> "".
+    const text = (v, max, required) => {
+      if (v === undefined) return required ? null : "";
+      if (typeof v !== "string") return null;
+      if (v.length <= max) return v;
+      const last = v.charCodeAt(max - 1);
+      return v.slice(0, last >= 0xd800 && last <= 0xdbff ? max - 1 : max);
+    };
+    const title = text(ev.title, 200, false);
+    const prediction = text(ev.prediction, 2000, true);
+    const output = text(ev.output, 300, false);
+    if (title === null || prediction === null || output === null) return null;
+    return { title, prediction, rating: ev.rating, output, slideId: (rawId || "trace-" + n) + ":" + ev.slideId };
+  }
+  // </pure:miraEventPayload>
+
+  function traceFrameOf(win) {
+    for (const f of deckEl.querySelectorAll(".trace iframe")) if (f.contentWindow === win) return f;
+    return null;
+  }
+  // The slide's accent as #RRGGBB when the computed value is a hex colour, otherwise null.
+  function accentOf(slide) {
+    const v = getComputedStyle(slide).getPropertyValue("--accent").trim();
+    if (/^#[0-9a-f]{6}$/i.test(v)) return v;
+    const m = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(v);
+    return m ? "#" + m[1] + m[1] + m[2] + m[2] + m[3] + m[3] : null;
+  }
+  // Keyboard focus back to the deck, so → / ← move through slides again (the player has it while the learner types in it).
+  function focusDeck() {
+    const a = doc.activeElement;
+    if (a && a.tagName === "IFRAME") { try { a.blur(); } catch { /* ignore */ } }
+    try { window.focus(); } catch { /* ignore */ }
+    try { deckEl.focus({ preventScroll: true }); } catch { /* ignore */ }
+  }
+  window.addEventListener("message", (e) => {
+    const d = e.data;
+    if (!d || typeof d !== "object" || d.source !== "mira" || d.v !== 1) return;
+    const frame = e.source ? traceFrameOf(e.source) : null;
+    if (!frame) return;
+    const slide = frame.closest(".slide");
+    const i = slides.indexOf(slide);
+    if (i < 0) return;
+    if (d.kind === "ready") {
+      const hello = { source: "aurora", v: 1, kind: "hello", theme: slide.dataset.tone === "light" ? "light" : "dark" };
+      const accent = accentOf(slide);
+      if (accent) hello.accent = accent;
+      try { frame.contentWindow.postMessage(hello, "*"); } catch { /* the frame went away */ }
+    } else if (d.kind === "event") {
+      if (STATIC) return;
+      const payload = miraEventPayload(d, ((CFG.slides || [])[i] || {}).rawId, i + 1);
+      if (payload) emitEvent("predict", payload, i);
+    } else if (d.kind === "blur") focusDeck();
+  });
+
   /* ───────────── HUD ───────────── */
   const countB = hud && hud.querySelector(".count b");
   const prog = hud && hud.querySelector(".progress i");
+  const progBar = hud && hud.querySelector(".progress");
+  const progTip = hud && hud.querySelector(".prog-tip");
   const notesP = hud && hud.querySelector(".notes-panel");
   const helpP = hud && hud.querySelector(".help-sheet");
   const toastEl = hud && hud.querySelector(".toast");
   const nextLessonEl = hud && hud.querySelector(".next-lesson");
+
+  if (progBar && !STATIC) {
+    function getScrubSlide(e) {
+      const r = progBar.getBoundingClientRect();
+      const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const frac = Math.max(0, Math.min(1, (clientX - r.left) / (r.width || 1)));
+      const targetIdx = N > 1 ? Math.min(N - 1, Math.round(frac * (N - 1))) : 0;
+      return { frac, targetIdx, clientX, r };
+    }
+    function updateTip(e) {
+      if (!progTip) return;
+      const { targetIdx, clientX } = getScrubSlide(e);
+      const s = slides[targetIdx];
+      const meta = (CFG.slides || [])[targetIdx];
+      const title = (s && (s.getAttribute("aria-label") || (s.querySelector(".sl-title") ? s.querySelector(".sl-title").textContent : ""))) || (meta && meta.title) || "";
+      const cleanTitle = title.replace(/^\d+\s*:\s*/, "").replace(/\s+/g, " ").trim();
+      progTip.textContent = (targetIdx + 1) + (cleanTitle ? " · " + cleanTitle : "");
+      progTip.hidden = false;
+      const tipW = progTip.offsetWidth || 120;
+      const minLeft = tipW / 2 + 8;
+      const maxLeft = innerWidth - tipW / 2 - 8;
+      const clampedX = Math.max(minLeft, Math.min(maxLeft, clientX));
+      progTip.style.left = clampedX + "px";
+    }
+    progBar.addEventListener("pointerenter", (e) => {
+      if (ov) return;
+      updateTip(e);
+    });
+    progBar.addEventListener("pointermove", (e) => {
+      if (ov) return;
+      updateTip(e);
+    });
+    progBar.addEventListener("pointerleave", () => {
+      if (progTip) progTip.hidden = true;
+    });
+    progBar.addEventListener("click", (e) => {
+      if (ov) return;
+      const { targetIdx } = getScrubSlide(e);
+      if (progTip) progTip.hidden = true;
+      go(targetIdx);
+    });
+  }
   function updateHud() {
     if (countB) countB.textContent = String(idx + 1);
     if (prog) {
@@ -1357,6 +1509,13 @@
     const c = b.cloneNode(true);
     c.classList.add("bd-clone", "on");
     c.removeAttribute("data-bd");
+    const type = s.dataset.type;
+    const hero = s.dataset.hero || ((type === "title" || type === "section" || type === "statement" || type === "quote")
+      ? "1"
+      : (type === "code" || type === "table" || type === "notebook" || type === "diagram" || type === "chart" || type === "predict" || type === "exercise")
+      ? "dense"
+      : "0");
+    c.dataset.hero = hero;
     s.prepend(c);
     s._clone = c;
   }
@@ -1439,9 +1598,65 @@
   }
   addEventListener("beforeprint", preparePrint);
 
-  /* ───────────── Quiz, flashcards, cloze, hotspots ───────────── */
+  /* ───────────── Quiz, practice interactions & grading ───────────── */
   const SVG_OK = '<svg viewBox="0 0 24 24"><path d="M5.5 12.5l4 4L18.5 7.5"/></svg>';
   const SVG_NO = '<svg viewBox="0 0 24 24"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9"/></svg>';
+  const scoredQuizzes = new Set(Object.keys(store.get("quiz") || {}));
+
+  function flipAnimate(elements, mutate) {
+    if (reduced || STATIC) {
+      mutate();
+      return;
+    }
+    const k = parseFloat(root.style.getPropertyValue("--k")) || 1;
+    const firsts = new Map();
+    elements.forEach((el) => {
+      firsts.set(el, el.getBoundingClientRect());
+    });
+    mutate();
+    elements.forEach((el) => {
+      const first = firsts.get(el);
+      if (!first) return;
+      const last = el.getBoundingClientRect();
+      const dx = (first.left - last.left) / k;
+      const dy = (first.top - last.top) / k;
+      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        el.animate(
+          [
+            { transform: "translate(" + dx.toFixed(2) + "px, " + dy.toFixed(2) + "px)" },
+            { transform: "translate(0, 0)" }
+          ],
+          { duration: SPR.snappy.duration, easing: SPR.snappy.easing }
+        );
+      }
+    });
+  }
+
+  function normDigits(s) {
+    const subs = "₀₁₂₃₄₅₆₇₈₉", sups = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+    return (s || "")
+      .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, (c) => String(subs.indexOf(c)))
+      .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => String(sups.indexOf(c)));
+  }
+  function normText(s) {
+    return normDigits((s || "").normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase());
+  }
+  function stripDiacritics(s) {
+    return normText(s).normalize("NFD").replace(/\p{M}/gu, "").replace(/[đĐ]/g, "d");
+  }
+
+  function recordQuizScore(slide, qId, isCorrect, payload) {
+    if (!qId) return;
+    if (!scoredQuizzes.has(qId)) {
+      scoredQuizzes.add(qId);
+      const scores = store.get("quiz") || {};
+      scores[qId] = isCorrect ? 1 : 0;
+      store.set("quiz", scores);
+      const sIdx = slides.indexOf(slide.closest(".slide"));
+      emitEvent("quiz", payload, sIdx >= 0 ? sIdx : idx);
+    }
+  }
+
   function grade(quiz, chosen) {
     if (quiz.classList.contains("answered")) return;
     const poll = !!quiz.dataset.poll;
@@ -1465,10 +1680,6 @@
       res.className = "qz-result " + (right ? "ok" : "bad");
     }
     if (!poll) {
-      const scores = store.get("quiz") || {};
-      scores[quiz.dataset.quiz] = right ? 1 : 0;
-      store.set("quiz", scores);
-
       const qEl = quiz.querySelector(".qz-q");
       const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
       const chosenIndices = chosen.map((o) => +o.dataset.k);
@@ -1493,8 +1704,557 @@
         correct: right,
       };
       if (explText) quizPayload.explanation = explText;
-      emitEvent("quiz", quizPayload);
+      recordQuizScore(quiz, quiz.dataset.quiz, right, quizPayload);
+
+      const retryBtn = quiz.querySelector(".qz-foot .qz-retry");
+      if (retryBtn) retryBtn.hidden = false;
     }
+  }
+
+  function resetQuiz(quiz) {
+    quiz.classList.remove("answered");
+    quiz.querySelectorAll(".qz-opt").forEach((o) => {
+      o.classList.remove("ok", "bad", "sel", "hit");
+      o.removeAttribute("aria-disabled");
+      const mk = o.querySelector(".qz-mark");
+      if (mk) mk.innerHTML = "";
+    });
+    const res = quiz.querySelector(".qz-result");
+    if (res) { res.textContent = ""; res.className = "qz-result"; }
+    const retryBtn = quiz.querySelector(".qz-foot .qz-retry");
+    if (retryBtn) retryBtn.hidden = true;
+    const chk = quiz.querySelector(".qz-check");
+    if (chk) { chk.disabled = true; chk.style.display = ""; }
+  }
+
+  /* ───────────── Order interaction ───────────── */
+  function updateOrderNumbers(list) {
+    list.querySelectorAll(".od-tile").forEach((tile, i) => {
+      const numEl = tile.querySelector(".od-num");
+      if (numEl) numEl.textContent = String(i + 1);
+    });
+  }
+
+  function gradeOrder(order) {
+    const tiles = Array.from(order.querySelectorAll(".od-tile"));
+    const n = tiles.length;
+    const chosenIndices = tiles.map((t) => +t.dataset.k);
+    let correctCount = 0;
+    tiles.forEach((t, i) => {
+      const ok = +t.dataset.k === i;
+      if (ok) correctCount++;
+      t.classList.toggle("ok", ok);
+      t.classList.toggle("bad", !ok);
+      const mk = t.querySelector(".od-mark");
+      if (mk) mk.innerHTML = ok ? SVG_OK : SVG_NO;
+    });
+    const isCorrect = correctCount === n;
+    const res = order.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.posCorrect || "Đúng {n}/{total} vị trí").replace("{n}", correctCount).replace("{total}", n);
+      res.className = "qz-result " + (isCorrect ? "ok" : "bad");
+    }
+    order.classList.add("checked");
+    const chk = order.querySelector(".qz-check");
+    if (chk) chk.hidden = true;
+    const actions = order.querySelector(".qz-actions");
+    if (actions) {
+      actions.hidden = false;
+      const rev = actions.querySelector(".qz-reveal");
+      if (rev) rev.hidden = isCorrect;
+    }
+
+    const qEl = order.querySelector("h2, .sl-head h2");
+    const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
+    const learnerTexts = tiles.map((t) => (t.querySelector(".od-text")?.textContent || "").trim());
+    const sortedTiles = tiles.slice().sort((a, b) => +a.dataset.k - +b.dataset.k);
+    const correctTexts = sortedTiles.map((t) => (t.querySelector(".od-text")?.textContent || "").trim());
+    const explEl = order.querySelector(".qz-expl");
+    const explText = explEl ? (explEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300) : "";
+
+    const payload = {
+      question: qText,
+      chosen: chosenIndices,
+      chosenText: [learnerTexts.join(" → ").slice(0, 160)],
+      answer: tiles.map((_, i) => i),
+      answerText: [correctTexts.join(" → ").slice(0, 160)],
+      correct: isCorrect,
+    };
+    if (explText) payload.explanation = explText;
+    recordQuizScore(order, order.dataset.quiz, isCorrect, payload);
+  }
+
+  function resetOrder(order) {
+    order.classList.remove("checked", "locked");
+    order.querySelectorAll(".od-tile").forEach((t) => {
+      t.classList.remove("ok", "bad", "selected");
+      const mk = t.querySelector(".od-mark");
+      if (mk) mk.innerHTML = "";
+    });
+    const res = order.querySelector(".qz-result");
+    if (res) { res.textContent = ""; res.className = "qz-result"; }
+    const actions = order.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+    const rev = order.querySelector(".qz-reveal");
+    if (rev) rev.hidden = false;
+    const chk = order.querySelector(".qz-check");
+    if (chk) chk.hidden = false;
+  }
+
+  function revealOrder(order) {
+    const list = order.querySelector(".od-list");
+    const tiles = Array.from(order.querySelectorAll(".od-tile"));
+    const sorted = tiles.slice().sort((a, b) => +a.dataset.k - +b.dataset.k);
+    flipAnimate(tiles, () => {
+      sorted.forEach((t) => list.appendChild(t));
+      updateOrderNumbers(list);
+    });
+    sorted.forEach((t) => {
+      t.classList.remove("bad", "selected");
+      t.classList.add("ok");
+      const mk = t.querySelector(".od-mark");
+      if (mk) mk.innerHTML = SVG_OK;
+    });
+    order.classList.add("locked");
+    const res = order.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.posCorrect || "Đúng {n}/{total} vị trí").replace("{n}", tiles.length).replace("{total}", tiles.length);
+      res.className = "qz-result ok";
+    }
+    const actions = order.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+  }
+
+  /* ───────────── Match interaction ───────────── */
+  function drawMatchCurves(match) {
+    const svg = match.querySelector(".mt-lines");
+    const middle = match.querySelector(".mt-middle");
+    if (!svg || !middle) return;
+    const k = parseFloat(root.style.getPropertyValue("--k")) || 1;
+    const rMiddle = middle.getBoundingClientRect();
+    const curves = [];
+    match.querySelectorAll('.mt-item[data-side="left"]').forEach((leftItem) => {
+      const rightK = leftItem.dataset.linkedTo;
+      if (rightK === undefined || rightK === "") return;
+      const rightItem = match.querySelector('.mt-item[data-side="right"][data-k="' + rightK + '"]');
+      if (!rightItem) return;
+      const lPort = leftItem.querySelector(".mt-port") || leftItem;
+      const rPort = rightItem.querySelector(".mt-port") || rightItem;
+      const rL = lPort.getBoundingClientRect();
+      const rR = rPort.getBoundingClientRect();
+      const x1 = (rL.left + rL.width / 2 - rMiddle.left) / k;
+      const y1 = (rL.top + rL.height / 2 - rMiddle.top) / k;
+      const x2 = (rR.left + rR.width / 2 - rMiddle.left) / k;
+      const y2 = (rR.top + rR.height / 2 - rMiddle.top) / k;
+      const dx = Math.abs(x2 - x1) * 0.45;
+      const d = "M" + x1.toFixed(1) + "," + y1.toFixed(1) + " C" + (x1 + dx).toFixed(1) + "," + y1.toFixed(1) + " " + (x2 - dx).toFixed(1) + "," + y2.toFixed(1) + " " + x2.toFixed(1) + "," + y2.toFixed(1);
+      const isChecked = match.classList.contains("checked") || match.classList.contains("locked");
+      const ok = +leftItem.dataset.k === +rightK;
+      const cls = "mt-curve" + (isChecked ? (ok ? " ok" : " bad") : "");
+      curves.push('<path class="' + cls + '" data-left="' + leftItem.dataset.k + '" data-right="' + rightK + '" d="' + d + '"/>');
+    });
+    svg.innerHTML = curves.join("");
+  }
+
+  function updateMatchCheck(match) {
+    const lefts = Array.from(match.querySelectorAll('.mt-item[data-side="left"]'));
+    const allLinked = lefts.length > 0 && lefts.every((l) => l.dataset.linkedTo !== undefined && l.dataset.linkedTo !== "");
+    const chk = match.querySelector(".qz-check");
+    if (chk) chk.disabled = !allLinked;
+  }
+
+  function connectMatch(match, leftItem, rightItem) {
+    if (leftItem.dataset.linkedTo !== undefined && leftItem.dataset.linkedTo !== "") {
+      const oldRight = match.querySelector('.mt-item[data-side="right"][data-k="' + leftItem.dataset.linkedTo + '"]');
+      if (oldRight) { delete oldRight.dataset.linkedFrom; oldRight.classList.remove("connected"); }
+    }
+    if (rightItem.dataset.linkedFrom !== undefined && rightItem.dataset.linkedFrom !== "") {
+      const oldLeft = match.querySelector('.mt-item[data-side="left"][data-k="' + rightItem.dataset.linkedFrom + '"]');
+      if (oldLeft) { delete oldLeft.dataset.linkedTo; oldLeft.classList.remove("connected"); }
+    }
+    leftItem.dataset.linkedTo = rightItem.dataset.k;
+    leftItem.classList.add("connected");
+    rightItem.dataset.linkedFrom = leftItem.dataset.k;
+    rightItem.classList.add("connected");
+    drawMatchCurves(match);
+    updateMatchCheck(match);
+  }
+
+  function disconnectMatch(match, item) {
+    if (item.dataset.side === "left") {
+      const rightK = item.dataset.linkedTo;
+      delete item.dataset.linkedTo;
+      item.classList.remove("connected", "sel");
+      if (rightK !== undefined && rightK !== "") {
+        const right = match.querySelector('.mt-item[data-side="right"][data-k="' + rightK + '"]');
+        if (right) { delete right.dataset.linkedFrom; right.classList.remove("connected"); }
+      }
+    } else {
+      const leftK = item.dataset.linkedFrom;
+      delete item.dataset.linkedFrom;
+      item.classList.remove("connected", "sel");
+      if (leftK !== undefined && leftK !== "") {
+        const left = match.querySelector('.mt-item[data-side="left"][data-k="' + leftK + '"]');
+        if (left) { delete left.dataset.linkedTo; left.classList.remove("connected"); }
+      }
+    }
+    drawMatchCurves(match);
+    updateMatchCheck(match);
+  }
+
+  function gradeMatch(match) {
+    const lefts = Array.from(match.querySelectorAll('.mt-item[data-side="left"]'));
+    const n = lefts.length;
+    let correctCount = 0;
+    const chosen = [];
+    const pairs = [];
+    lefts.forEach((l) => {
+      const lK = +l.dataset.k;
+      const rK = +l.dataset.linkedTo;
+      chosen.push(rK);
+      const ok = lK === rK;
+      if (ok) correctCount++;
+      l.classList.toggle("ok", ok);
+      l.classList.toggle("bad", !ok);
+      const lMk = l.querySelector(".mt-mark");
+      if (lMk) lMk.innerHTML = ok ? SVG_OK : SVG_NO;
+      const r = match.querySelector('.mt-item[data-side="right"][data-k="' + rK + '"]');
+      if (r) {
+        r.classList.toggle("ok", ok);
+        r.classList.toggle("bad", !ok);
+        const rMk = r.querySelector(".mt-mark");
+        if (rMk) rMk.innerHTML = ok ? SVG_OK : SVG_NO;
+      }
+      const rExpected = match.querySelector('.mt-item[data-side="right"][data-k="' + lK + '"]');
+      const lText = (l.querySelector(".mt-text")?.textContent || "").trim();
+      const rChosenText = (r?.querySelector(".mt-text")?.textContent || "").trim();
+      const rExpectedText = (rExpected?.querySelector(".mt-text")?.textContent || "").trim();
+      pairs.push({ ok, chosen: lText + " → " + rChosenText, answer: lText + " → " + rExpectedText });
+    });
+    const isCorrect = correctCount === n;
+    pairs.sort((a, b) => (a.ok === b.ok ? 0 : a.ok ? 1 : -1));
+    const res = match.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.pairsCorrect || "Đúng {n}/{total} cặp").replace("{n}", correctCount).replace("{total}", n);
+      res.className = "qz-result " + (isCorrect ? "ok" : "bad");
+    }
+    match.classList.add("checked");
+    drawMatchCurves(match);
+    const chk = match.querySelector(".qz-check");
+    if (chk) chk.hidden = true;
+    const actions = match.querySelector(".qz-actions");
+    if (actions) {
+      actions.hidden = false;
+      const rev = actions.querySelector(".qz-reveal");
+      if (rev) rev.hidden = isCorrect;
+    }
+
+    const qEl = match.querySelector("h2, .sl-head h2");
+    const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
+    const explEl = match.querySelector(".qz-expl");
+    const explText = explEl ? (explEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300) : "";
+
+    const payload = {
+      question: qText,
+      chosen,
+      chosenText: pairs.slice(0, 6).map((p) => p.chosen.slice(0, 160)),
+      answer: lefts.map((_, i) => i),
+      answerText: pairs.slice(0, 6).map((p) => p.answer.slice(0, 160)),
+      correct: isCorrect,
+    };
+    if (explText) payload.explanation = explText;
+    recordQuizScore(match, match.dataset.quiz, isCorrect, payload);
+  }
+
+  function resetMatch(match) {
+    match.classList.remove("checked", "locked");
+    match.querySelectorAll(".mt-item").forEach((it) => {
+      it.classList.remove("ok", "bad");
+      const mk = it.querySelector(".mt-mark");
+      if (mk) mk.innerHTML = "";
+    });
+    drawMatchCurves(match);
+    const res = match.querySelector(".qz-result");
+    if (res) { res.textContent = ""; res.className = "qz-result"; }
+    const actions = match.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+    const rev = match.querySelector(".qz-reveal");
+    if (rev) rev.hidden = false;
+    const chk = match.querySelector(".qz-check");
+    if (chk) chk.hidden = false;
+  }
+
+  function revealMatch(match) {
+    const lefts = Array.from(match.querySelectorAll('.mt-item[data-side="left"]'));
+    lefts.forEach((l) => {
+      const lK = l.dataset.k;
+      const r = match.querySelector('.mt-item[data-side="right"][data-k="' + lK + '"]');
+      if (r) {
+        l.dataset.linkedTo = lK;
+        l.classList.add("connected", "ok");
+        l.classList.remove("bad", "sel");
+        r.dataset.linkedFrom = lK;
+        r.classList.add("connected", "ok");
+        r.classList.remove("bad", "sel");
+        const lMk = l.querySelector(".mt-mark");
+        if (lMk) lMk.innerHTML = SVG_OK;
+        const rMk = r.querySelector(".mt-mark");
+        if (rMk) rMk.innerHTML = SVG_OK;
+      }
+    });
+    match.classList.add("locked");
+    drawMatchCurves(match);
+    const res = match.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.pairsCorrect || "Đúng {n}/{total} cặp").replace("{n}", lefts.length).replace("{total}", lefts.length);
+      res.className = "qz-result ok";
+    }
+    const actions = match.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+  }
+
+  /* ───────────── Sort interaction ───────────── */
+  function lockSortTray(sort) {
+    if (!sort) return;
+    const tray = sort.querySelector(".st-tray");
+    if (!tray || tray._locked) return;
+    const h = tray.offsetHeight;
+    if (h > 0) {
+      tray.style.minHeight = h + "px";
+      tray._locked = true;
+    }
+  }
+
+  function updateSortCheck(sort) {
+    lockSortTray(sort);
+    const tray = sort.querySelector(".st-tray");
+    const trayChips = tray ? tray.querySelectorAll(".st-chip") : [];
+    const chk = sort.querySelector(".qz-check");
+    if (chk) chk.disabled = trayChips.length > 0;
+  }
+
+  function gradeSort(sort) {
+    const chips = Array.from(sort.querySelectorAll(".st-chip")).sort((a, b) => +a.dataset.id - +b.dataset.id);
+    const total = chips.length;
+    let correctCount = 0;
+    const chosen = [];
+    const answer = [];
+    const items = [];
+    chips.forEach((ch) => {
+      const expectedG = +ch.dataset.k;
+      const bin = ch.closest(".st-bin");
+      const chosenG = bin ? +bin.dataset.bin : -1;
+      chosen.push(chosenG);
+      answer.push(expectedG);
+      const ok = chosenG === expectedG;
+      if (ok) correctCount++;
+      ch.classList.toggle("ok", ok);
+      ch.classList.toggle("bad", !ok);
+      const mk = ch.querySelector(".st-chip-mark");
+      if (mk) mk.innerHTML = ok ? SVG_OK : SVG_NO;
+      const text = (ch.querySelector(".st-chip-text")?.textContent || "").trim();
+      const chosenLabel = bin ? (bin.querySelector(".st-bin-label")?.textContent || "").trim() : "";
+      const rightBin = sort.querySelector('.st-bin[data-bin="' + expectedG + '"]');
+      const rightLabel = rightBin ? (rightBin.querySelector(".st-bin-label")?.textContent || "").trim() : "";
+      items.push({ ok, chosen: text + " → " + chosenLabel, answer: text + " → " + rightLabel });
+    });
+    const isCorrect = correctCount === total;
+    items.sort((a, b) => (a.ok === b.ok ? 0 : a.ok ? 1 : -1));
+    const res = sort.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.itemsCorrect || "Đúng {n}/{total} mục").replace("{n}", correctCount).replace("{total}", total);
+      res.className = "qz-result " + (isCorrect ? "ok" : "bad");
+    }
+    sort.classList.add("checked");
+    const chk = sort.querySelector(".qz-check");
+    if (chk) chk.hidden = true;
+    const actions = sort.querySelector(".qz-actions");
+    if (actions) {
+      actions.hidden = false;
+      const rev = actions.querySelector(".qz-reveal");
+      if (rev) rev.hidden = isCorrect;
+    }
+
+    const qEl = sort.querySelector("h2, .sl-head h2");
+    const qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
+    const explEl = sort.querySelector(".qz-expl");
+    const explText = explEl ? (explEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300) : "";
+
+    const payload = {
+      question: qText,
+      chosen,
+      chosenText: items.slice(0, 6).map((it) => it.chosen.slice(0, 160)),
+      answer,
+      answerText: items.slice(0, 6).map((it) => it.answer.slice(0, 160)),
+      correct: isCorrect,
+    };
+    if (explText) payload.explanation = explText;
+    recordQuizScore(sort, sort.dataset.quiz, isCorrect, payload);
+  }
+
+  function resetSort(sort) {
+    sort.classList.remove("checked", "locked");
+    sort.querySelectorAll(".st-chip").forEach((ch) => {
+      ch.classList.remove("ok", "bad", "selected");
+      const mk = ch.querySelector(".st-chip-mark");
+      if (mk) mk.innerHTML = "";
+    });
+    const res = sort.querySelector(".qz-result");
+    if (res) { res.textContent = ""; res.className = "qz-result"; }
+    const actions = sort.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+    const rev = sort.querySelector(".qz-reveal");
+    if (rev) rev.hidden = false;
+    const chk = sort.querySelector(".qz-check");
+    if (chk) chk.hidden = false;
+  }
+
+  function revealSort(sort) {
+    const chips = Array.from(sort.querySelectorAll(".st-chip"));
+    flipAnimate(chips, () => {
+      chips.forEach((ch) => {
+        const bin = sort.querySelector('.st-bin[data-bin="' + ch.dataset.k + '"]');
+        if (bin) {
+          const drop = bin.querySelector(".st-bin-drop");
+          if (drop) drop.appendChild(ch);
+        }
+      });
+    });
+    chips.forEach((ch) => {
+      ch.classList.remove("bad", "selected");
+      ch.classList.add("ok");
+      const mk = ch.querySelector(".st-chip-mark");
+      if (mk) mk.innerHTML = SVG_OK;
+    });
+    sort.classList.add("locked");
+    const res = sort.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.itemsCorrect || "Đúng {n}/{total} mục").replace("{n}", chips.length).replace("{total}", chips.length);
+      res.className = "qz-result ok";
+    }
+    const actions = sort.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+  }
+
+  /* ───────────── Typed Cloze interaction ───────────── */
+  function updateClozeCheck(cloze) {
+    const inputs = Array.from(cloze.querySelectorAll(".cz-in"));
+    const allFilled = inputs.length > 0 && inputs.every((inp) => inp.value.trim().length > 0);
+    const chk = cloze.querySelector(".qz-check");
+    if (chk) chk.disabled = !allFilled;
+  }
+
+  function gradeCloze(cloze) {
+    const inputs = Array.from(cloze.querySelectorAll(".cz-in"));
+    const total = inputs.length;
+    let correctCount = 0;
+    inputs.forEach((inp) => {
+      const val = normText(inp.value);
+      const alts = (inp.dataset.alt || inp.dataset.ans || "").split("|").map(normText);
+      const exact = alts.includes(val);
+      const near = !exact && alts.map(stripDiacritics).includes(stripDiacritics(val));
+      const ok = exact || near;
+      if (ok) correctCount++;
+      inp.classList.toggle("ok", ok);
+      inp.classList.toggle("bad", !ok);
+      const wrap = inp.closest(".cz-blank-wrap");
+      const mk = wrap ? wrap.querySelector(".cz-mark") : null;
+      if (mk) { mk.innerHTML = ok ? SVG_OK : SVG_NO; mk.className = "cz-mark " + (ok ? "ok" : "bad"); }
+      const fb = wrap ? wrap.querySelector(".cz-fb") : null;
+      if (fb) {
+        if (near) {
+          fb.textContent = (T.accentNote || "Chú ý dấu: ") + (inp.dataset.ans || "");
+          fb.className = "cz-fb show accent";
+        } else if (!ok) {
+          fb.textContent = inp.dataset.ans || "";
+          fb.className = "cz-fb show wrong";
+        } else {
+          fb.className = "cz-fb";
+        }
+      }
+    });
+    const isCorrect = correctCount === total;
+    const res = cloze.querySelector(".qz-result");
+    if (res) {
+      res.textContent = (T.blanksCorrect || "Đúng {n}/{total} ô").replace("{n}", correctCount).replace("{total}", total);
+      res.className = "qz-result " + (isCorrect ? "ok" : "bad");
+    }
+    cloze.classList.add("checked");
+    const chk = cloze.querySelector(".qz-check");
+    if (chk) chk.hidden = true;
+    const actions = cloze.querySelector(".qz-actions");
+    if (actions) {
+      actions.hidden = false;
+      const rev = actions.querySelector(".qz-reveal");
+      if (rev) rev.hidden = isCorrect;
+    }
+
+    let qText = "";
+    const czTextEl = cloze.querySelector(".cz-text");
+    if (czTextEl) {
+      const clone = czTextEl.cloneNode(true);
+      clone.querySelectorAll(".cz-blank-wrap, .blank").forEach((b) => b.replaceWith("___"));
+      qText = (clone.textContent || "").trim().replace(/\s+/g, " ").slice(0, 200);
+    }
+    if (!qText) {
+      const qEl = cloze.querySelector("h2, .sl-head h2");
+      qText = (qEl ? qEl.textContent : "").trim().replace(/\s+/g, " ").slice(0, 200);
+    }
+    const explEl = cloze.querySelector(".qz-expl");
+    const explText = explEl ? (explEl.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300) : "";
+
+    const payload = {
+      question: qText,
+      chosen: [],
+      chosenText: inputs.map((inp) => inp.value.trim().slice(0, 160)),
+      answer: [],
+      answerText: inputs.map((inp) => (inp.dataset.ans || "").slice(0, 160)),
+      correct: isCorrect,
+    };
+    if (explText) payload.explanation = explText;
+    recordQuizScore(cloze, cloze.dataset.quiz, isCorrect, payload);
+  }
+
+  function resetCloze(cloze) {
+    cloze.classList.remove("checked", "locked");
+    cloze.querySelectorAll(".cz-in").forEach((inp) => {
+      inp.classList.remove("ok", "bad");
+      const wrap = inp.closest(".cz-blank-wrap");
+      const mk = wrap ? wrap.querySelector(".cz-mark") : null;
+      if (mk) { mk.innerHTML = ""; mk.className = "cz-mark"; }
+      const fb = wrap ? wrap.querySelector(".cz-fb") : null;
+      if (fb) fb.className = "cz-fb";
+    });
+    const res = cloze.querySelector(".qz-result");
+    if (res) { res.textContent = ""; res.className = "qz-result"; }
+    const actions = cloze.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
+    const rev = cloze.querySelector(".qz-reveal");
+    if (rev) rev.hidden = false;
+    const chk = cloze.querySelector(".qz-check");
+    if (chk) chk.hidden = false;
+  }
+
+  function revealCloze(cloze) {
+    cloze.querySelectorAll(".cz-in").forEach((inp) => {
+      inp.value = inp.dataset.ans || "";
+      inp.classList.remove("bad");
+      inp.classList.add("ok");
+      const wrap = inp.closest(".cz-blank-wrap");
+      const mk = wrap ? wrap.querySelector(".cz-mark") : null;
+      if (mk) { mk.innerHTML = SVG_OK; mk.className = "cz-mark ok"; }
+      const fb = wrap ? wrap.querySelector(".cz-fb") : null;
+      if (fb) fb.className = "cz-fb";
+    });
+    cloze.classList.add("locked");
+    const res = cloze.querySelector(".qz-result");
+    if (res) {
+      const n = cloze.querySelectorAll(".cz-in").length;
+      res.textContent = (T.blanksCorrect || "Đúng {n}/{total} ô").replace("{n}", n).replace("{total}", n);
+      res.className = "qz-result ok";
+    }
+    const actions = cloze.querySelector(".qz-actions");
+    if (actions) actions.hidden = true;
   }
   function answerKey(k) {
     const s = slides[idx];
@@ -1713,8 +2473,111 @@
     const chk = e.target.closest(".qz-check");
     if (chk) {
       const quiz = chk.closest(".quiz");
-      grade(quiz, Array.from(quiz.querySelectorAll(".qz-opt.sel")));
+      if (quiz) { grade(quiz, Array.from(quiz.querySelectorAll(".qz-opt.sel"))); return; }
+      const order = chk.closest(".order");
+      if (order) { gradeOrder(order); return; }
+      const match = chk.closest(".match");
+      if (match) { gradeMatch(match); return; }
+      const sort = chk.closest(".sort");
+      if (sort) { gradeSort(sort); return; }
+      const cloze = chk.closest(".cloze");
+      if (cloze) { gradeCloze(cloze); return; }
       return;
+    }
+    const retryBtn = e.target.closest(".qz-retry");
+    if (retryBtn) {
+      const quiz = retryBtn.closest(".quiz");
+      if (quiz) { resetQuiz(quiz); return; }
+      const order = retryBtn.closest(".order");
+      if (order) { resetOrder(order); return; }
+      const match = retryBtn.closest(".match");
+      if (match) { resetMatch(match); return; }
+      const sort = retryBtn.closest(".sort");
+      if (sort) { resetSort(sort); return; }
+      const cloze = retryBtn.closest(".cloze");
+      if (cloze) { resetCloze(cloze); return; }
+      return;
+    }
+    const revealBtn = e.target.closest(".qz-reveal");
+    if (revealBtn) {
+      const order = revealBtn.closest(".order");
+      if (order) { revealOrder(order); return; }
+      const match = revealBtn.closest(".match");
+      if (match) { revealMatch(match); return; }
+      const sort = revealBtn.closest(".sort");
+      if (sort) { revealSort(sort); return; }
+      const cloze = revealBtn.closest(".cloze");
+      if (cloze) { revealCloze(cloze); return; }
+      return;
+    }
+    const mtItem = e.target.closest(".mt-item");
+    if (mtItem) {
+      const match = mtItem.closest(".match");
+      if (match && !match.classList.contains("locked")) {
+        if (mtItem.dataset.linkedTo !== undefined || mtItem.dataset.linkedFrom !== undefined) {
+          disconnectMatch(match, mtItem);
+          return;
+        }
+        const side = mtItem.dataset.side;
+        const otherSide = side === "left" ? "right" : "left";
+        const otherSel = match.querySelector('.mt-item[data-side="' + otherSide + '"].sel');
+        if (otherSel) {
+          otherSel.classList.remove("sel");
+          mtItem.classList.remove("sel");
+          const leftItem = side === "left" ? mtItem : otherSel;
+          const rightItem = side === "right" ? mtItem : otherSel;
+          connectMatch(match, leftItem, rightItem);
+        } else {
+          match.querySelectorAll('.mt-item[data-side="' + side + '"].sel').forEach((el) => el.classList.remove("sel"));
+          mtItem.classList.toggle("sel");
+        }
+        return;
+      }
+    }
+    const odTile = e.target.closest(".od-tile");
+    if (odTile) {
+      const order = odTile.closest(".order");
+      if (order && !order.classList.contains("locked")) {
+        const list = order.querySelector(".od-list");
+        const selected = list ? list.querySelector(".od-tile.selected") : null;
+        if (selected && selected !== odTile) {
+          flipAnimate(Array.from(list.children), () => {
+            const nextA = odTile.nextElementSibling === selected ? odTile : odTile.nextElementSibling;
+            list.insertBefore(odTile, selected);
+            list.insertBefore(selected, nextA);
+            updateOrderNumbers(list);
+          });
+          selected.classList.remove("selected");
+          odTile.classList.remove("selected");
+        } else {
+          odTile.classList.toggle("selected");
+        }
+        return;
+      }
+    }
+    const stChip = e.target.closest(".st-chip");
+    if (stChip) {
+      const sort = stChip.closest(".sort");
+      if (sort && !sort.classList.contains("locked")) {
+        stChip.classList.toggle("selected");
+        return;
+      }
+    }
+    const stBin = e.target.closest(".st-bin, .st-tray");
+    if (stBin) {
+      const sort = stBin.closest(".sort");
+      if (sort && !sort.classList.contains("locked")) {
+        const selected = sort.querySelector(".st-chip.selected");
+        if (selected) {
+          const drop = stBin.classList.contains("st-bin") ? stBin.querySelector(".st-bin-drop") : stBin.querySelector(".st-chips");
+          if (drop && selected.parentElement !== drop) {
+            flipAnimate([selected], () => { drop.appendChild(selected); });
+            selected.classList.remove("selected");
+            updateSortCheck(sort);
+            return;
+          }
+        }
+      }
     }
     const card = e.target.closest(".fcard");
     if (card) {
@@ -1768,12 +2631,290 @@
       s.querySelectorAll(".hs-pin").forEach((p) => p.classList.toggle("cur", p === pin));
     }
   });
+  /* ───────────── Drag & drop helpers for practice slides ───────────── */
+  let activeDrag = null;
+  // The click that follows a drag lands on the dragged piece (pointer capture); swallow it so it does not
+  // select, swap or unlink what was just dropped.
+  let dragClickGuard = false;
+  deckEl.addEventListener("click", (e) => {
+    if (!dragClickGuard) return;
+    dragClickGuard = false;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+  }, true);
+  deckEl.addEventListener("pointerdown", (e) => {
+    dragClickGuard = false;
+    if (STATIC || e.button !== 0) return;
+    const tile = e.target.closest(".od-tile");
+    if (tile) {
+      const order = tile.closest(".order");
+      if (!order || order.classList.contains("locked")) return;
+      const list = order.querySelector(".od-list");
+      if (!list) return;
+      activeDrag = { type: "order", tile, order, list, pointerId: e.pointerId, startY: e.clientY, moved: false };
+      return;
+    }
+    const chip = e.target.closest(".st-chip");
+    if (chip) {
+      const sort = chip.closest(".sort");
+      if (!sort || sort.classList.contains("locked")) return;
+      lockSortTray(sort);
+      activeDrag = { type: "sort", chip, sort, pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false };
+      return;
+    }
+    const mtItem = e.target.closest(".mt-item");
+    if (mtItem) {
+      const match = mtItem.closest(".match");
+      if (!match || match.classList.contains("locked")) return;
+      activeDrag = { type: "match", item: mtItem, match, side: mtItem.dataset.side, pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false };
+      return;
+    }
+  });
+
+  addEventListener("pointermove", (e) => {
+    if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
+    const k = parseFloat(root.style.getPropertyValue("--k")) || 1;
+    if (activeDrag.type === "order") {
+      const dy = e.clientY - activeDrag.startY;
+      if (!activeDrag.moved && Math.abs(dy) > 5) {
+        activeDrag.moved = true;
+        try { activeDrag.tile.setPointerCapture(e.pointerId); } catch {}
+        activeDrag.tile.classList.add("dragging");
+      }
+      if (activeDrag.moved) {
+        // Move the tile past every neighbour the pointer has crossed (fast drags can skip several slots in one event).
+        const tile = activeDrag.tile, list = activeDrag.list;
+        tile.style.transform = "none";
+        const home = tile.getBoundingClientRect();
+        const y = home.top + home.height / 2 + dy;
+        let ref = tile, moved = false;
+        if (dy > 0) {
+          for (let n = tile.nextElementSibling; n; n = n.nextElementSibling) {
+            const r = n.getBoundingClientRect();
+            if (y > r.top + r.height / 2) { ref = n; moved = true; } else break;
+          }
+        } else {
+          for (let p = tile.previousElementSibling; p; p = p.previousElementSibling) {
+            const r = p.getBoundingClientRect();
+            if (y < r.top + r.height / 2) { ref = p; moved = true; } else break;
+          }
+        }
+        if (moved) {
+          flipAnimate(Array.from(list.children).filter((t) => t !== tile), () => {
+            list.insertBefore(tile, dy > 0 ? ref.nextElementSibling : ref);
+            updateOrderNumbers(list);
+          });
+          const now = tile.getBoundingClientRect();
+          activeDrag.startY += now.top - home.top;
+        }
+        tile.style.transform = "translateY(" + ((e.clientY - activeDrag.startY) / k).toFixed(2) + "px)";
+      }
+    } else if (activeDrag.type === "sort") {
+      const dx = e.clientX - activeDrag.startX;
+      const dy = e.clientY - activeDrag.startY;
+      if (!activeDrag.moved && Math.hypot(dx, dy) > 5) {
+        activeDrag.moved = true;
+        try { activeDrag.chip.setPointerCapture(e.pointerId); } catch {}
+        activeDrag.chip.classList.add("dragging");
+      }
+      if (activeDrag.moved) {
+        activeDrag.chip.style.transform = "translate(" + (dx / k).toFixed(2) + "px, " + (dy / k).toFixed(2) + "px)";
+        activeDrag.sort.querySelectorAll(".st-bin, .st-tray").forEach((box) => {
+          const r = box.getBoundingClientRect();
+          const hit = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+          box.classList.toggle("hovered", hit);
+        });
+      }
+    } else if (activeDrag.type === "match") {
+      const dx = e.clientX - activeDrag.startX;
+      const dy = e.clientY - activeDrag.startY;
+      if (!activeDrag.moved && Math.hypot(dx, dy) > 5) {
+        activeDrag.moved = true;
+        try { activeDrag.item.setPointerCapture(e.pointerId); } catch {}
+      }
+      if (activeDrag.moved) {
+        const svg = activeDrag.match.querySelector(".mt-lines");
+        const middle = activeDrag.match.querySelector(".mt-middle");
+        if (svg && middle) {
+          const rMiddle = middle.getBoundingClientRect();
+          const port = activeDrag.item.querySelector(".mt-port") || activeDrag.item;
+          const rPort = port.getBoundingClientRect();
+          const x1 = (rPort.left + rPort.width / 2 - rMiddle.left) / k;
+          const y1 = (rPort.top + rPort.height / 2 - rMiddle.top) / k;
+          const x2 = (e.clientX - rMiddle.left) / k;
+          const y2 = (e.clientY - rMiddle.top) / k;
+          const cdx = Math.abs(x2 - x1) * 0.45;
+          const d = "M" + x1.toFixed(1) + "," + y1.toFixed(1) + " C" + (x1 + cdx).toFixed(1) + "," + y1.toFixed(1) + " " + (x2 - cdx).toFixed(1) + "," + y2.toFixed(1) + " " + x2.toFixed(1) + "," + y2.toFixed(1);
+          let prevPath = svg.querySelector(".mt-curve.preview");
+          if (!prevPath) {
+            prevPath = doc.createElementNS("http://www.w3.org/2000/svg", "path");
+            prevPath.setAttribute("class", "mt-curve preview");
+            svg.appendChild(prevPath);
+          }
+          prevPath.setAttribute("d", d);
+        }
+      }
+    }
+  });
+
+  // A cancelled gesture (system dialog, lost touch) drops nothing and restores the dragged piece.
+  addEventListener("pointercancel", (e) => {
+    if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
+    const el = activeDrag.tile || activeDrag.chip;
+    if (el) {
+      el.classList.remove("dragging");
+      el.style.transform = "";
+    }
+    if (activeDrag.sort) activeDrag.sort.querySelectorAll(".hovered").forEach((b) => b.classList.remove("hovered"));
+    const pv = activeDrag.match && activeDrag.match.querySelector(".mt-curve.preview");
+    if (pv) pv.remove();
+    if (activeDrag.list) updateOrderNumbers(activeDrag.list);
+    activeDrag = null;
+  });
+  addEventListener("pointerup", (e) => {
+    if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
+    const drag = activeDrag;
+    activeDrag = null;
+    if (drag.moved) dragClickGuard = true;
+    if (drag.type === "order") {
+      if (drag.moved) {
+        try { drag.tile.releasePointerCapture(e.pointerId); } catch {}
+        drag.tile.classList.remove("dragging");
+        drag.tile.style.transform = "";
+        updateOrderNumbers(drag.list);
+      }
+    } else if (drag.type === "sort") {
+      if (drag.moved) {
+        try { drag.chip.releasePointerCapture(e.pointerId); } catch {}
+        drag.chip.classList.remove("dragging");
+        drag.chip.style.transform = "";
+        let targetDrop = null;
+        drag.sort.querySelectorAll(".st-bin, .st-tray").forEach((box) => {
+          const r = box.getBoundingClientRect();
+          const hit = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+          box.classList.remove("hovered");
+          if (hit) {
+            targetDrop = box.classList.contains("st-bin") ? box.querySelector(".st-bin-drop") : box.querySelector(".st-chips");
+          }
+        });
+        if (targetDrop && drag.chip.parentElement !== targetDrop) {
+          flipAnimate([drag.chip], () => { targetDrop.appendChild(drag.chip); });
+          drag.chip.classList.remove("selected");
+          updateSortCheck(drag.sort);
+        }
+      }
+    } else if (drag.type === "match") {
+      if (drag.moved) {
+        try { drag.item.releasePointerCapture(e.pointerId); } catch {}
+        const svg = drag.match.querySelector(".mt-lines");
+        const prevPath = svg ? svg.querySelector(".mt-curve.preview") : null;
+        if (prevPath) prevPath.remove();
+        const otherSide = drag.side === "left" ? "right" : "left";
+        drag.match.querySelectorAll('.mt-item[data-side="' + otherSide + '"]').forEach((targetItem) => {
+          const r = targetItem.getBoundingClientRect();
+          if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+            const leftItem = drag.side === "left" ? drag.item : targetItem;
+            const rightItem = drag.side === "right" ? drag.item : targetItem;
+            connectMatch(drag.match, leftItem, rightItem);
+          }
+        });
+      }
+    }
+  });
+
   deckEl.addEventListener("keydown", (e) => {
     const blank = e.target.closest && e.target.closest(".blank");
     if (blank && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       blank._open = true;
       blank.classList.add("on");
+      return;
+    }
+    const tile = e.target.closest && e.target.closest(".od-tile");
+    if (tile) {
+      const order = tile.closest(".order");
+      const list = order ? order.querySelector(".od-list") : null;
+      if (order && !order.classList.contains("locked") && list) {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          tile.classList.toggle("selected");
+        } else if (e.key === "ArrowUp" && tile.classList.contains("selected")) {
+          const prev = tile.previousElementSibling;
+          if (prev) {
+            e.preventDefault();
+            flipAnimate(Array.from(list.children), () => {
+              list.insertBefore(tile, prev);
+              updateOrderNumbers(list);
+            });
+            tile.focus();
+          }
+        } else if (e.key === "ArrowDown" && tile.classList.contains("selected")) {
+          const next = tile.nextElementSibling;
+          if (next) {
+            e.preventDefault();
+            flipAnimate(Array.from(list.children), () => {
+              list.insertBefore(tile, next.nextElementSibling);
+              updateOrderNumbers(list);
+            });
+            tile.focus();
+          }
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          tile.classList.remove("selected");
+        }
+      }
+      return;
+    }
+    const chip = e.target.closest && e.target.closest(".st-chip");
+    if (chip) {
+      const sort = chip.closest(".sort");
+      if (sort && !sort.classList.contains("locked")) {
+        if (/^[1-4]$/.test(e.key)) {
+          const binIdx = +e.key - 1;
+          const bin = sort.querySelector('.st-bin[data-bin="' + binIdx + '"]');
+          if (bin) {
+            e.preventDefault();
+            const drop = bin.querySelector(".st-bin-drop");
+            flipAnimate([chip], () => { drop.appendChild(chip); });
+            chip.classList.remove("selected");
+            updateSortCheck(sort);
+            chip.focus();
+            return;
+          }
+        } else if (e.key === "0" || e.key === "Escape") {
+          const trayDrop = sort.querySelector(".st-tray .st-chips");
+          if (trayDrop && chip.parentElement !== trayDrop) {
+            e.preventDefault();
+            flipAnimate([chip], () => { trayDrop.appendChild(chip); });
+            chip.classList.remove("selected");
+            updateSortCheck(sort);
+            chip.focus();
+            return;
+          }
+        }
+      }
+      return;
+    }
+    const inp = e.target.closest && e.target.closest(".cz-in");
+    if (inp && e.key === "Enter") {
+      e.preventDefault();
+      const cloze = inp.closest(".cloze");
+      const inputs = Array.from(cloze.querySelectorAll(".cz-in"));
+      const curIdx = inputs.indexOf(inp);
+      if (curIdx < inputs.length - 1) {
+        inputs[curIdx + 1].focus();
+      } else {
+        const chk = cloze.querySelector(".qz-check");
+        if (chk && !chk.disabled) gradeCloze(cloze);
+      }
+    }
+  });
+
+  deckEl.addEventListener("input", (e) => {
+    const inp = e.target.closest && e.target.closest(".cz-in");
+    if (inp) {
+      const cloze = inp.closest(".cloze");
+      if (cloze) updateClozeCheck(cloze);
     }
   });
 
@@ -1797,15 +2938,24 @@
       if (!raf) raf = requestAnimationFrame(parallaxLoop);
     }, { passive: true });
   }
+  const LIT_SEL = ".card, .cmp-col, .fc-face, .qz-opt, .sm-score, .srs-card, .od-tile, .mt-item, .st-chip, .st-bin, .st-tray";
   deckEl.addEventListener("pointermove", (e) => {
+    if (reduced || e.pointerType !== "mouse") return;
+    const lit = e.target.closest && e.target.closest(LIT_SEL);
+    if (lit) {
+      const r = lit.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      lit.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
+      lit.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+    }
     const card = e.target.closest && e.target.closest(".card");
-    if (!card || reduced) return;
-    const r = card.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    card.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
-    card.style.setProperty("--my", (y * 100).toFixed(1) + "%");
-    card.style.transform = "perspective(1200px) rotateX(" + ((0.5 - y) * 4).toFixed(2) + "deg) rotateY(" + ((x - 0.5) * 5).toFixed(2) + "deg)";
+    if (card) {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      card.style.transform = "perspective(1200px) rotateX(" + ((0.5 - y) * 4).toFixed(2) + "deg) rotateY(" + ((x - 0.5) * 5).toFixed(2) + "deg)";
+    }
   }, { passive: true });
   deckEl.addEventListener("pointerout", (e) => {
     const card = e.target.closest && e.target.closest(".card");
@@ -1813,6 +2963,7 @@
   });
   let sx = null, sy = null;
   deckEl.addEventListener("touchstart", (e) => {
+    if (e.target.closest && e.target.closest(".od-tile, .mt-item, .st-chip, .cz-in, input, button")) return;
     if (e.touches.length === 1) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
   }, { passive: true });
   deckEl.addEventListener("touchend", (e) => {
@@ -1938,6 +3089,7 @@
       }
     }
     if (s.querySelector(".dg-failed")) issues.push({ level: "error", msg: "A diagram could not be drawn: fix its Mermaid code (the build warnings quote Mermaid's message)." });
+    if (s.querySelector(".tr-missing")) issues.push({ level: "warn", msg: "The Mira player of this trace slide is missing or is not a Mira player: build it with mira_build, fix \"player\" and rebuild (the build warnings give the path)." });
     const labels = Array.from(s.querySelectorAll(".cy-label, .cy-badge"));
     outer: for (let a = 0; a < labels.length; a++) {
       for (let b = a + 1; b < labels.length; b++) {
@@ -2070,6 +3222,7 @@
     setStatic: (on) => { STATIC = on !== false; root.classList.toggle("static", STATIC); },
     audit, sheet, preparePrint, fit: () => slides.forEach(fitSlide),
     overview: toggleOverview,
+    miraEventPayload,
   };
   boot();
 })();

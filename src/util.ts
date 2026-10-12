@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const VERSION = "0.7.1";
+export const VERSION = "0.8.0";
 /** Package root (works from dist/aurora.mjs and from src/*.ts). */
 export const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const UA = `AuroraSlides/${VERSION} (self-study slide builder; Model Context Protocol server) Node.js/${process.versions.node}`;
@@ -26,7 +26,7 @@ export const esc = (s: unknown): string => String(s ?? "").replace(/[&<>"']/g, (
 
 export const hash = (s: string, n = 8): string => createHash("sha1").update(s).digest("hex").slice(0, n);
 
-export function slugify(s: string): string {
+export function slugify(s: string, fallback = "deck"): string {
   return (
     s
       .normalize("NFD")
@@ -35,7 +35,7 @@ export function slugify(s: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
-      .slice(0, 48) || "deck"
+      .slice(0, 48) || fallback
   );
 }
 

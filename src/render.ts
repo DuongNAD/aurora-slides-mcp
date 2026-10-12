@@ -6,16 +6,18 @@
  * "render" pass then produces the final markup. One code path decides what is
  * needed, so the two can never drift apart.
  */
-import { readFile } from "node:fs/promises";
-import { basename, extname, isAbsolute, join, resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
+import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 import { PALETTE, renderChart } from "./charts.js";
 import { createMath, highlightCode, langFromExt, type CodeHtml } from "./highlight.js";
 import { block, inline, plain } from "./markup.js";
 import { diagramKey, mermaidCss, mermaidTheme, renderDiagrams, type DiagramJob, type DiagramOut } from "./diagrams.js";
 import { findGenerated, generateCached, genKey, imageMode, placeInDeck } from "./imagegen.js";
 import { iconHtml, imageKey, resolveIcons, resolveImageQueries, type IconRecord, type ImageResult, type Orientation } from "./media.js";
+import { renderSceneLayers, resolveDeckScene, resolveIconMotion, type IconMotion, type Scene } from "./scenes.js";
 import type { Deck, ImageInput, Slide, SlideOf, SlideType } from "./schema.js";
-import { esc, hash, PKG_ROOT, VERSION } from "./util.js";
+import { esc, hash, PKG_ROOT, slugify, VERSION } from "./util.js";
 
 /* ───────────────────────── Theme metadata ───────────────────────── */
 
@@ -59,8 +61,17 @@ export const STRINGS = {
     recalled: "Bạn nhớ được", stopsUnit: "trạm", reviewMissed: "Ôn lại các trạm màu cam rồi đi thêm một vòng nhé.",
     allRecalled: "Tuyệt vời, không sót trạm nào!", anchors: "Neo trí nhớ", reviewTag: "Ôn lại", analogy: "Neo vào điều đã biết",
     limit: "Chỗ không giống", mnemonic: "Mẹo nhớ", diagramFailed: "Chưa vẽ được sơ đồ", exportProgress: "Xuất tiến độ",
+    chapters: "Các phần",
+    traceHint: "Dự đoán ở mỗi điểm dừng. Nhấn Esc để quay lại điều hướng slide.",
+    traceMissing: "Chưa có trình dò Mira tại {path}. Tạo bằng mira_build rồi build lại deck.",
+    traceStatic: "Bản tương tác:", traceName: "Trình dò Mira",
+    orderEyebrow: "Sắp xếp", matchEyebrow: "Nối cặp", sortEyebrow: "Phân loại", clozeEyebrow: "Điền từ",
+    tryAgain: "Làm lại", showAnswer: "Xem đáp án", blankLabel: "Ô trống",
+    sortTray: "Kéo các mục vào nhóm đúng",
+    posCorrect: "vị trí", pairsCorrect: "cặp", itemsCorrect: "mục", blanksCorrect: "ô",
+    accentNote: "Chú ý dấu: ",
     srsAgain: "Quên", srsHard: "Khó", srsGood: "Nhớ", srsEasy: "Dễ", srsReview: "Đã ôn", cardsUnit: "thẻ", forgotten: "Quên",
-    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["1–4", "Đánh giá thẻ (Quên / Khó / Nhớ / Dễ)"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
+    keys: [["→ / Space", "Tiếp theo"], ["←", "Quay lại"], ["O / Esc", "Tổng quan"], ["N", "Ghi chú"], ["F", "Toàn màn hình"], ["1–6", "Chọn đáp án"], ["1 / 2", "Đúng / Lệch (dự đoán), Nhớ / Chưa nhớ"], ["1–4", "Phân loại vào nhóm; Đánh giá thẻ"], ["Space / Enter", "Bốc / thả mục (sắp xếp)"], ["T", "Bấm giờ bài tập"], ["Home / End", "Đầu / cuối"]],
   },
   en: {
     prev: "Previous", next: "Next", overview: "Overview", notes: "Notes", fullscreen: "Fullscreen", help: "Shortcuts",
@@ -87,8 +98,17 @@ export const STRINGS = {
     recalled: "You recalled", stopsUnit: "stops", reviewMissed: "Review the orange stops, then walk it once more.",
     allRecalled: "Perfect, not a single stop missed!", anchors: "Memory anchors", reviewTag: "Review", analogy: "Anchor it to what you know",
     limit: "Where it breaks", mnemonic: "Mnemonic", diagramFailed: "Could not draw the diagram", exportProgress: "Export progress",
+    chapters: "Chapters",
+    traceHint: "Predict at every stop. Press Esc to return to slide navigation.",
+    traceMissing: "No Mira trace player at {path}. Build one with mira_build, then rebuild the deck.",
+    traceStatic: "Interactive version:", traceName: "Mira trace player",
+    orderEyebrow: "Put in order", matchEyebrow: "Match", sortEyebrow: "Sort", clozeEyebrow: "Fill in",
+    tryAgain: "Try again", showAnswer: "Show answer", blankLabel: "Blank",
+    sortTray: "Drag items into the right group",
+    posCorrect: "correct positions", pairsCorrect: "correct pairs", itemsCorrect: "correct items", blanksCorrect: "correct blanks",
+    accentNote: "Check the accents: ",
     srsAgain: "Again", srsHard: "Hard", srsGood: "Good", srsEasy: "Easy", srsReview: "Reviewed", cardsUnit: "cards", forgotten: "Again",
-    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["1–4", "Card rating (Again / Hard / Good / Easy)"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
+    keys: [["→ / Space", "Next"], ["←", "Back"], ["O / Esc", "Overview"], ["N", "Notes"], ["F", "Fullscreen"], ["1–6", "Answer"], ["1 / 2", "As predicted / Different, Got it / Missed"], ["1–4", "Sort into bin; Card rating"], ["Space / Enter", "Pick up / drop item"], ["T", "Exercise timer"], ["Home / End", "First / last"]],
   },
 };
 type Strings = (typeof STRINGS)["vi"];
@@ -106,6 +126,7 @@ export const SVG = {
   cross: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9"/></svg>',
   dot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="fill" cx="12" cy="12" r="3.6"/></svg>',
   arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg>',
+  grip: '<svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5" class="fill"/><circle cx="11" cy="5" r="1.5" class="fill"/><circle cx="5" cy="12" r="1.5" class="fill"/><circle cx="11" cy="12" r="1.5" class="fill"/><circle cx="5" cy="19" r="1.5" class="fill"/><circle cx="11" cy="19" r="1.5" class="fill"/></svg>',
   bulb: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 17.5h5.6M10.2 20.5h3.6M12 3.5a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2v1.2h5.2v-1.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.5z"/></svg>',
   flip: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 0 1 13-5.1M19.5 12a7.5 7.5 0 0 1-13 5.1"/><path d="M17.8 3.4v3.8H14M6.2 20.6v-3.8H10"/></svg>',
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M8.5 6.2v11.6c0 .7.8 1.1 1.4.7l8.6-5.8a.85.85 0 0 0 0-1.4L9.9 5.5c-.6-.4-1.4 0-1.4.7z"/></svg>',
@@ -145,6 +166,39 @@ interface CodeError {
   filename: string;
 }
 
+/** A Mira trace player (mira-embed.v1) that a `trace` slide points to. */
+interface TraceJob {
+  slideNo: number;
+  /** The path exactly as written in the slide (used in messages). */
+  player: string;
+  /** Absolute path of the player file. */
+  abs: string;
+  /** Where the copy lives inside the deck folder: assets/mira/<slug>.html */
+  rel: string;
+}
+
+interface TraceInfo extends TraceJob {
+  /** True when the file exists and carries the `mira-player` meta tag. */
+  ok: boolean;
+  data?: Buffer;
+}
+
+/** The `<meta name="mira-player" …>` tag every Mira player carries. */
+const MIRA_META = /<meta\s[^>]*\bname\s*=\s*["']?mira-player["']?/i;
+
+/**
+ * Where a Mira player is read from and where its copy goes inside the deck folder.
+ * The copy is named after the player's folder, so decks stay readable, plus 6 hex of sha1(absolute path)
+ * so two players from different places never collide: assets/mira/<ascii-slug>-<6 hex>.html
+ * (letters, digits and dashes only: legal on every file system).
+ */
+export function traceTarget(dir: string, player: string): { abs: string; rel: string } {
+  const abs = resolve(dir, player.trim().replace(/\\/g, "/"));
+  const key = abs.replace(/\\/g, "/").replace(/^[a-z]:/, (m) => m.toUpperCase());
+  const slug = slugify(basename(dirname(abs)), "") || slugify(basename(abs, extname(abs)), "") || "mira";
+  return { abs, rel: `assets/mira/${slug}-${hash(key, 6)}.html` };
+}
+
 interface Ctx {
   mode: "collect" | "render";
   deck: Deck;
@@ -171,6 +225,8 @@ interface Ctx {
   genWait: Set<string>;
   needDiagrams: Map<string, DiagramJob>;
   diagrams: Map<string, DiagramOut>;
+  needTraces: Map<string, TraceJob>;
+  traces: Map<string, TraceInfo>;
   warnings: string[];
   sections: Array<{ index: number; title: string; number: string }>;
   quizTotal: number;
@@ -181,6 +237,8 @@ interface Ctx {
   domId: string;
   backdrops: Map<string, string>;
   css: string[];
+  deckScene?: Scene;
+  currentSectionScene?: Scene | "none";
 }
 
 const A = (a: string, d: number, extra = ""): string => ` data-a="${a}" data-d="${Math.max(0, Math.round(d))}"${extra}`;
@@ -205,6 +263,21 @@ function icon(c: Ctx, id: string | undefined, cls: string, d?: number, anim = "p
   if (!rec && id.includes(":")) warn(c, `Icon "${id}" not found (slide ${slideNo(c)}). Use aurora_search_icons to pick a valid id.`);
   const attrs = (d !== undefined ? A(anim, d) : "") + (morphable ? morph(c, "i", id) : "");
   return iconHtml(rec, id, cls, attrs);
+}
+
+function heroIconHtml(c: Ctx, iconId: string | undefined, cls: string, d: number, depth: number, wrapCls: string, motion?: IconMotion, withHalo = false): string {
+  if (!iconId) return "";
+  const mot = resolveIconMotion(motion, iconId);
+  const motAttr = mot ? ` data-motion="${mot}"` : "";
+  const motLayers =
+    mot === "rays"
+      ? '<i class="ic-rays" aria-hidden="true"></i>'
+      : mot === "orbit"
+        ? '<i class="ic-orbit" aria-hidden="true"><span class="ic-orb-dot"></span></i>'
+        : mot === "ripple"
+          ? '<i class="ic-ripple" aria-hidden="true"><span></span><span></span></i>'
+          : "";
+  return `<div class="${wrapCls}" data-depth="${depth}"${motAttr}>${withHalo ? '<div class="halo"></div>' : ""}${motLayers}${icon(c, iconId, cls, d, "pop", true)}</div>`;
 }
 
 const MIME: Record<string, string> = {
@@ -566,6 +639,36 @@ const BENTO_TEMPLATES: Record<number, string[]> = {
 const AREA: Record<string, number> = { sm: 1, wide: 2, tall: 2, lg: 4 };
 const MARK: Record<string, string> = { good: SVG.check, bad: SVG.cross, neutral: SVG.dot, accent: SVG.arrow };
 
+export const isGraded = (s: Slide): boolean =>
+  s.type === "quiz" || s.type === "order" || s.type === "match" || s.type === "sort" || (s.type === "cloze" && Boolean(s.input));
+
+function deterministicShuffle<T>(arr: T[], seedStr: string, isSolved: (res: T[]) => boolean): T[] {
+  let s = 0x811c9dc5;
+  for (let i = 0; i < seedStr.length; i++) {
+    s ^= seedStr.charCodeAt(i);
+    s = Math.imul(s, 0x01000193);
+  }
+  s = s >>> 0;
+  const rng = () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const res = arr.slice();
+  for (let i = res.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = res[i]!;
+    res[i] = res[j]!;
+    res[j] = tmp;
+  }
+  if (isSolved(res) && res.length > 1) {
+    const first = res.shift()!;
+    res.push(first);
+  }
+  return res;
+}
+
 const layouts: Layouts = {
   title(s, c) {
     const im = imgOf(c, s.image, "landscape");
@@ -577,7 +680,7 @@ const layouts: Layouts = {
       `${lead(c, s.subtitle, after)}${s.meta ? `<div class="meta"${A("fade", after + 260)}>${inl(c, s.meta)}</div>` : ""}</div>`;
     let visual: string;
     if (im) visual = `<div class="hero-media" data-depth="0.35">${figure(c, im, "glow", "hero-fig", 240, "zoom")}</div>`;
-    else if (s.icon) visual = `<div class="hero-icon" data-depth="0.8"><div class="halo"></div>${icon(c, s.icon, "hero-ic", 0, "pop", true)}</div>`;
+    else if (s.icon) visual = heroIconHtml(c, s.icon, "hero-ic", 0, 0.8, "hero-icon", s.motion, true);
     else visual = `<div class="orb" aria-hidden="true" data-depth="0.5"${A("blur", 0)}><i></i><i></i><i></i></div>`;
     const order = align === "center" ? visual + text : text + visual;
     return { cls: `align-${align} ${im ? "has-media" : s.icon ? "has-icon" : "has-orb"}`, html: `<div class="hero">${order}</div>` };
@@ -590,14 +693,31 @@ const layouts: Layouts = {
     const visual = im
       ? `<div class="sec-media">${figure(c, im, "rounded", "sec-fig", 220, "wipe")}</div>`
       : s.icon
-        ? `<div class="sec-icon" data-depth="0.6">${icon(c, s.icon, "sec-ic", 240, "pop", true)}</div>`
+        ? heroIconHtml(c, s.icon, "sec-ic", 240, 0.6, "sec-icon", s.motion)
         : "";
     const d = s.eyebrow ? 200 : 140;
+    const numHtml = num ? `<div class="sec-num" aria-hidden="true"${A("blur", 0)}>${esc(num)}</div>` : "";
+    let rail = "";
+    if (c.sections.length >= 2) {
+      const n = c.sections.length;
+      const curIdx = c.sections.findIndex((x) => x.index === c.slideIndex);
+      const progPct = n > 1 ? (Math.max(0, curIdx) / (n - 1)) * 100 : 0;
+      const items = c.sections
+        .map((x, k) => {
+          const cls = k < curIdx ? "done" : k === curIdx ? "cur" : "";
+          return `<li class="${cls}">` +
+            `<span class="sr-dot" aria-hidden="true"></span>` +
+            `<span class="sr-title">${esc(plain(x.title))}</span>` +
+            `</li>`;
+        })
+        .join("");
+      const railDelay = d + wordsDur(s.title) + (s.subtitle ? 240 : 120);
+      rail = `<ol class="sec-rail" style="--prog:${progPct.toFixed(2)}%;--n:${n}"${A("rise", railDelay)} aria-label="${esc(c.t.chapters)}"><li class="sr-track" aria-hidden="true"><i class="sr-fill"></i></li>${items}</ol>`;
+    }
     return {
-      cls: visual ? "has-visual" : "",
+      cls: `${visual ? "has-visual" : ""}${rail ? " has-rail" : ""}`,
       html:
-        `<div class="sec">${num ? `<div class="sec-num" aria-hidden="true"${A("blur", 0)}>${esc(num)}</div>` : ""}` +
-        `<div class="sec-text">${eyebrow(c, s.eyebrow, 120)}${heading(c, s.title, "display", d)}${lead(c, s.subtitle, d + wordsDur(s.title) + 140)}</div>${visual}</div>`,
+        `<div class="sec"><div class="sec-text">${numHtml}${eyebrow(c, s.eyebrow, 120)}${heading(c, s.title, "display", d)}${lead(c, s.subtitle, d + wordsDur(s.title) + 140)}</div>${visual}</div>${rail}`,
     };
   },
 
@@ -620,7 +740,7 @@ const layouts: Layouts = {
     const media = im
       ? figure(c, im, "rounded", "bl-fig", 280, "wipe")
       : s.icon
-        ? `<div class="bl-icon" data-depth="0.5">${icon(c, s.icon, "big-ic", 260, "pop", true)}</div>`
+        ? heroIconHtml(c, s.icon, "big-ic", 260, 0.5, "bl-icon", s.motion)
         : "";
     const h = head(c, s.eyebrow, s.title, s.subtitle);
     const cols = s.columns ?? (s.items.length > 5 && !media ? 2 : 1);
@@ -638,7 +758,7 @@ const layouts: Layouts = {
     let media = "";
     if (s.code) media = codeWindow(c, s.code, 300, { w: 860, h: 780 });
     else if (im) media = figure(c, im, "glow", "sp-fig", 260, "wipe");
-    else if (s.icon) media = `<div class="sp-icon" data-depth="0.5">${icon(c, s.icon, "big-ic", 240, "pop", true)}</div>`;
+    else if (s.icon) media = heroIconHtml(c, s.icon, "big-ic", 240, 0.5, "sp-icon", s.motion);
     let body = "";
     if (s.text) {
       body += `<div class="body"${A("rise", d)}>${blk(c, s.text)}</div>`;
@@ -892,7 +1012,7 @@ const layouts: Layouts = {
     const media = im
       ? figure(c, im, "rounded", "qz-fig", 240, "zoom")
       : s.icon
-        ? `<div class="qz-icon" data-depth="0.5">${icon(c, s.icon, "big-ic", 240, "pop", true)}</div>`
+        ? heroIconHtml(c, s.icon, "big-ic", 240, 0.5, "qz-icon", s.motion)
         : "";
     const eb = s.eyebrow ?? `${c.t.question}${c.quizTotal > 1 ? ` ${c.quizNo}/${c.quizTotal}` : ""}`;
     const qd = 60 + 120 + wordsDur(s.question);
@@ -906,7 +1026,8 @@ const layouts: Layouts = {
       .join("");
     const foot =
       `<div class="qz-foot">${multi ? `<button class="qz-check" type="button" disabled>${esc(c.t.check)}</button>` : ""}` +
-      `<div class="qz-result" role="status" aria-live="polite"></div></div>`;
+      `<div class="qz-result" role="status" aria-live="polite"></div>` +
+      `<button class="qz-retry" type="button" hidden>${esc(c.t.tryAgain)}</button></div>`;
     const expl = s.explanation ? `<div class="qz-expl">${blk(c, s.explanation)}</div>` : "";
     return {
       cls: `${media ? "with-media" : ""} n-${opts.length}${multi ? " multi" : ""}`,
@@ -923,7 +1044,7 @@ const layouts: Layouts = {
       .map(
         (card, k) =>
           `<button class="fcard" type="button" aria-pressed="false"${A("tilt", h.d + k * 110)}><span class="fc-in">` +
-          `<span class="fc-face fc-front">${card.icon ? icon(c, card.icon, "fc-ic") : ""}<span class="fc-term">${inl(c, card.front)}</span>` +
+          `<span class="fc-face fc-front">${card.icon ? `<span class="fc-icon-wrap"><span class="fc-halo" aria-hidden="true"></span>${icon(c, card.icon, "fc-ic")}</span>` : ""}<span class="fc-term">${inl(c, card.front)}</span>` +
           `${card.hint ? `<span class="fc-hint">${esc(c.t.hint)}: ${inl(c, card.hint)}</span>` : ""}<span class="fc-tap">${SVG.flip}${esc(c.t.flip)}</span></span>` +
           `<span class="fc-face fc-back"><span class="fc-ans">${inl(c, card.back)}</span></span></span></button>`,
       )
@@ -962,15 +1083,155 @@ const layouts: Layouts = {
   },
 
   cloze(s, c) {
-    const h = head(c, s.eyebrow, s.title);
-    const counter = { n: 0 };
+    const isTyped = Boolean(s.input);
+    if (isTyped && c.mode === "render") c.quizNo++;
+    const eb = s.eyebrow ?? (isTyped ? c.t.clozeEyebrow : undefined);
+    const h = head(c, eb, s.title);
+    const counter = { n: 0, input: isTyped, ariaLabel: c.t.blankLabel };
     const text = block(s.text, { math: c.math.render, cloze: counter });
     if (!counter.n) warn(c, `Cloze slide ${slideNo(c)} has no [[blanks]].`);
+    const expl = isTyped && s.explanation ? `<div class="qz-expl">${blk(c, s.explanation)}</div>` : "";
+    const foot = isTyped
+      ? `<div class="qz-foot"${A("rise", h.d + 200)}><button class="qz-check" type="button" disabled>${esc(c.t.check)}</button>` +
+        `<div class="qz-result" role="status" aria-live="polite"></div>` +
+        `<div class="qz-actions" hidden><button class="qz-retry" type="button">${esc(c.t.tryAgain)}</button><button class="qz-reveal" type="button">${esc(c.t.showAnswer)}</button></div>` +
+        `</div>${expl}`
+      : "";
     return {
-      cls: `blanks-${counter.n}`,
+      cls: isTyped ? `cz-typed blanks-${counter.n}` : `blanks-${counter.n}`,
       html:
-        `<div class="cloze">${h.html}<div class="cz-text"${A("rise", h.d)}>${text}</div>` +
-        `${s.hint ? `<div class="cz-hint"${A("fade", h.d + 320)}>${SVG.bulb}<span>${inl(c, s.hint)}</span></div>` : ""}</div>`,
+        `<div class="cloze${isTyped ? " cz-input" : ""}"${isTyped ? ` data-quiz="${c.quizNo}"` : ""}>` +
+        `${h.html}<div class="cz-text"${A("rise", h.d)}>${text}</div>` +
+        `${s.hint ? `<div class="cz-hint"${A("fade", h.d + 320)}>${SVG.bulb}<span>${inl(c, s.hint)}</span></div>` : ""}${foot}</div>`,
+    };
+  },
+
+  order(s, c) {
+    if (c.mode === "render") c.quizNo++;
+    const eb = s.eyebrow ?? c.t.orderEyebrow;
+    const items = s.items.map((text, k) => ({ text, k }));
+    const seed = `${c.slideIndex}:${s.items.join("::")}`;
+    const shuffled = deterministicShuffle(items, seed, (arr) => arr.every((it, idx) => it.k === idx));
+    const h = head(c, eb, s.title, s.subtitle);
+    const expl = s.explanation ? `<div class="qz-expl">${blk(c, s.explanation)}</div>` : "";
+    const list = shuffled
+      .map(
+        (it, idx) =>
+          `<li class="od-tile" data-k="${it.k}" tabindex="0" role="listitem">` +
+          `<span class="od-num" aria-hidden="true">${idx + 1}</span>` +
+          `<span class="od-text">${inl(c, it.text)}</span>` +
+          `<span class="od-grip" aria-hidden="true">${SVG.grip}</span>` +
+          `<span class="od-mark" aria-hidden="true"></span>` +
+          `</li>`,
+      )
+      .join("");
+    return {
+      cls: `od-count-${items.length}`,
+      html:
+        `<div class="order" data-quiz="${c.quizNo}">` +
+        `<div class="od-main">${h.html}` +
+        `<ol class="od-list"${A("rise", h.d + 60)}>${list}</ol>` +
+        `<div class="qz-foot"${A("rise", h.d + 200)}><button class="qz-check" type="button">${esc(c.t.check)}</button>` +
+        `<div class="qz-result" role="status" aria-live="polite"></div>` +
+        `<div class="qz-actions" hidden><button class="qz-retry" type="button">${esc(c.t.tryAgain)}</button><button class="qz-reveal" type="button">${esc(c.t.showAnswer)}</button></div>` +
+        `</div>${expl}</div></div>`,
+    };
+  },
+
+  match(s, c) {
+    if (c.mode === "render") c.quizNo++;
+    const eb = s.eyebrow ?? c.t.matchEyebrow;
+    const rightItems = s.pairs.map((p, k) => ({ right: p.right, k }));
+    const seed = `${c.slideIndex}:${s.pairs.map((p) => p.right).join("::")}`;
+    const shuffledRight = deterministicShuffle(rightItems, seed, (arr) => arr.every((it, idx) => it.k === idx));
+    const h = head(c, eb, s.title, s.subtitle);
+    const expl = s.explanation ? `<div class="qz-expl">${blk(c, s.explanation)}</div>` : "";
+    const leftCol = s.pairs
+      .map(
+        (p, k) =>
+          `<button class="mt-item" type="button" data-side="left" data-k="${k}">` +
+          (p.icon ? icon(c, p.icon, "mt-ic") : "") +
+          `<span class="mt-text">${inl(c, p.left)}</span>` +
+          `<span class="mt-port" aria-hidden="true"></span>` +
+          `<span class="mt-mark" aria-hidden="true"></span>` +
+          `</button>`,
+      )
+      .join("");
+    const rightCol = shuffledRight
+      .map(
+        (r) =>
+          `<button class="mt-item" type="button" data-side="right" data-k="${r.k}">` +
+          `<span class="mt-port" aria-hidden="true"></span>` +
+          `<span class="mt-text">${inl(c, r.right)}</span>` +
+          `<span class="mt-mark" aria-hidden="true"></span>` +
+          `</button>`,
+      )
+      .join("");
+    return {
+      cls: `mt-count-${s.pairs.length}`,
+      html:
+        `<div class="match" data-quiz="${c.quizNo}">` +
+        `<div class="mt-main">${h.html}` +
+        `<div class="mt-body"${A("rise", h.d + 60)}>` +
+        `<div class="mt-col mt-left">${leftCol}</div>` +
+        `<div class="mt-middle"><svg class="mt-lines" aria-hidden="true"></svg></div>` +
+        `<div class="mt-col mt-right">${rightCol}</div>` +
+        `</div>` +
+        `<div class="qz-foot"${A("rise", h.d + 200)}><button class="qz-check" type="button" disabled>${esc(c.t.check)}</button>` +
+        `<div class="qz-result" role="status" aria-live="polite"></div>` +
+        `<div class="qz-actions" hidden><button class="qz-retry" type="button">${esc(c.t.tryAgain)}</button><button class="qz-reveal" type="button">${esc(c.t.showAnswer)}</button></div>` +
+        `</div>${expl}</div></div>`,
+    };
+  },
+
+  sort(s, c) {
+    if (c.mode === "render") c.quizNo++;
+    const eb = s.eyebrow ?? c.t.sortEyebrow;
+    let chipId = 0;
+    const allChips: Array<{ id: number; text: string; groupIndex: number }> = [];
+    s.groups.forEach((g, gIdx) => {
+      g.items.forEach((text) => {
+        allChips.push({ id: chipId++, text, groupIndex: gIdx });
+      });
+    });
+    const seed = `${c.slideIndex}:${allChips.map((x) => x.text).join("::")}`;
+    const shuffledChips = deterministicShuffle(allChips, seed, (arr) => arr.every((ch, i) => ch.groupIndex === allChips[i]!.groupIndex));
+    const h = head(c, eb, s.title, s.subtitle);
+    const expl = s.explanation ? `<div class="qz-expl">${blk(c, s.explanation)}</div>` : "";
+    const chipsHtml = shuffledChips
+      .map(
+        (ch) =>
+          `<div class="st-chip" data-k="${ch.groupIndex}" data-id="${ch.id}" tabindex="0" role="button">` +
+          `<span class="st-chip-text">${inl(c, ch.text)}</span>` +
+          `<span class="st-chip-mark" aria-hidden="true"></span>` +
+          `</div>`,
+      )
+      .join("");
+    const binsHtml = s.groups
+      .map(
+        (g, gIdx) =>
+          `<div class="st-bin" data-bin="${gIdx}">` +
+          `<div class="st-bin-head">${g.icon ? icon(c, g.icon, "st-bin-ic") : ""}<span class="st-bin-label">${inl(c, g.label)}</span><span class="st-bin-key" aria-hidden="true">${gIdx + 1}</span></div>` +
+          `<div class="st-bin-drop" data-role="bin-drop"></div>` +
+          `</div>`,
+      )
+      .join("");
+    return {
+      cls: `st-groups-${s.groups.length}`,
+      html:
+        `<div class="sort" data-quiz="${c.quizNo}">` +
+        `<div class="st-main">${h.html}` +
+        `<div class="st-body"${A("rise", h.d + 60)}>` +
+        `<div class="st-tray" data-role="tray">` +
+        `<div class="st-tray-label" aria-hidden="true">${esc(c.t.sortTray)}</div>` +
+        `<div class="st-chips" data-role="tray-drop">${chipsHtml}</div>` +
+        `</div>` +
+        `<div class="st-bins count-${s.groups.length}">${binsHtml}</div>` +
+        `</div>` +
+        `<div class="qz-foot"${A("rise", h.d + 200)}><button class="qz-check" type="button" disabled>${esc(c.t.check)}</button>` +
+        `<div class="qz-result" role="status" aria-live="polite"></div>` +
+        `<div class="qz-actions" hidden><button class="qz-retry" type="button">${esc(c.t.tryAgain)}</button><button class="qz-reveal" type="button">${esc(c.t.showAnswer)}</button></div>` +
+        `</div>${expl}</div></div>`,
     };
   },
 
@@ -1004,7 +1265,7 @@ const layouts: Layouts = {
     const media = im
       ? figure(c, im, "rounded", "df-fig", 300, "zoom")
       : s.icon
-        ? `<div class="df-icon" data-depth="0.5">${icon(c, s.icon, "big-ic", 280, "pop", true)}</div>`
+        ? heroIconHtml(c, s.icon, "big-ic", 280, 0.5, "df-icon", s.motion)
         : "";
     const d = 60 + wordsDur(s.term) + 100;
     const kind = s.kind ? `<div class="df-kind"${A("rise", 0)}>${inl(c, s.kind)}</div>` : "";
@@ -1072,7 +1333,7 @@ const layouts: Layouts = {
     const totalCount = c.quizTotal || c.predictTotal || c.srsTotal;
     const scoreLabel = c.quizTotal ? c.t.score : c.predictTotal ? c.t.predictionsRight : c.t.srsReview;
     const score = showScore
-      ? `<div class="sm-score"${A("scale", h.d + 200)}><div class="sm-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="sm-track" cx="100" cy="100" r="84"/>` +
+      ? `<div class="sm-score"${A("scale", h.d + 200)}><div class="sm-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="sm-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--accent2)"/></linearGradient></defs><circle class="sm-track" cx="100" cy="100" r="84"/>` +
         `<circle class="sm-fill" cx="100" cy="100" r="84" pathLength="100"/></svg><div class="sm-num"><b class="sm-got">0</b><span>/${totalCount}</span></div></div>` +
         `<div class="sm-label">${esc(scoreLabel)}</div><div class="sm-msg">${esc(c.t.none)}</div>` +
         (c.quizTotal > 0 && c.predictTotal > 0 ? `<div class="sm-pred" hidden></div>` : "") +
@@ -1110,6 +1371,33 @@ const layouts: Layouts = {
       html:
         `<div class="video">${h.html}<figure class="vd-frame"${A("zoom", h.d)}><div class="win-bar"><i></i><i></i><i></i><span class="win-title">${label}</span></div><div class="vd-ratio">${inner}</div></figure>` +
         `${s.caption ? `<p class="vd-cap"${A("fade", h.d + 300)}>${inl(c, s.caption)}</p>` : ""}</div>`,
+    };
+  },
+
+  // A Mira trace player (mira-embed.v1) in a macOS window. The player file is copied into assets/mira/ by the build (see store.ts);
+  // the iframe loads lazily when the slide opens and stays loaded, so the learner keeps their place in the trace.
+  trace(s, c) {
+    const h = head(c, s.eyebrow, s.title);
+    const label = esc(plain(s.title) || c.t.traceName);
+    const tgt = traceTarget(c.dir, s.player);
+    if (c.mode === "collect") c.needTraces.set(tgt.abs, { slideNo: slideNo(c), player: s.player, ...tgt });
+    const ok = !!c.traces.get(tgt.abs)?.ok;
+    if (!ok) warn(c, `trace slide ${slideNo(c)}: player not found / not a Mira player: ${s.player}`);
+    const inner = ok
+      ? `<div class="tr-ph" aria-hidden="true"><span class="tr-ph-ic">${SVG.play}</span><span class="tr-ph-t">${esc(c.t.traceStatic)} ${esc(tgt.rel)}</span></div>` +
+        `<iframe data-src="${esc(tgt.rel)}?embed=1" title="${label}" loading="lazy"></iframe>`
+      : `<div class="tr-missing" role="note"><b>${esc(c.t.traceName)}</b><span>${esc(c.t.traceMissing).replace("{path}", () => esc(s.player))}</span></div>`;
+    // On paper the player cannot run: the print block names the title, the caption and where the interactive version lives.
+    const print = ok
+      ? `<div class="tr-print"><b class="tr-print-t">${label}</b>${s.caption ? `<p class="tr-print-c">${inl(c, s.caption)}</p>` : ""}` +
+        `<p class="tr-print-p">${SVG.play}<span>${esc(c.t.traceStatic)} ${esc(tgt.rel)}</span></p></div>`
+      : "";
+    return {
+      cls: ok ? "" : "no-player",
+      html:
+        `<div class="trace">${h.html}<div class="tr-body"><figure class="tr-frame"${A("zoom", h.d)}>` +
+        `<div class="win-bar"><i></i><i></i><i></i><span class="win-title">${label}</span></div><div class="tr-ratio">${inner}</div></figure>${print}</div>` +
+        `<p class="tr-cap"${A("fade", h.d + 300)}>${s.caption ? inl(c, s.caption) : esc(c.t.traceHint)}</p></div>`,
     };
   },
 
@@ -1469,7 +1757,7 @@ export const BD_LAYERS: Record<BgKind, string> = {
 };
 
 /** Registers (once) the backdrop a slide needs and returns its key; identical backdrops are shared so they never restart between slides. */
-function backdrop(c: Ctx, s: Slide, theme: ThemeName): string {
+function backdrop(c: Ctx, s: Slide, theme: ThemeName, slideScene?: Scene): string {
   const spec = s.background ?? (s.theme ? "auto" : (c.deck.background ?? "auto"));
   const o = typeof spec === "string" ? { kind: spec } : spec;
   const kind: BgKind = o.kind && o.kind !== "auto" ? o.kind : THEME_META[theme].bg;
@@ -1477,16 +1765,22 @@ function backdrop(c: Ctx, s: Slide, theme: ThemeName): string {
   const dim = "dim" in o ? o.dim : undefined;
   const blur = "blur" in o ? o.blur : undefined;
   const colors = "colors" in o ? o.colors : undefined;
-  const key = "b" + hash(JSON.stringify([theme, kind, im?.src || im?.key || "", dim, blur, colors]), 6);
+  const motion = "motion" in o ? o.motion : "kenburns";
+  const isKenBurns = Boolean(im && !im.missing && im.src && motion !== "none");
+  const key = "b" + hash(JSON.stringify([theme, kind, im?.src || im?.key || "", dim, blur, colors, motion, slideScene || ""]), 6);
   if (c.mode === "render" && !c.backdrops.has(key)) {
     const style = colors ? ` style="${esc(colors.map((col, k) => `--b${k + 1}:${col}`).join(";"))}"` : "";
     const photo =
       im && !im.missing && im.src
-        ? `<img class="bd-img" src="${esc(im.src)}" alt="" decoding="async"${blur ? ` style="filter:blur(${blur}px);inset:-${blur * 2}px"` : ""}><i class="bd-dim" style="opacity:${dim ?? 0.45}"></i>`
+        ? `<img class="bd-img${isKenBurns ? " kb" : ""}" src="${esc(im.src)}" alt="" decoding="async"${blur ? ` style="filter:blur(${blur}px);inset:-${blur * 2}px"` : ""}><i class="bd-dim" style="opacity:${dim ?? 0.45}"></i>`
         : "";
+    const baseLayers = photo || BD_LAYERS[kind];
+    const sceneLayers = slideScene ? renderSceneLayers(slideScene, c.deck.title) : "";
+    const fullLayers = `${baseLayers}${sceneLayers}`;
+    const sceneAttr = slideScene ? ` data-scene="${slideScene}"` : "";
     c.backdrops.set(
       key,
-      `<div class="bd k-${photo ? "image" : kind}" data-bd="${key}" data-theme="${theme}" data-tone="${THEME_META[theme].tone}"${style}>${photo || BD_LAYERS[kind]}</div>`,
+      `<div class="bd k-${photo ? "image" : kind}" data-bd="${key}" data-theme="${theme}" data-tone="${THEME_META[theme].tone}"${sceneAttr}${style}>${fullLayers}</div>`,
     );
   }
   return key;
@@ -1524,6 +1818,8 @@ export function titleOf(s: Slide): string {
       return s.title ?? s.phrase ?? s.items.map((it) => it.cue).join(" ");
     case "diagram":
       return s.title ?? s.caption ?? "";
+    case "trace":
+      return s.title ?? s.eyebrow ?? s.caption ?? "";
     case "html":
       return "";
     default: {
@@ -1538,14 +1834,30 @@ function renderSlide(c: Ctx, s: Slide, i: number): string {
   c.domId = `s-${s.id ?? i + 1}`;
   const theme = s.theme ?? c.deck.theme;
   const tone = THEME_META[theme].tone;
+
+  if (s.type === "section" && s.scene !== undefined) {
+    c.currentSectionScene = s.scene;
+  }
+  let slideScene: Scene | undefined;
+  if (s.scene !== undefined) {
+    slideScene = s.scene === "none" ? undefined : s.scene;
+  } else if (c.currentSectionScene !== undefined) {
+    slideScene = c.currentSectionScene === "none" ? undefined : c.currentSectionScene;
+  } else {
+    slideScene = c.deckScene;
+  }
+
   const r = (layouts[s.type] as (s: Slide, c: Ctx) => R)(s, c);
-  const bd = backdrop(c, s, theme);
+  const bd = backdrop(c, s, theme, slideScene);
   const notes = s.notes ? blk(c, s.notes) : "";
   if (c.mode === "collect") return "";
   const acc = accentParts(s.accent ?? (s.theme ? undefined : c.deck.accent));
   const label = plain(titleOf(s));
+  const isHero = ["title", "section", "statement", "quote"].includes(s.type);
+  const isDense = ["code", "table", "notebook", "diagram", "chart", "predict", "exercise"].includes(s.type);
+  const hero = isHero ? "1" : isDense ? "dense" : "0";
   const attrs =
-    ` id="${esc(c.domId)}" class="slide t-${s.type}${r.cls ? ` ${r.cls.trim()}` : ""}" data-i="${i}" data-type="${s.type}"` +
+    ` id="${esc(c.domId)}" class="slide t-${s.type}${r.cls ? ` ${r.cls.trim()}` : ""}" data-i="${i}" data-type="${s.type}" data-hero="${hero}"` +
     ` data-theme="${theme}" data-tone="${tone}" data-bd="${bd}"${acc.attr}${acc.style ? ` style="${acc.style}"` : ""}` +
     `${s.transition ? ` data-transition="${s.transition}"` : ""}${s.morph === false ? ' data-morph="0"' : ""}` +
     ` aria-roledescription="slide" aria-label="${i + 1}${label ? `: ${esc(label.slice(0, 120))}` : ""}"`;
@@ -1573,7 +1885,16 @@ function hud(c: Ctx, total: number, course?: CourseNav): string {
   const counter = o.counter !== false ? `<span class="count" aria-live="polite"><b>1</b><span class="sl">/</span><span class="tot">${total}</span></span>` : "";
   return (
     `<div class="hud">${crumb}${nextLesson}` +
-    (o.progress !== false ? `<div class="progress" aria-hidden="true"><i></i></div>` : "") +
+    (o.progress !== false
+      ? `<div class="progress" aria-hidden="true"><div class="prog-tip" hidden></div><i></i>` +
+        (c.sections.length >= 2 && total > 1
+          ? c.sections
+              .filter((s) => s.index > 0)
+              .map((s) => `<b style="left:${((s.index / (total - 1)) * 100).toFixed(4)}%"></b>`)
+              .join("")
+          : "") +
+        `</div>`
+      : "") +
     (o.controls !== false
       ? `<nav class="pill" aria-label="${esc(t.controls)}">${btn("prev", t.prev, SVG.prev)}${counter}${btn("next", t.next, SVG.next)}<i class="sep"></i>` +
         `${btn("overview", t.overview, SVG.grid)}${btn("notes", t.notes, SVG.notes)}${btn("fullscreen", t.fullscreen, SVG.full)}${btn("help", t.help, SVG.help)}</nav>`
@@ -1657,6 +1978,8 @@ export interface RenderResult {
   imageRequests: ImageRequest[];
   /** Ids of every `generate` prompt in the deck (filled or not). */
   genIds: string[];
+  /** Mira trace players the deck embeds: `rel` is the path inside the deck folder; buildDeck copies `data` there. */
+  traceFiles: Array<{ rel: string; data: Buffer }>;
   stats: { slides: number; icons: number; images: number; codeBlocks: number; math: boolean; bytes: number };
 }
 
@@ -1668,6 +1991,27 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     if (s.type === "section")
       sections.push({ index: i, title: s.title, number: s.number !== undefined ? String(s.number) : String(sections.length + 1).padStart(2, "0") });
   });
+
+  // Check course lesson scene inheritance if dir sits inside a course
+  let courseLessonScene: string | undefined;
+  try {
+    const parentCourseJson = join(dirname(dir), "course.json");
+    if (existsSync(parentCourseJson)) {
+      const cJson = JSON.parse(await readFile(parentCourseJson, "utf8"));
+      if (Array.isArray(cJson.lessons)) {
+        const myDirName = basename(dir);
+        const l = cJson.lessons.find((les: { dir?: string; title?: string; scene?: string }, idx: number) => {
+          const lDir = les.dir ?? `${String(idx + 1).padStart(2, "0")}-${slugify(les.title ?? "")}`;
+          return lDir === myDirName;
+        });
+        if (l && l.scene) courseLessonScene = l.scene;
+      }
+    }
+  } catch {}
+
+  const resolvedDeckScene = resolveDeckScene(deck, courseLessonScene);
+  const deckScene: Scene | undefined = resolvedDeckScene.scene === "none" ? undefined : resolvedDeckScene.scene;
+
   const shared = {
     icons: new Map<string, IconRecord>(),
     images: new Map<string, ImageResult>(),
@@ -1680,14 +2024,16 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     genErrors: new Map<string, string>(),
     genWait: new Set<string>(),
     diagrams: new Map<string, DiagramOut>(),
+    traces: new Map<string, TraceInfo>(),
   };
   const mk = (mode: Ctx["mode"]): Ctx => ({
     mode, deck, dir, embed: !!opts.embed, t: STRINGS[lang], magic: deck.options?.magicMove !== false, math: createMath(), ...shared,
-    needIcons: new Set(), needImages: new Map(), needCode: new Map(), needCodeFiles: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), warnings: [], sections,
-    quizTotal: deck.slides.filter((s) => s.type === "quiz").length,
+    needIcons: new Set(), needImages: new Map(), needCode: new Map(), needCodeFiles: new Map(), needLocal: new Map(), needGen: new Map(), needDiagrams: new Map(), needTraces: new Map(), warnings: [], sections,
+    quizTotal: deck.slides.filter(isGraded).length,
     predictTotal: deck.slides.filter((s) => s.type === "predict").length,
     srsTotal: deck.slides.filter((s) => s.type === "srs").length,
     quizNo: 0, slideIndex: 0, domId: "", backdrops: new Map(), css: [],
+    deckScene, currentSectionScene: undefined,
   });
 
   // Pass 1: collect everything the layouts need.
@@ -1765,10 +2111,25 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     const fontText = deck.font === "system" ? "" : await asset(`font-${deck.font}.css`);
     (await renderDiagrams([...col.needDiagrams.values()], fontText)).forEach((v, k) => shared.diagrams.set(k, v));
   };
-  await Promise.all([worker(), worker(), worker(), drawDiagrams()]);
+  // Mira trace players: the file must exist and carry the `mira-player` meta tag (their copies are written by buildDeck).
+  const checkTraces = () =>
+    Promise.all(
+      [...col.needTraces.values()].map(async (job) => {
+        try {
+          if ((await stat(job.abs)).size > 64 * 1024 * 1024) throw new Error("too large to be a player");
+          const data = await readFile(job.abs);
+          const ok = MIRA_META.test(data.toString("utf8"));
+          shared.traces.set(job.abs, ok ? { ...job, ok, data } : { ...job, ok });
+        } catch {
+          shared.traces.set(job.abs, { ...job, ok: false });
+        }
+      }),
+    );
+  await Promise.all([worker(), worker(), worker(), drawDiagrams(), checkTraces()]);
 
   // Pass 2: render.
   const c = mk("render");
+  c.warnings.push(`Scene: ${resolvedDeckScene.scene} (${resolvedDeckScene.why})`);
   const slides = deck.slides.map((s, i) => renderSlide(c, s, i)).join("\n");
   const total = deck.slides.length;
   if (iconRes.offline.length) c.warnings.push(`Could not reach the Iconify API for ${iconRes.offline.length} icon(s); they render as blanks until the next online build.`);
@@ -1783,6 +2144,12 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     usesCode ? fontCss("mono") : Promise.resolve(""),
   ]);
   if (!css || !js) c.warnings.push("Runtime assets are missing; run `node scripts/build.mjs` in the Aurora Slides folder.");
+
+  const s0 = deck.slides[0];
+  const s0Type = s0?.type ?? "title";
+  const isHero = ["title", "section", "statement", "quote"].includes(s0Type);
+  const isDense = ["code", "table", "notebook", "diagram", "chart", "predict", "exercise"].includes(s0Type);
+  const initialHero = isHero ? "1" : isDense ? "dense" : "0";
 
   const o = deck.options ?? {};
   const cfg = {
@@ -1825,7 +2192,7 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     `${deck.subtitle ? `<meta name="description" content="${esc(plain(deck.subtitle))}">\n` : ""}${deck.author ? `<meta name="author" content="${esc(deck.author)}">\n` : ""}` +
     `<meta name="color-scheme" content="${THEME_META[theme].tone}">\n${fonts}${mono}${katexCss ? `<style>${katexCss}</style>` : ""}\n<style>${css}</style>\n` +
     `${c.css.length ? `<style>${c.css.join("\n")}</style>\n` : ""}</head>\n<body>\n` +
-    `<div class="backdrops" aria-hidden="true">${[...c.backdrops.values()].join("")}</div>\n` +
+    `<div class="backdrops" data-hero="${initialHero}" aria-hidden="true">${[...c.backdrops.values()].join("")}</div>\n` +
     `<main class="deck" id="deck">\n${slides}\n</main>\n` +
     `${cfg.options.grain ? `<div class="grain" aria-hidden="true"></div>\n` : ""}${hud(c, total, opts.course)}\n` +
     `<script>window.AURORA=${JSON.stringify(cfg).replace(/</g, "\\u003c")}</script>\n<script>${js}</script>\n</body>\n</html>\n`;
@@ -1837,6 +2204,7 @@ export async function renderDeck(deck: Deck, opts: RenderOptions = {}): Promise<
     failedImages: imgRes.failed,
     imageRequests: [...col.needGen].filter(([k]) => shared.genWait.has(k)).map(([id, g]) => ({ id, ...g })),
     genIds: [...col.needGen.keys()],
+    traceFiles: [...shared.traces.values()].flatMap((t) => (t.ok && t.data ? [{ rel: t.rel, data: t.data }] : [])),
     stats: { slides: total, icons: shared.icons.size, images: shared.images.size, codeBlocks: col.needCode.size + col.needCodeFiles.size, math: c.math.used(), bytes: Buffer.byteLength(html) },
   };
 }

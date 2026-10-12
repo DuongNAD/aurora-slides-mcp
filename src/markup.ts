@@ -12,14 +12,14 @@ export interface MarkupOptions {
   words?: boolean;
   math?: (tex: string, display: boolean) => string;
   /** Mutable counter: when present, [[blanks]] become cloze steps. */
-  cloze?: { n: number };
+  cloze?: { n: number; input?: boolean; ariaLabel?: string };
 }
 
 type Node =
   | { k: "text"; v: string }
   | { k: "br" }
   | { k: "raw"; html: string }
-  | { k: "blank"; v: string; step: number }
+  | { k: "blank"; v: string; alts: string[]; step: number }
   | { k: "tag"; tag: string; href?: string; kids: Node[] };
 
 const DELIMS: Array<[string, string]> = [
@@ -112,7 +112,9 @@ function parse(src: string, o: MarkupOptions): Node[] {
         const j = src.indexOf("]]", i + 2);
         if (j > i + 2) {
           flush();
-          out.push({ k: "blank", v: src.slice(i + 2, j), step: ++o.cloze.n });
+          const raw = src.slice(i + 2, j);
+          const parts = raw.split("|").map((p) => p.trim());
+          out.push({ k: "blank", v: parts[0]!, alts: parts, step: ++o.cloze.n });
           i = j + 2;
           continue;
         }
@@ -171,7 +173,7 @@ const wrapWords = (s: string): string =>
     .map((part) => (part === "" ? "" : /^\s+$/.test(part) ? " " : `<span class="w">${esc(part)}</span>`))
     .join("");
 
-function render(nodes: Node[], words: boolean): string {
+function render(nodes: Node[], words: boolean, o: MarkupOptions = {}): string {
   let html = "";
   for (const n of nodes) {
     switch (n.k) {
@@ -185,12 +187,20 @@ function render(nodes: Node[], words: boolean): string {
         html += words ? `<span class="w wi">${n.html}</span>` : n.html;
         break;
       case "blank":
-        html += `<span class="blank" data-step="${n.step}" tabindex="0" role="button" aria-label="Hiện đáp án"><span class="b-ans">${esc(n.v)}</span></span>`;
+        if (o.cloze?.input) {
+          const maxLen = Math.max(...n.alts.map((a) => a.length));
+          const w = Math.max(4, maxLen);
+          const altsStr = n.alts.join("|");
+          const ariaLbl = `${o.cloze.ariaLabel || "Ô trống"} ${n.step}`;
+          html += `<span class="cz-blank-wrap"><input class="cz-in" data-ans="${esc(n.v)}" data-alt="${esc(altsStr)}" aria-label="${esc(ariaLbl)}" style="width:${w}ch" autocomplete="off" spellcheck="false" autocapitalize="off"><span class="cz-mark" aria-hidden="true"></span><span class="cz-fb" aria-live="polite"></span></span>`;
+        } else {
+          html += `<span class="blank" data-step="${n.step}" tabindex="0" role="button" aria-label="Hiện đáp án"><span class="b-ans">${esc(n.v)}</span></span>`;
+        }
         break;
       case "tag": {
         // Gradient and marker runs stay atomic so the gradient/sweep is continuous.
         const atomic = n.tag === "grad" || n.tag === "mark";
-        const inner = render(n.kids, words && !atomic);
+        const inner = render(n.kids, words && !atomic, o);
         let el: string;
         if (n.tag === "grad") el = `<span class="grad">${inner}</span>`;
         else if (n.tag === "a") el = `<a href="${esc(n.href)}" target="_blank" rel="noopener">${inner}</a>`;
@@ -206,7 +216,7 @@ function render(nodes: Node[], words: boolean): string {
 /** Inline markup (titles, labels, one-liners). */
 export function inline(src: string | undefined, o: MarkupOptions = {}): string {
   if (!src) return "";
-  return render(parse(src, o), !!o.words);
+  return render(parse(src, o), !!o.words, o);
 }
 
 /** Paragraph markup: blank lines split paragraphs, "- " lines become a list. */
@@ -231,7 +241,7 @@ export function plain(src: string | undefined): string {
   if (!src) return "";
   return src
     .replace(/\$\$?([^$]+)\$\$?/g, "$1")
-    .replace(/\[\[([^\]]+)\]\]/g, "$1")
+    .replace(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/(\*\*|==|\+\+|~~|\*|_|`)/g, "")
     .replace(/<[^>]+>/g, "")

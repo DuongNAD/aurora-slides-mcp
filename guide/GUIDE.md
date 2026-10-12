@@ -5,6 +5,7 @@ Aurora Slides turns a JSON deck into one self-contained HTML presentation in the
 big type, glass cards, slow aurora backgrounds, spring animations, Magic Move between slides, and
 interactive learning blocks (quiz, flashcards, cloze, notebook pages, exercises with timers, memory palaces and other memory anchors),
 and diagrams written in Mermaid (flowcharts, mind maps, sequence and state diagrams…) that build in step by step.
+Real code can be traced line by line inside a slide: a `trace` slide embeds a player built by sister project Mira.
 The output is made for **self-study**: the learner reads at their own pace with → / Space, writes the key
 points into a paper notebook, then practises.
 
@@ -92,6 +93,49 @@ Choosing a theme:
 Accents re-tint highlights, icons, charts and gradients: one of the named Apple colors or "#RRGGBB".
 `background` overrides the theme backdrop per deck or slide: a kind (aurora, mesh, spotlight, grid, dots, stars, glow, plain)
 or `{ "image": {"query": "misty forest"}, "dim": 0.55, "blur": 6 }` for a photo backdrop behind text.
+Lesson scenes (`scene`: leaves, cells, dna, quantum, waves, molecules, circuit, network, code, orbits, geometry, ink) adapt automatically to the chosen theme, drawing from its gradient and accent variables (`--b1`..`--b4`, `--g1`..`--g3`, `--accent`, `--accent2`, `--c2`..`--c6`).
+
+## scenes
+Lesson scenes bring animated, subject-matched background art to your decks: sunlight through leaves for photosynthesis, interference rings and a Bloch sphere for quantum mechanics, PCB traces with travelling pulses for hardware, code token streams for programming, planetary orbits for astronomy, and more.
+
+Scenes are deterministic SVG layers generated at build time, aria-hidden, pointer-events none, styled exclusively with theme color variables (`--b1`..`--b4`, `--g1`..`--g3`, `--accent`, `--accent2`, `--c2`..`--c6`), and modulated by slide density (`data-hero`: opacity 1.0 on title/section/statement/quote, 0.3 on dense code/table/notebook slides, 0.55 on standard content slides).
+
+### The 12 scenes
+- `leaves`: Sunlight shafts shining from the top-left at ~28°, swaying leaf silhouettes entering from corners, rising light motes (photosynthesis, botany, plants, ecology, agriculture).
+- `cells`: Translucent floating cells with visible nuclei and organelles, soft bokeh cell disks behind (cytology, microbiology, immunology, bacteria, viruses).
+- `dna`: Double helix on the right third, flowing seamlessly along its axis with alternating base-pair rungs and background helix depth (genetics, evolution, molecular biology, heredity).
+- `quantum`: Concentric interference rings expanding from dual sources, wireframe Bloch sphere with oscillating meridian and precessing state vector, probability dot cloud (qubits, quantum theory, atomic physics).
+- `waves`: 4-layer undulating sine waves across the lower 40% with translucent water surface fill (wave mechanics, oscillation, acoustics, optics, signal processing).
+- `molecules`: Floating ball-and-stick molecules (benzene, water, CO2, methane, carbon chain) and faint hexagonal crystal lattice (chemistry, reactions, molecular physics, materials).
+- `circuit`: Orthogonal PCB traces with 45° chamfers, integrated chip package with pins, light pulses travelling along traces (electronics, microprocessors, hardware, CPU, transistors).
+- `network`: Seeded graph nodes with interconnecting edges, transmitting data pulses, softly firing neural nodes (AI, machine learning, neural networks, graph algorithms).
+- `code`: Abstract code editor window on the right with colored syntax token bars, blinking caret, and seamlessly scrolling lines (software engineering, algorithms, Python, JavaScript, databases).
+- `orbits`: Tilted elliptical planetary orbits around a radiant star glow with moving celestial bodies (astronomy, astrophysics, gravitation, space).
+- `geometry`: Inscribed equilateral triangle slowly revolving within a construction circle, self-drawing sine curve, tangent line, background grid (mathematics, geometry, algebra, calculus).
+- `ink`: Soft breathing ink-wash blooms, sweeping self-drawing calligraphic brush stroke, subtle paper fiber texture (history, philosophy, literature, humanities, law).
+
+### Auto-detection & scoping
+- **Deck level (`scene`)**: `"auto"` (default), explicit scene name, or `"none"`.
+  When `"auto"`, Aurora folds diacritics and performs whole-word matching across English and Vietnamese keywords from deck title, subtitle, and section titles. The build output reports the chosen scene and keyword (e.g. `Scene: leaves (auto: 'quang hợp')`).
+- **Course level**: Lessons in `course.json` can specify `scene: "..."` which lesson decks inherit automatically.
+- **Section level**: Setting `scene` on a `section` slide applies to that section and all subsequent slides until another section overrides it.
+- **Slide level**: Setting `scene` on any individual slide overrides the scene for that slide only. Set `"scene": "none"` to suppress scenes on visually demanding slides.
+
+### Icon motion
+Hero icons on `title`, `section`, `bullets`, `split`, `quiz`, and `definition` slides automatically receive a gentle, Apple-like motion loop matched to the icon's meaning:
+- `sway`: leaf, plant, tree, flower, seedling, grass
+- `spin`: gear, cog, fan, settings
+- `rays`: sun (halo of thin rotating rays behind icon)
+- `orbit`: atom, planet, globe, molecule (small dot orbiting on tilted ellipse)
+- `ripple`: drop, water, droplet (expanding water rings below)
+- `beat`: heart, pulse
+- `float`: cloud, rocket, feather, bubble, balloon, fish, airplane
+- `flicker`: flame, fire, lightning, bolt, candle (subtle opacity and scale jitter)
+- `bob`: book, pencil, notebook, lightbulb, lamp, brain
+- `none`: default for other icons or explicit override via slide field `"motion": "..."`.
+
+### Photo backdrops and scenes
+Photo backdrops (`"background": { "image": "...", "dim": 0.55, "blur": 6 }`) default to slow Ken Burns drift (`"motion": "kenburns"`). A dimmed photo backdrop pairs beautifully with subject scenes like `leaves`, `waves`, or `circuit` floating softly over the image.
 
 ## markup
 Inline markup works in every text field:
@@ -109,6 +153,7 @@ Icons: any Iconify id `prefix:name`. Good sets: `ph` (Phosphor, use `-duotone`),
 `logos` / `skill-icons` (brands and programming languages), `fluent-emoji` (3D emoji, playful only).
 Find several at once: `aurora_search_icons {"queries": ["photosynthesis", "leaf", "microscope"], "style": "duotone"}`.
 Unknown ids render as a blank square and produce a warning; fix them before finishing.
+Hero icons (on `title`, `section`, `bullets`, `split`, `quiz`, `definition`) automatically receive slow Apple-like motion loops based on the icon's meaning (`sway`, `spin`, `rays`, `orbit`, `ripple`, `beat`, `float`, `flicker`, `bob`, or override with slide-level `"motion": "..."`).
 
 Images: `"image": "https://…"`, a local path relative to the deck folder, or an object
 `{ "src" | "query" | "generate" | "svg", "alt", "credit", "fit": "cover|contain", "position": "50% 30%", "frame": "rounded|glow|window|circle|none" }`.
@@ -138,8 +183,18 @@ no text". Never ask for words or labels inside the image (they come out garbled,
 For explode parts ask for "top-down view, isolated object, transparent background".
 
 - Full-bleed photos belong in `image` slides (cinematic, Ken Burns zoom); text sits on an automatic gradient shade.
+- Photo backdrops (`"background": { "image": "...", "dim": 0.55, "blur": 6 }`) default to slow Ken Burns drift (`"motion": "kenburns"`, disable with `"motion": "none"`). Photos pair especially well with dimmed subject scenes like `leaves`, `waves`, or `circuit` (at `dim: 0.6`) floating softly over the image.
 - Always check images in the screenshot: replace irrelevant results with another query, prompt or a fixed `src`.
 Video: YouTube/Vimeo URLs embed when served over http (aurora_preview); from file:// a poster links to the video.
+Mira trace player (`trace` slide): a player is one self-contained `index.html` that Mira builds with its tool `mira_build` from real Python
+(it steps through the code line by line beside a visualisation and stops at prediction gates, where the learner types what will happen).
+`mira_build` prints a ready slide JSON: paste it. Use it after the theory and code slides of an algorithm (loops, recursion, search,
+sorting), for 3-8 stops, give the slide an `id` and say in `caption` what to predict. The build copies the player to
+`assets/mira/<folder>-<6 hex>.html` next to index.html (keep that folder with the deck) and embeds it in an iframe that loads when
+the slide opens and stays loaded, so the learner keeps their place. **Esc inside the player hands the keyboard back to the deck**, so
+→ / ← move through slides again: mention it in the caption. A missing player (or a page without the `mira-player` meta tag) only
+warns and shows a calm card; print and PDF show the title, the caption and the path of the interactive version.
+Fields and a Vietnamese example: `aurora_guide {"type": "trace"}`. The predictions flow into the progress log (topic "progress").
 
 ## diagram
 `diagram` slides draw a Mermaid diagram at build time (in the headless Chrome also used for screenshots), coloured by the slide's
@@ -218,6 +273,7 @@ entered a new chapter.
 3. Choose themes by content and keep neighbours different: theory/abstract → aurora or midnight; building blocks and circuits →
    titanium; waves, fields, data → ocean; history and people → sunset; life sciences → forest; playful practice or recap → liquid;
    printable reference → paper or daylight. Repeat a theme only when lessons are far apart.
+   Lesson cards preview each lesson's scene faintly in the background. Pick scenes so neighbouring lessons do not look identical (e.g. quantum → circuit → network, never two identical scenes back-to-back).
 4. Each lesson still follows theory → notebook → practice → summary (topic "pedagogy"), and recalls the previous lesson in 1–2 slides.
 5. `aurora_preview {"dir": "<course folder>"}` serves the whole course; `aurora_build` on the course folder rebuilds everything.
 6. Polaris lesson outlines: when building a lesson in a course and `<subject>/polaris/lessons/<lesson>.outline.md` exists, follow it and cite its sources in `source`.
@@ -237,8 +293,9 @@ Shape every lesson deck for that habit (section titles in the deck language, e.g
    their own pace; keep each line copyable in one go (≤ 18 words).
 5. **Practice**: a `section`, then start practice with `predict` slides for the code just taught (predict-then-run: the learner writes a prediction, runs the code in the slide's terminal, then compares and copies gaps into their error log), followed by `exercise` slides from easy to hard: a self-contained problem, `time` to try alone
    (60–300 s), 1–2 `hints` that nudge without giving it away, a worked `solution` in short steps, and a final `answer`.
-   Follow with retrieval: `quiz` (with explanations), `cloze`, `flashcards`, and the recall walk of the lesson's palace
-   (`{"type": "palace", "from": "<id>", "mode": "recall"}`) or `anchors` with `recall: true`.
+   Follow with hands-on practice: `order` for processes and sequences 3–7 steps, `match` for term ↔ meaning 2–6 pairs,
+   `sort` for classification 2–4 groups (4–12 items), `cloze` with `input: true` for exact recall of key terms, `quiz` (with explanations),
+   `flashcards`, and the recall walk of the lesson's palace (`{"type": "palace", "from": "<id>", "mode": "recall"}`) or `anchors` with `recall: true`.
 6. **Closing**: `summary` with 3–6 takeaways; it also shows the learner's quiz score.
 
 Teaching rules:
@@ -247,9 +304,18 @@ Teaching rules:
 - When the deck language is not English, introduce technical terms in that language with the English term in parentheses on
   first use: "lục lạp (chloroplast)".
 - Wrong answers must teach: give quiz `explanation` and per-option `explain`.
-- Spread active recall: some check (quiz, cloze, flashcards, exercise) every 5–7 slides.
+- Spread active recall: some check (quiz, cloze, flashcards, exercise, order, match, sort) every 5–7 slides.
 - Natural language: write as a good teacher speaks the deck language, not as a translation. For Vietnamese: correct diacritics,
   no mixed-up tones.
+
+## practice
+Hands-on practice interactions test comprehension and active recall with instant grading:
+- **order**: sequence 3–7 steps (processes, timelines, algorithms). Drag tiles or use Space/Enter and Arrow keys.
+- **match**: connect 2–6 pairs (term ↔ meaning, cause ↔ effect). Click or drag between columns; Bézier curves connect them.
+- **sort**: classify 4–12 items into 2–4 groups. Drag chips into bins or press keys 1–4.
+- **cloze** (with `input: true`): exact recall of terms. Accepts alternatives `[[shown|alt 1|alt 2]]`; diacritic variations trigger accent reminders.
+- **quiz**: multiple choice (2–6 options) with "Làm lại" / "Try again" to retry after seeing feedback.
+All graded slides share a common footer with "Kiểm tra" / "Check", instant score, "Làm lại" / "Try again", "Xem đáp án" / "Show answer", and report mistakes through the standard `quiz` progress event for Polaris error logs.
 
 ## memory
 Memory anchors make theory stick: tie each key idea to something the learner already knows, then make them recall it later.
@@ -321,6 +387,9 @@ Before you report a deck as done:
 Aurora records interactive learning events during self-study:
 - `quiz`: submitted answer with question (plain text, max 200 chars), chosen option indices (`chosen`), chosen option texts (`chosenText`, string array, max 160 chars each, optional), correct answer indices (`answer`), correct answer texts (`answerText`, string array, max 160 chars each, optional), explanation (`explanation`, plain text, max 300 chars, optional), and boolean `correct`.
 - `predict`: prediction title, learner's typed prediction text (max 2000 chars), self-rating ("right" or "different"), and real terminal output snippet (max 300 chars).
+  Predictions made in a Mira player embedded by a `trace` slide arrive as `predict` events too (one per prediction gate): `slideId` is `<slide id>:mira-stop-<k>`
+  (`trace-<slide number>:mira-stop-<k>` when the slide has no id). The player speaks the `mira-embed.v1` protocol (`ready`, `event`, `blur` messages; Aurora answers `ready` with a
+  `hello` carrying the theme and accent); only `predict` events are relayed, the player's own `complete` is ignored because Aurora sends its own.
 - `recall`: memory palace id, station index, place, item, and rating ("got" or "missed").
 - `card`: spaced repetition review card id (`card`, max 100 chars), rating ("again", "hard", "good", or "easy"), and review duration in milliseconds (`ms`, integer 0..86400000, optional).
 - `complete`: total slide count, quiz accuracy (`x/y` or null), prediction accuracy (`x/y` or null) — sent once per visit on the last slide.
@@ -335,6 +404,7 @@ Call `aurora_progress {"dir": "<course or deck folder>", "file"?: "<optional exp
 - Last activity timestamp per lesson.
 - Quiz accuracy percentage and wrong answers with chosen vs correct texts.
 - Predictions (counts of right vs different, listing different predictions with snippets).
+- Predictions made in Mira trace players, listed apart under the sub-heading `Dò code (Mira)` with their own right/different counts.
 - Missed memory palace stations (`place -> item`).
 - Spaced repetition reviews (counts per rating: again, hard, good, easy).
 - Completed lessons with completion dates and spaced reviews due (+1, +3, +7, +16, +35 days).
@@ -342,3 +412,10 @@ Call `aurora_progress {"dir": "<course or deck folder>", "file"?: "<optional exp
 ### Sister projects
 - **Polaris** (https://github.com/DuongNAD/polaris-mcp) reads Aurora's `progress.jsonl` via `polaris_progress_sync` to automatically populate the learner's error log ("Sổ lỗi") and update the spaced review schedule.
 - **Vega** (https://github.com/DuongNAD/vega-mcp, FSRS memory engine) generates daily review decks (`deck.json` composed of `srs` slides) and reads `card` progress events via `vega_sync` to reschedule each card with FSRS.
+
+Also in the ecosystem (each has its own MCP server):
+- Orion: practice labs checked by real tests, tutoring-ladder hints, predict-then-run, attempt tracking.
+- SmartDrive: SSD governance and learning-aware search; Aurora asks it to re-index a folder after every write.
+- Constellation: one manifest, registration into the coding agents, health checks, drift doctor and the shared contracts (aurora-progress-event.v1).
+- Mira: code trace players: real Python execution traces in a self-contained player that a `trace` slide embeds; its predictions arrive in this progress log (mira-embed.v1), so Polaris and Vega need no change.
+- Sirius: execution loop - deadlines, triage, today router, session timer, weekly review

@@ -412,6 +412,71 @@
       "explanation": "Chu trình Calvin cần các enzyme trong **stroma**; màng thylakoid là nơi diễn ra pha sáng."
     },
     {
+      "type": "order",
+      "eyebrow": "Chu trình Calvin",
+      "title": "Xếp ba giai đoạn theo đúng thứ tự",
+      "subtitle": "Bắt đầu từ lúc CO₂ đi vào chu trình",
+      "items": [
+        "Cố định CO₂ nhờ RuBisCO",
+        "Khử 3-PGA thành G3P",
+        "Tái sinh RuBP"
+      ],
+      "explanation": "**C**on **k**iến **t**ha mồi: **C**ố định → **K**hử → **T**ái sinh. RuBisCO gắn CO₂ vào RuBP, ATP và NADPH khử 3-PGA thành G3P, rồi RuBP được tái sinh để chu trình quay tiếp."
+    },
+    {
+      "type": "match",
+      "title": "Mỗi bộ phận làm việc gì?",
+      "pairs": [
+        {
+          "left": "Diệp lục",
+          "right": "Hấp thụ năng lượng ánh sáng",
+          "icon": "ph:leaf-duotone"
+        },
+        {
+          "left": "Màng thylakoid",
+          "right": "Nơi diễn ra pha sáng",
+          "icon": "ph:stack-duotone"
+        },
+        {
+          "left": "Chất nền stroma",
+          "right": "Nơi diễn ra chu trình Calvin",
+          "icon": "ph:drop-duotone"
+        },
+        {
+          "left": "RuBisCO",
+          "right": "Gắn CO₂ vào RuBP",
+          "icon": "ph:atom-duotone"
+        }
+      ],
+      "explanation": "Diệp lục trên màng thylakoid bắt ánh sáng cho pha sáng; trong stroma, enzyme RuBisCO gắn CO₂ vào RuBP để mở đầu chu trình Calvin."
+    },
+    {
+      "type": "sort",
+      "title": "Pha sáng hay pha tối?",
+      "subtitle": "Xếp mỗi ý vào đúng pha",
+      "groups": [
+        {
+          "label": "Pha sáng",
+          "icon": "ph:sun-duotone",
+          "items": [
+            "Cần ánh sáng trực tiếp",
+            "Phân li nước, giải phóng O₂",
+            "Tạo ATP và NADPH"
+          ]
+        },
+        {
+          "label": "Pha tối",
+          "icon": "ph:moon-stars-duotone",
+          "items": [
+            "Cố định CO₂ nhờ RuBisCO",
+            "Dùng ATP, NADPH để tạo đường",
+            "Diễn ra trong chất nền stroma"
+          ]
+        }
+      ],
+      "explanation": "Pha sáng diễn ra trên màng thylakoid, cần ánh sáng và tạo ATP, NADPH, O₂. Pha tối (chu trình Calvin) diễn ra trong stroma, dùng ATP và NADPH để biến CO₂ thành đường."
+    },
+    {
       "type": "palace",
       "from": "pha-sang",
       "mode": "recall",
@@ -420,8 +485,10 @@
     {
       "type": "cloze",
       "title": "Điền vào chỗ trống",
-      "text": "Pha sáng diễn ra trên màng [[thylakoid]], còn chu trình Calvin diễn ra trong [[chất nền stroma]]. Sản phẩm của pha sáng là [[ATP]] và [[NADPH]].",
-      "hint": "Nghĩ về cấu trúc bên trong lục lạp."
+      "text": "Pha sáng diễn ra trên màng [[thylakoid|tilacoit|tilacôit]], còn chu trình Calvin diễn ra trong [[chất nền stroma|stroma|chất nền]]. Sản phẩm của pha sáng là [[ATP|NADPH]] và [[NADPH|ATP]].",
+      "hint": "Nghĩ về cấu trúc bên trong lục lạp.",
+      "input": true,
+      "explanation": "Pha sáng trên màng thylakoid tạo ATP và NADPH; chu trình Calvin trong stroma dùng chúng để biến CO₂ thành đường."
     },
     {
       "type": "flashcards",

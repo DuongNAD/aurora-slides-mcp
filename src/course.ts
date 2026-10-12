@@ -5,6 +5,7 @@
 import { inline, plain } from "./markup.js";
 import { iconHtml, resolveIcons } from "./media.js";
 import { asset, BD_LAYERS, fontCss, STRINGS, SVG, THEME_META, type ThemeName } from "./render.js";
+import { detectScene, renderSceneLayers, type Scene } from "./scenes.js";
 import type { Course } from "./schema.js";
 import { esc, hash, VERSION } from "./util.js";
 
@@ -21,6 +22,7 @@ export interface LessonCard {
   href?: string;
   slides?: number;
   key: string;
+  scene?: Scene | "none";
 }
 
 /** Rotation used when a lesson has no theme: neighbours never share a look. */
@@ -119,15 +121,30 @@ export async function renderCourse(course: Course, lessons: LessonCard[]): Promi
   const ids = lessons.map((l) => l.icon).filter((x): x is string => !!x);
   const res = ids.length ? await resolveIcons(ids) : { icons: new Map(), missing: [] as string[], offline: [] as string[] };
   res.missing.forEach((m) => warnings.push(`Icon "${m}" in the course outline was not found.`));
+  // Lint: neighbouring lessons sharing a scene
+  for (let i = 1; i < course.lessons.length; i++) {
+    const prev = course.lessons[i - 1]!;
+    const curr = course.lessons[i]!;
+    const s1 = prev.scene ?? detectScene([prev.title, prev.summary].filter(Boolean).join(" "))?.scene;
+    const s2 = curr.scene ?? detectScene([curr.title, curr.summary].filter(Boolean).join(" "))?.scene;
+    if (s1 && s2 && s1 !== "none" && s2 !== "none" && s1 === s2) {
+      warnings.push(`Lessons ${i} and ${i + 1} both use the "${s1}" scene; vary scenes between neighbouring lessons for visual rhythm.`);
+    }
+  }
+
   const totalMin = lessons.reduce((a, l) => a + (l.minutes ?? 0), 0);
   const built = lessons.filter((l) => l.href);
   const cards = lessons
-    .map((l) => {
+    .map((l, idx) => {
       const meta = [l.minutes ? `${l.minutes} ${t.minutesUnit}` : "", l.slides ? `${l.slides} ${t.slidesUnit}` : ""].filter(Boolean).join(" · ");
       const whenLine = l.when ? `<div class="c-when">${inline(l.when)}</div>` : "";
       const ic = l.icon ? iconHtml(res.icons.get(l.icon), l.icon, "c-ic") : "";
+      const cl = course.lessons[idx];
+      const rawScn = l.scene ?? cl?.scene ?? "auto";
+      const scn = rawScn === "auto" ? (detectScene([l.title, l.summary].filter(Boolean).join(" "))?.scene ?? "none") : rawScn;
+      const scnMarkup = scn && scn !== "none" ? `<div class="c-scn scn-${scn}" aria-hidden="true">${renderSceneLayers(scn, l.title)}</div>` : "";
       const inner =
-        `<div class="c-bg" aria-hidden="true"><i></i><i></i></div><div class="c-num">${String(l.n).padStart(2, "0")}</div>` +
+        `<div class="c-bg" aria-hidden="true"><i></i><i></i></div>${scnMarkup}<div class="c-num">${String(l.n).padStart(2, "0")}</div>` +
         `<div class="c-body">${meta ? `<div class="c-meta">${esc(meta)}</div>` : ""}${whenLine}<h2 class="c-t">${inline(l.title)}</h2>` +
         `${l.summary ? `<p class="c-s">${inline(l.summary)}</p>` : ""}` +
         `<div class="c-state"><span class="c-chip">${esc(l.href ? t.statusNew : t.statusSoon)}</span><span class="c-bar"><i></i></span></div></div>` +

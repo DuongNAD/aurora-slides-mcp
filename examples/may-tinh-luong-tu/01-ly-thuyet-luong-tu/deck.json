@@ -305,6 +305,32 @@
       "explanation": "Mỗi lần đo cho **một** kết quả; xác suất của mỗi kết quả là bình phương biên độ, và trạng thái sụp về kết quả đó."
     },
     {
+      "type": "sort",
+      "title": "Bit hay qubit?",
+      "subtitle": "Xếp mỗi tính chất vào đúng loại",
+      "groups": [
+        {
+          "label": "Bit cổ điển",
+          "icon": "ph:toggle-left-duotone",
+          "items": [
+            "Luôn là 0 hoặc 1",
+            "Đọc không làm giá trị thay đổi",
+            "Sao chép tự do"
+          ]
+        },
+        {
+          "label": "Qubit",
+          "icon": "ph:atom-duotone",
+          "items": [
+            "Có thể ở chồng chập",
+            "Đo làm trạng thái sụp đổ",
+            "Không thể sao chép"
+          ]
+        }
+      ],
+      "explanation": "Bit luôn có một giá trị xác định, đọc bao nhiêu lần cũng vậy. Qubit có thể ở chồng chập α|0⟩ + β|1⟩; phép đo cho ra 0 hoặc 1 và làm trạng thái sụp về kết quả đó; định lý no-cloning cấm sao chép một trạng thái chưa biết."
+    },
+    {
       "type": "palace",
       "from": "nha-qubit",
       "mode": "recall",

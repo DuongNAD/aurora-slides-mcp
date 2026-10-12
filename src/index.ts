@@ -16,7 +16,7 @@ import { showcaseDeck } from "./catalog.js";
 import { guideText, TOPICS } from "./guide.js";
 import { ICON_STYLES, searchIcons, searchImages, type ImageProvider } from "./media.js";
 import { existingPreview, previewUrl, stopPreview } from "./preview.js";
-import { deckJsonSchema, SLIDE_TYPES, THEMES, validateDeck } from "./schema.js";
+import { deckJsonSchema, SCENES, SLIDE_TYPES, THEMES, validateDeck } from "./schema.js";
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { generateCached, importImage, placeInDeck } from "./imagegen.js";
@@ -114,6 +114,7 @@ Rules
 - Teach for memory: theory → memory anchors (palace walk, anchors, analogy, mnemonic) → notebook page → practice (exercises easy → hard) → recall walk → summary.
 - One idea per slide, short lines, varied layouts; the full explanation goes in "notes".
 - Processes, structures and overviews (flowcharts, mind maps, sequence, state, timelines…): a "diagram" slide with Mermaid code.
+- Algorithms the learner should watch run (loops, recursion, search, sorting): a "trace" slide embeds a Mira player (build it with the Mira tool mira_build and paste the slide JSON it prints); its predictions flow into the progress log.
 - Polaris outlines: follow <subject>/polaris/lessons/<lesson>.outline.md if present and cite sources in \`source\`.
 - ${PICTURE_RULE}
 
@@ -680,6 +681,7 @@ Usage: node aurora.mjs [command] [options]
   audit <dir>
   pdf <dir> [--out file.pdf]
   showcase [dir] [--theme aurora]   build a deck that uses every layout
+  scenes [dir] [--theme aurora]     build a gallery deck with one title slide per scene
   selftest [dir]                drive a deck in headless Chrome and report runtime errors
   schema [--out deck.schema.json]
   images <query> [--orientation …] [--kind …]   search photos
@@ -848,6 +850,27 @@ async function cli(cmd: string, argv: string[]): Promise<number> {
       console.log(formatAudit(r.slides, r.logs, v.ok ? lintDeck(v.deck!) : v.errors));
       await closeBrowser();
       return r.slides.some((s) => s.issues.some((i) => i.level === "error")) ? 2 : 0;
+    }
+    case "scenes": {
+      const theme = typeof opt.theme === "string" ? opt.theme : "aurora";
+      if (!(THEMES as readonly string[]).includes(theme)) throw new Error(`Unknown theme ${theme}. Themes: ${THEMES.join(", ")}`);
+      const p = deckPaths(target ?? join(appDir("showcase"), "scenes"));
+      const slides = SCENES.map((scn) => ({
+        type: "title" as const,
+        title: scn,
+        subtitle: `Lesson scene: ${scn}`,
+        scene: scn,
+      }));
+      const deck = {
+        title: `Scenes Gallery (${theme})`,
+        author: "Aurora Slides",
+        lang: "en",
+        theme,
+        slides,
+      };
+      const b = await buildDeck(deck, p);
+      console.log(summarize(b));
+      return b.ok ? 0 : 1;
     }
     case "selftest": {
       let p = deckPaths(target ?? join(appDir("showcase"), "selftest"));

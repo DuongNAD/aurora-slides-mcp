@@ -130,6 +130,10 @@ export interface LessonSummary {
   predictRight: number;
   predictDifferent: number;
   differentPredictions: Array<{ title: string; snippet: string }>;
+  /** Predictions made inside Mira trace players (slideId "<slide>:mira-stop-<k>"), kept apart from the deck's own predict slides. */
+  miraRight: number;
+  miraDifferent: number;
+  miraDifferentPredictions: Array<{ title: string; stop: string; snippet: string }>;
   missedStations: Array<{ place: string; item: string }>;
   cardAgain: number;
   cardHard: number;
@@ -168,6 +172,9 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
     let predictRight = 0;
     let predictDifferent = 0;
     const diffPreds: Array<{ title: string; snippet: string }> = [];
+    let miraRight = 0;
+    let miraDifferent = 0;
+    const miraDiffPreds: Array<{ title: string; stop: string; snippet: string }> = [];
     const missedStationsMap = new Map<string, { place: string; item: string }>();
     let cardAgain = 0;
     let cardHard = 0;
@@ -189,6 +196,17 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
             answer: ev.answer,
             answerText: ev.answerText,
             explanation: ev.explanation,
+          });
+        }
+      } else if (ev.type === "predict" && typeof ev.slideId === "string" && ev.slideId.includes(":mira-stop-")) {
+        // A prediction made inside a Mira trace player embedded by a `trace` slide.
+        if (ev.rating === "right") miraRight++;
+        else if (ev.rating === "different") {
+          miraDifferent++;
+          miraDiffPreds.push({
+            title: ev.title || "Prediction",
+            stop: ev.slideId.slice(ev.slideId.lastIndexOf(":") + 1),
+            snippet: (ev.prediction || "").replace(/\s+/g, " ").trim().slice(0, 100),
           });
         }
       } else if (ev.type === "predict") {
@@ -237,6 +255,9 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
       predictRight,
       predictDifferent,
       differentPredictions: diffPreds,
+      miraRight,
+      miraDifferent,
+      miraDifferentPredictions: miraDiffPreds,
       missedStations: Array.from(missedStationsMap.values()),
       cardAgain,
       cardHard,
@@ -305,6 +326,15 @@ export function summarizeProgress(events: ProgressEvent[], defaultName = "lesson
       if (s.reviewDates.length > 0) {
         lines.push(`- Spaced reviews due: ${s.reviewDates.join(", ")}`);
       }
+    }
+
+    if (s.miraRight > 0 || s.miraDifferent > 0) {
+      lines.push("");
+      lines.push("#### Dò code (Mira)");
+      lines.push(`- Predictions: ${s.miraRight} right, ${s.miraDifferent} different`);
+      s.miraDifferentPredictions.forEach((p) => {
+        lines.push(`  • ${p.title} (${p.stop}): "${p.snippet}"`);
+      });
     }
   }
 

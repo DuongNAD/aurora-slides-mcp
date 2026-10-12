@@ -4,6 +4,9 @@
  * actionable validation errors instead of silently disappearing.
  */
 import { z } from "zod";
+import { DECK_SCENES, ICON_MOTIONS, SCENES, type DeckScene, type IconMotion, type Scene } from "./scenes.js";
+
+export { DECK_SCENES, ICON_MOTIONS, SCENES, type DeckScene, type IconMotion, type Scene };
 
 export const THEMES = ["aurora", "midnight", "daylight", "titanium", "ocean", "sunset", "forest", "paper", "liquid"] as const;
 export const ACCENTS = ["blue", "purple", "pink", "red", "orange", "yellow", "green", "mint", "teal", "cyan", "indigo"] as const;
@@ -62,9 +65,10 @@ export const BackgroundSchema = z
       dim: z.number().min(0).max(0.95).optional().describe("Darken a background image (0..0.95, default 0.45)"),
       blur: z.number().min(0).max(60).optional().describe("Blur a background image in px"),
       colors: z.array(z.string()).min(2).max(4).optional().describe("Custom blob/gradient colors (CSS colors)"),
+      motion: z.enum(["kenburns", "none"]).optional().describe("Slow cinematic motion for photo backdrops (default kenburns)"),
     }),
   ])
-  .describe(`Background: ${BACKGROUNDS.join(" | ")} or {kind, image, dim, blur, colors}`);
+  .describe(`Background: ${BACKGROUNDS.join(" | ")} or {kind, image, dim, blur, colors, motion}`);
 
 const base = {
   id: z
@@ -75,6 +79,8 @@ const base = {
   theme: z.enum(THEMES).optional().describe("Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm"),
   accent: AccentSchema.optional(),
   background: BackgroundSchema.optional(),
+  scene: z.enum([...SCENES, "none"]).optional().describe("Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section."),
+  motion: z.enum(ICON_MOTIONS).optional().describe("Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none"),
   transition: z.enum(TRANSITIONS).optional(),
   notes: optMd("Study notes for this slide (press N). Put depth here, keep the slide itself minimal."),
   morph: z.boolean().optional().describe("false disables automatic Magic Move into this slide"),
@@ -405,7 +411,62 @@ const ClozeSlide = z.strictObject({
   title: optMd("Title"),
   text: md("Sentence(s) with [[blanks]]: 'Quang hợp diễn ra ở [[lục lạp]].' Each → reveals the next blank."),
   hint: optMd("Hint line"),
+  input: z.boolean().optional().describe("Learner types each blank instead of step reveal"),
+  explanation: optMd("Shown after checking"),
 });
+
+const OrderSlide = z.strictObject({
+  type: z.literal("order"),
+  ...base,
+  eyebrow,
+  title: md("Title"),
+  subtitle: optMd("Subtitle"),
+  items: z.array(z.string().min(1)).min(3).max(7).describe("3–7 items in the CORRECT order (each ≤ 8 words)"),
+  explanation: optMd("Shown after checking"),
+});
+
+const MatchPair = z.strictObject({
+  left: md("Left item / prompt"),
+  right: md("Matching right item / answer"),
+  icon: IconSchema.optional(),
+});
+
+const MatchSlide = z.strictObject({
+  type: z.literal("match"),
+  ...base,
+  eyebrow,
+  title: md("Title"),
+  subtitle: optMd("Subtitle"),
+  pairs: z.array(MatchPair).min(2).max(6).describe("2–6 matching pairs"),
+  explanation: optMd("Shown after checking"),
+});
+
+const SortGroup = z.strictObject({
+  label: md("Group label"),
+  icon: IconSchema.optional(),
+  items: z.array(z.string().min(1)).min(1).max(6).describe("1–6 items belonging to this group"),
+});
+
+const SortSlide = z
+  .strictObject({
+    type: z.literal("sort"),
+    ...base,
+    eyebrow,
+    title: md("Title"),
+    subtitle: optMd("Subtitle"),
+    groups: z.array(SortGroup).min(2).max(4).describe("2–4 classification groups"),
+    explanation: optMd("Shown after checking"),
+  })
+  .superRefine((s, ctx) => {
+    const total = s.groups.reduce((acc, g) => acc + g.items.length, 0);
+    if (total < 4 || total > 12) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["groups"],
+        message: `sort slide needs at least 4 items and at most 12 items across all groups (got ${total})`,
+      });
+    }
+  });
 
 const ChartSlide = z
   .strictObject({
@@ -711,6 +772,17 @@ const DiagramSlide = z.strictObject({
     .describe("Reveal the boxes one per → in the order they first appear in the code; arrows appear with their boxes (flowchart, state, class, ER, mindmap)"),
 });
 
+/* Mira trace player (mira-embed.v1): a self-contained player built by sister project Mira (mira_build) that steps through real code
+   line by line beside a visualisation, with prediction gates. Aurora copies it into assets/mira/ and relays its predictions. */
+const TraceSlide = z.strictObject({
+  type: z.literal("trace"),
+  ...base,
+  eyebrow,
+  title: optMd("Title"),
+  player: z.string().min(1).describe("Path to a Mira player index.html (built with mira_build), relative to the deck folder or absolute"),
+  caption: optMd("Caption under the player, e.g. what to predict"),
+});
+
 export const SlideSchema = z.discriminatedUnion("type", [
   TitleSlide,
   SectionSlide,
@@ -748,6 +820,10 @@ export const SlideSchema = z.discriminatedUnion("type", [
   AnalogySlide,
   MnemonicSlide,
   DiagramSlide,
+  OrderSlide,
+  MatchSlide,
+  SortSlide,
+  TraceSlide,
 ]);
 
 export const SLIDE_TYPES: string[] = SlideSchema.options.map((o) => String(o.shape.type.value));
@@ -761,6 +837,7 @@ export const DeckSchema = z.strictObject({
   theme: z.enum(THEMES).default("aurora"),
   accent: AccentSchema.optional(),
   background: BackgroundSchema.optional(),
+  scene: z.enum(DECK_SCENES).default("auto").describe(`Lesson scene backdrop: ${DECK_SCENES.join(" | ")} (default auto)`),
   transition: z.enum(TRANSITIONS).default("fade"),
   font: z.enum(FONTS).default("vietnam").describe("vietnam = Be Vietnam Pro (default), inter = Inter, system = OS font (SF Pro on Apple)"),
   options: z
@@ -886,6 +963,7 @@ export const CourseLessonSchema = z.strictObject({
   icon: IconSchema.optional(),
   theme: z.enum(THEMES).optional().describe("Theme of this lesson's deck; give each lesson its own look"),
   accent: AccentSchema.optional(),
+  scene: z.enum([...SCENES, "auto", "none"]).optional().describe("Lesson scene backdrop; inherited by the lesson deck when omitted"),
   minutes: z.number().int().min(1).max(240).optional().describe("Estimated study time"),
 });
 

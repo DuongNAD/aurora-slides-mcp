@@ -12,7 +12,7 @@ import { lintDeck, outline, type OutlineRow } from "./lint.js";
 import { renderDeck, type CourseNav, type RenderResult } from "./render.js";
 import { SLIDE_TYPES, THEMES, validateCourse, validateDeck, type Course, type Deck } from "./schema.js";
 import { notifySmartDrive } from "./smartdrive.js";
-import { slugify } from "./util.js";
+import { errMsg, slugify } from "./util.js";
 
 export interface DeckPaths {
   dir: string;
@@ -82,6 +82,21 @@ export interface BuildOutcome {
   outline?: OutlineRow[];
 }
 
+/** Copies the Mira trace players a deck embeds into <deck>/assets/mira/; a file is only rewritten when its content differs. */
+async function copyTracePlayers(dir: string, result: RenderResult): Promise<void> {
+  for (const f of result.traceFiles) {
+    const target = join(dir, f.rel);
+    try {
+      const have = await readFile(target).catch(() => undefined);
+      if (have?.equals(f.data)) continue;
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, f.data);
+    } catch (e) {
+      result.warnings.push(`Could not copy the Mira player to ${f.rel}: ${errMsg(e)}`);
+    }
+  }
+}
+
 /** Validates, renders and (unless write:false) saves deck.json + the HTML. Lessons of a course also refresh the course page. */
 export async function buildDeck(
   raw: unknown,
@@ -100,6 +115,7 @@ export async function buildDeck(
   if (opts.write !== false) {
     await mkdir(p.dir, { recursive: true });
     if (opts.saveJson !== false) await writeFile(p.json, JSON.stringify(raw, null, 2) + "\n", "utf8");
+    await copyTracePlayers(p.dir, result);
     await writeFile(p.html, result.html, "utf8");
     builds.emit("built", p.dir);
     notifySmartDrive(p.dir);

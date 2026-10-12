@@ -11,7 +11,7 @@ export interface CatalogEntry {
 
 export const CATALOG: Record<SlideType, CatalogEntry> = {
   title: {
-    use: "Opening hero. Headline ≤ 7 words (\\n for a line break, ++word++ for gradient), one subtitle sentence. A large duotone icon (painted with the theme gradient) or a photo adds presence.",
+    use: "Opening hero. Headline ≤ 7 words (\\n for a line break, ++word++ for gradient), one subtitle sentence. A large duotone icon (painted with the theme gradient, with optional motion) or a photo adds presence. Optional scene or motion overrides the default.",
     example: {
       type: "title",
       eyebrow: "Sinh học 10 · Bài 12",
@@ -26,7 +26,7 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
     example: { type: "agenda", title: "Hôm nay mình học gì?" },
   },
   section: {
-    use: "Chapter divider with a huge auto number. Resets attention every 4–7 slides.",
+    use: "Chapter divider with a huge auto number. Resets attention every 4–7 slides. Optional scene overrides the backdrop for this section and subsequent slides.",
     example: { type: "section", title: "Pha sáng", subtitle: "Lá cây thu năng lượng từ ánh sáng", icon: "solar:sun-2-bold-duotone" },
   },
   statement: {
@@ -480,6 +480,75 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
       css: "& .lab{height:100%;display:grid;place-content:center;justify-items:center;text-align:center;gap:28px} & .lab-ring{width:220px;height:220px;border-radius:50%;background:conic-gradient(from 90deg,var(--accent),var(--accent2),var(--accent));-webkit-mask:radial-gradient(circle,transparent 57%,#000 59%);mask:radial-gradient(circle,transparent 57%,#000 59%)} & h2{font-size:84px;letter-spacing:-.03em} & p{font-size:34px;color:var(--fg2)}",
     },
   },
+  order: {
+    use: "Put 3–7 items in the correct sequence (chronological, process steps, priority). Drag tiles or use Space/Enter and Arrow keys. Graded on check.",
+    example: {
+      type: "order",
+      eyebrow: "Pha sáng",
+      title: "Đường đi của electron trong pha sáng",
+      subtitle: "Sắp xếp từ nơi electron xuất phát đến nơi nó dừng lại",
+      items: [
+        "Nước bị quang phân li, nhường electron",
+        "Diệp lục P680 (quang hệ II) nhận electron",
+        "Electron qua chuỗi chuyền đến quang hệ I",
+        "NADP⁺ nhận electron, tạo NADPH",
+      ],
+      explanation: "Electron đi một chiều: từ nước, qua quang hệ II và chuỗi chuyền, sang quang hệ I rồi dừng ở NADPH. Ánh sáng kích thích hai quang hệ để đẩy electron đi tiếp.",
+    },
+  },
+  match: {
+    use: "Connect 2–6 pairs of related concepts (term ↔ definition, cause ↔ effect, problem ↔ solution). Click or drag between columns to connect. Graded on check.",
+    example: {
+      type: "match",
+      eyebrow: "Nối cặp khái niệm",
+      title: "Cấu trúc và chức năng trong lục lạp",
+      pairs: [
+        { left: "Màng thylakoid", right: "Nơi diễn ra pha sáng và chuỗi chuyền electron", icon: "ph:stack-duotone" },
+        { left: "Chất nền stroma", right: "Nơi diễn ra chu trình Calvin cố định CO₂", icon: "ph:drop-duotone" },
+        { left: "Khí khổng", right: "Cửa ngõ trao đổi khí CO₂ và thoát hơi nước", icon: "ph:wind-duotone" },
+      ],
+      explanation: "Thylakoid chứa sắc tố quang hợp cho pha sáng; stroma chứa enzyme cho pha tối; khí khổng điều tiết khí ra vào lá.",
+    },
+  },
+  sort: {
+    use: "Classify 4–12 items into 2–4 groups. Drag chips into bins, click chip then bin, or press keys 1–4. Graded on check.",
+    example: {
+      type: "sort",
+      eyebrow: "Phân loại",
+      title: "Phân loại các phản ứng quang hợp",
+      subtitle: "Xếp mỗi sự kiện vào đúng pha tương ứng",
+      groups: [
+        {
+          label: "Pha sáng",
+          icon: "solar:sun-bold-duotone",
+          items: ["Quang phân li nước", "Tổng hợp ATP nhờ ánh sáng", "Giải phóng khí O₂"],
+        },
+        {
+          label: "Pha tối (chu trình Calvin)",
+          icon: "solar:moon-stars-bold-duotone",
+          items: ["Cố định CO₂ nhờ RuBisCO", "Tiêu thụ ATP và NADPH", "Tạo hợp chất G3P tổng hợp glucose"],
+        },
+      ],
+      explanation: "Pha sáng cần ánh sáng trực tiếp trên màng thylakoid để tạo ATP và NADPH; pha tối dùng năng lượng đó trong stroma để biến CO₂ thành đường.",
+    },
+  },
+  trace: {
+    use:
+      "Embeds a Mira trace player (sister project Mira): a self-contained player, built with mira_build from real Python, that steps through the code line by line " +
+      "beside a visualisation and stops at prediction gates where the learner types what will happen. Use it after the theory and code slides of an algorithm " +
+      "(loops, recursion, search, sorting), for 3-8 stops; mira_build prints a ready slide JSON, paste it. Give the slide an id: each prediction is relayed to the " +
+      "progress log as a predict event with slideId <id>:mira-stop-<k> (Polaris error log, Vega cards). The player loads when the slide opens and keeps its " +
+      "place; Esc inside it hands the keyboard back to the deck (the caption should say so). The player file is copied to assets/mira/ next to index.html: " +
+      "keep that folder with the deck. A missing or non-Mira player only warns and shows a calm card; printing shows the title, caption and the player's path.",
+    example: {
+      type: "trace",
+      id: "tim-kiem-nhi-phan",
+      eyebrow: "Chạy từng dòng",
+      title: "Tìm kiếm nhị phân qua từng bước",
+      player: "mira/tim-kiem-nhi-phan/index.html",
+      caption: "Ở mỗi điểm dừng, hãy đoán giá trị của mid trước khi bấm tiếp. Nhấn Esc để quay lại điều hướng slide.",
+    },
+  },
 };
 
 /** Showcase order: a coherent mini-lesson that exercises every layout. */
@@ -487,7 +556,7 @@ export const SHOWCASE_ORDER: SlideType[] = [
   "title", "agenda", "section", "statement", "bullets", "split", "image", "explode", "bento", "stats", "definition",
   "section", "steps", "diagram", "compare", "cycle", "formula", "code", "chart", "table", "timeline", "hotspots",
   "section", "palace", "analogy", "anchors", "mnemonic", "notebook",
-  "section", "exercise", "predict", "quiz", "palace", "flashcards", "srs", "cloze", "quote", "video", "html", "summary",
+  "section", "exercise", "predict", "order", "match", "sort", "quiz", "palace", "flashcards", "srs", "cloze", "quote", "video", "html", "summary",
 ];
 
 export function showcaseDeck(theme = "aurora"): Record<string, unknown> {
@@ -498,12 +567,20 @@ export function showcaseDeck(theme = "aurora"): Record<string, unknown> {
     if (t === "section") {
       sec++;
       if (sec === 2) Object.assign(ex, { title: "Pha tối", subtitle: "Biến CO₂ thành đường trong stroma", icon: "solar:moon-stars-bold-duotone" });
-      if (sec === 3) Object.assign(ex, { title: "Neo trí nhớ", subtitle: "Gắn mỗi ý vào một chỗ, một hình ảnh bạn đã quen", icon: "ph:anchor-simple-duotone" });
+      if (sec === 3) Object.assign(ex, { title: "Neo trí nhớ", subtitle: "Gắn mỗi ý vào một chỗ, một hình ảnh bạn đã quen", icon: "ph:anchor-simple-duotone", scene: "none" });
       if (sec === 4) Object.assign(ex, { title: "Thực hành", subtitle: "Làm bài từ dễ đến khó, rồi tự kiểm tra", icon: "ph:pencil-simple-line-duotone" });
     }
     // The second palace is the recall walk of the first one.
     if (t === "palace" && palaces++ > 0) return { type: "palace", from: "pha-sang", mode: "recall" };
+    if (t === "cloze") {
+      Object.assign(ex, {
+        input: true,
+        eyebrow: "Điền từ",
+        text: "Pha sáng diễn ra trên màng [[thylakoid|mang thylakoid]], còn chu trình Calvin diễn ra trong [[chất nền stroma|stroma]].",
+        explanation: "Pha sáng xảy ra tại màng thylakoid; pha tối (chu trình Calvin) xảy ra ở chất nền stroma.",
+      });
+    }
     return ex;
   });
-  return { title: "Aurora Slides: showcase", author: "Aurora Slides", lang: "vi", theme, slides };
+  return { title: "Aurora Slides: showcase", author: "Aurora Slides", lang: "vi", theme, scene: "leaves", slides };
 }

@@ -16,7 +16,7 @@ It is built around one way of studying, **theory → memory anchors → copy int
 **courses of small lessons**: a big subject (say, quantum computing) is split into short lessons, **each with its own look**,
 plus a course home page that tracks progress.
 
-Current version: **0.7.1**. Author: **DuongNAD**.
+Current version: **0.8.0**. Author: **DuongNAD**.
 
 ## Aurora + Polaris
 
@@ -50,6 +50,9 @@ The canonical, versioned definition with JSON Schema and fixtures lives in Const
 | [Vega](https://github.com/DuongNAD/vega-mcp) | Spaced repetition memory engine (FSRS), review session generator |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | SSD governance, learning-aware search, protection of course folders, post-write index hook |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | One manifest, registration into Claude Code / Antigravity / Cursor / Codex, health checks, drift doctor, updates |
+| Orion | Practice labs checked by real tests, tutoring-ladder hints, predict-then-run, attempt tracking |
+| Mira | Code trace players: records real Python execution traces and builds the self-contained player that Aurora embeds with the `trace` slide; its predictions flow into Aurora's progress log |
+| Sirius | Execution loop: deadlines, triage, today router, session timer, weekly review |
 
 ## Aurora + SmartDrive-OS
 
@@ -58,6 +61,27 @@ Aurora Slides automatically coordinates with sister project [SmartDrive-OS](http
 - **Non-blocking & coalesced**: Index notifications run detached in the background with a 60 s timeout and are coalesced per folder within 2 s.
 - **Opt-out**: Set `AURORA_SMARTDRIVE=off` to disable SmartDrive-OS indexing notifications.
 - **Custom command**: Set `AURORA_SMARTDRIVE_CMD` (e.g. `python -m smart_drive` or a path to the executable) if `smart-drive` is not on PATH.
+
+## Aurora + Mira
+
+Sister project Mira records **real Python execution traces** and builds a self-contained player (one offline `index.html`) that steps through the code line by line beside a visualisation, with **prediction gates** where the learner types what will happen before the next step.
+Aurora embeds that player in a lesson with the `trace` slide and relays its predictions into the same progress pipeline as quizzes and `predict` slides, so Polaris (error log) and Vega (cards) receive them with no other change.
+
+```json
+{
+  "type": "trace",
+  "id": "tim-kiem-nhi-phan",
+  "eyebrow": "Chạy từng dòng",
+  "title": "Tìm kiếm nhị phân qua từng bước",
+  "player": "mira/tim-kiem-nhi-phan/index.html",
+  "caption": "Ở mỗi điểm dừng, hãy đoán giá trị của mid trước khi bấm tiếp. Nhấn Esc để quay lại điều hướng slide."
+}
+```
+
+- **Build**: `player` is a path to the player's `index.html`, relative to the deck folder or absolute. The build copies it to `assets/mira/<folder>-<6 hex of sha1(path)>.html` inside the deck folder (rewritten only when its content changed) and renders a lazy iframe (`assets/mira/….html?embed=1`) in a macOS-style window. A missing file, or a page without `<meta name="mira-player">`, only gives a build warning and a calm fallback card.
+- **Embed protocol `mira-embed.v1`**: the player posts `ready`, `event` and `blur` messages (`{source: "mira", v: 1, …}`) to the deck. Aurora accepts them only from its own trace iframes, answers `ready` with a `hello` (theme and accent), relays only valid `predict` events (strings truncated to 200 / 2000 / 300 characters, `slideId` `mira-stop-<k>`) as `<slide id>:mira-stop-<k>`, ignores the player's own `complete` (Aurora sends its own) and returns the keyboard to the deck on `blur`, which the player sends when Esc is pressed inside it.
+- **Progress**: events go to the localStorage buffer, to `progress.jsonl` under `aurora_preview` and to the export button like every other event; `aurora_progress` lists them under `Dò code (Mira)`.
+- **Print and PDF**: the player is replaced by a static block with the title, the caption and `Interactive version: assets/mira/….html`.
 
 ## Highlights
 
@@ -69,9 +93,22 @@ Aurora Slides automatically coordinates with sister project [SmartDrive-OS](http
   are written in English so agents follow them precisely, but they require the lesson content and the agent's replies to use the
   language you wrote the request in (ask in Vietnamese and you get Vietnamese slides with `lang: "vi"`). Image prompts, ids and
   Mermaid keywords stay in English.
-- **36 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
+- **40 slide types**: title, section, agenda, statement, bullets, split, image (with camera zoom), explode, bento, stats, quote,
   code, timeline, steps, cycle, compare, table, chart, formula, definition, hotspots, notebook, exercise, predict, quiz, flashcards,
-  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram.
+  srs, cloze, summary, video, html, palace, anchors, analogy, mnemonic, diagram, order, match, sort, trace.
+- **Code traces from Mira** (`trace`): a player built by sister project Mira steps through real Python line by line beside a visualisation and stops at prediction gates; Aurora embeds it in a macOS-style window and relays the predictions into the progress log (see Aurora + Mira).
+- **Lesson scenes** (`scene`): the background and its motion match the subject. Twelve animated scenes (leaves, cells, dna, quantum,
+  waves, molecules, circuit, network, code, orbits, geometry, ink) are drawn in the theme's colours, work offline and stay calm
+  behind the title; `scene: "auto"` (the default) picks one from the lesson title, a course can give each lesson its own, and a
+  `section` can switch it for its chapter. Hero icons move with their meaning (a leaf sways, the sun's rays turn, an electron orbits
+  its atom) and photo backdrops drift slowly (Ken Burns). `aurora scenes` builds a gallery to look at them.
+- **Hands-on practice** (`order`, `match`, `sort`, typed `cloze`): drag steps into sequence, connect terms to their meanings with
+  curves, sort chips into groups, or type the missing words (accent-insensitive, with a note when only the accents differ). Everything
+  also works with clicks, the keyboard and touch; "Try again" and "Show answer" follow each check, and the first attempt is reported
+  through the existing `quiz` progress event, so Polaris logs mistakes with no contract change. Quizzes gained "Try again" too.
+- **Liquid Glass look**: glass cards with a lit top edge and a soft light that follows the pointer, a backdrop that drifts from slide
+  to slide and shifts hue per chapter, chapter openers with a gradient number and a chapter rail, and a progress bar split into
+  chapters that shows the slide title on hover and jumps on click.
 - **Spaced repetition review sessions** (`srs`): sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS engine) generates review decks composed of `srs` slides (front → hint → flip to back → 1–4 rating "Again / Hard / Good / Easy"), emitting `card` progress events to reschedule cards.
 - **Predict-then-run practice** (`predict`): the learner writes their prediction into a persisted input box, runs the real code in an
   animated macOS terminal, compares the real output, self-rates with keys 1/2 ("As predicted" / "Different"), and logs gaps into their error log.
@@ -244,6 +281,7 @@ Tools the agent uses:
 | 1–4 | Rate spaced repetition card (Again / Hard / Good / Easy) on `srs` slides |
 | 1 / 2 | Got it / Missed during memory palace review; As predicted / Different on predict slides |
 | H | Reveal/toggle hint on `srs` slides |
+| Esc (inside a Mira player) | Hand the keyboard back to the deck, so → / ← move through slides again |
 
 On exploded-view and memory palace slides, the mouse wheel or trackpad scrubs the animation continuously, like an Apple page.
 Lessons remember where you stopped; the course page shows each lesson's progress and which lessons are due for review.
@@ -299,6 +337,15 @@ PLAN.md     status, next ideas, constraints
 
 ## Version history
 
+- **0.8.0** (2026-10-12):
+  - Liquid Glass look: lit glass edges and a pointer light on cards, quiz options, flashcards and the HUD; backdrop drift per slide and a hue shift per chapter; section slides with a gradient number and a chapter rail; a chapter-aware progress bar that scrubs (hover shows the slide title, click jumps).
+  - Practice slides `order`, `match`, `sort` and `cloze` with `input: true` (alternatives `[[shown|alt]]`): pointer drag with FLIP motion plus click, keyboard and touch paths; deterministic build-time shuffles; first attempts reported as `quiz` events; "Try again" / "Show answer"; quizzes gained "Try again".
+  - Lesson scenes: 12 animated scenes matching the subject (`scene` on a deck, a course lesson or a section; `auto` picks from the title with diacritic-aware Vietnamese and English keywords), hero icon motion (`motion`), Ken Burns on photo backdrops, scene previews on course cards, the `aurora scenes` gallery command.
+  - New `trace` slide embeds a player built by sister project Mira (`mira_build`): the build copies the player to `assets/mira/` and renders a lazy iframe in a macOS-style window; a missing player or a page without the `mira-player` meta tag only warns and shows a fallback card.
+  - Embed protocol `mira-embed.v1`: the runtime accepts `ready`, `event` and `blur` messages only from its own trace iframes, answers `ready` with a `hello` (theme, accent), relays valid `predict` events into the progress pipeline as `<slide id>:mira-stop-<k>` (localStorage buffer, `/__aurora/progress`, export button), ignores the player's own `complete` and returns the keyboard to the deck on `blur`.
+  - `aurora_progress` lists Mira predictions under `Dò code (Mira)`; a pedagogy hint when a trace has no caption and no `code` or `predict` slide before it; the audit warns about a missing player; print and PDF show a static block instead of the player.
+  - Guide: the `trace` type (fields, Vietnamese example, when to use), the Esc key, and Mira, Orion and Sirius in the ecosystem lists.
+  - e2e: schema, asset copy, fallbacks, message validation and a real-browser relay check.
 - **0.7.1** (2026-10-11):
   - Accept `eyebrow` on `statement` slides as an alias of `kicker` (every other slide type uses `eyebrow`).
   - When both `kicker` and `eyebrow` are provided, `kicker` takes precedence and a content note is emitted.

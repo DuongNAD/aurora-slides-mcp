@@ -182,12 +182,41 @@
               "items": {
                 "type": "string"
               }
+            },
+            "motion": {
+              "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+              "type": "string",
+              "enum": [
+                "kenburns",
+                "none"
+              ]
             }
           },
           "additionalProperties": false
         }
       ],
-      "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+      "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+    },
+    "scene": {
+      "default": "auto",
+      "description": "Lesson scene backdrop: leaves | cells | dna | quantum | waves | molecules | circuit | network | code | orbits | geometry | ink | auto | none (default auto)",
+      "type": "string",
+      "enum": [
+        "leaves",
+        "cells",
+        "dna",
+        "quantum",
+        "waves",
+        "molecules",
+        "circuit",
+        "network",
+        "code",
+        "orbits",
+        "geometry",
+        "ink",
+        "auto",
+        "none"
+      ]
     },
     "transition": {
       "default": "fade",
@@ -430,12 +459,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -737,12 +809,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -1040,12 +1155,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -1284,12 +1442,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -1634,12 +1835,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -2008,12 +2252,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -2361,12 +2648,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -2721,12 +3051,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -2987,12 +3360,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -3278,12 +3694,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -3554,12 +4013,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -3809,12 +4311,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -4059,12 +4604,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -4317,12 +4905,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -4591,12 +5222,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -4841,12 +5515,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -5191,12 +5908,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -5443,12 +6203,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -5702,12 +6505,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -5747,6 +6593,14 @@
               },
               "hint": {
                 "description": "Hint line",
+                "type": "string"
+              },
+              "input": {
+                "description": "Learner types each blank instead of step reveal",
+                "type": "boolean"
+              },
+              "explanation": {
+                "description": "Shown after checking",
                 "type": "string"
               }
             },
@@ -5929,12 +6783,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -6215,12 +7112,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -6466,12 +7406,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -6779,12 +7762,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -7107,12 +8133,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -7338,12 +8407,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -7571,12 +8683,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -7801,12 +8956,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -8020,12 +9218,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -8283,12 +9524,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -8580,12 +9864,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -8862,12 +10189,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -9257,12 +10627,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -9679,12 +11092,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -10002,12 +11458,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -10436,12 +11935,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -10687,12 +12229,55 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
                       }
                     },
                     "additionalProperties": false
                   }
                 ],
-                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors}"
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
               },
               "transition": {
                 "type": "string",
@@ -10802,6 +12387,1166 @@
             "required": [
               "type",
               "code"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "order"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Title"
+              },
+              "subtitle": {
+                "description": "Subtitle",
+                "type": "string"
+              },
+              "items": {
+                "minItems": 3,
+                "maxItems": 7,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": "3–7 items in the CORRECT order (each ≤ 8 words)"
+              },
+              "explanation": {
+                "description": "Shown after checking",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "match"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Title"
+              },
+              "subtitle": {
+                "description": "Subtitle",
+                "type": "string"
+              },
+              "pairs": {
+                "minItems": 2,
+                "maxItems": 6,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "left": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Left item / prompt"
+                    },
+                    "right": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Matching right item / answer"
+                    },
+                    "icon": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Iconify id \"prefix:name\" — e.g. \"ph:atom-duotone\", \"solar:leaf-bold-duotone\", \"fluent-emoji:seedling\", \"logos:python\""
+                    }
+                  },
+                  "required": [
+                    "left",
+                    "right"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "2–6 matching pairs"
+              },
+              "explanation": {
+                "description": "Shown after checking",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "pairs"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "sort"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Title"
+              },
+              "subtitle": {
+                "description": "Subtitle",
+                "type": "string"
+              },
+              "groups": {
+                "minItems": 2,
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Group label"
+                    },
+                    "icon": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Iconify id \"prefix:name\" — e.g. \"ph:atom-duotone\", \"solar:leaf-bold-duotone\", \"fluent-emoji:seedling\", \"logos:python\""
+                    },
+                    "items": {
+                      "minItems": 1,
+                      "maxItems": 6,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": "1–6 items belonging to this group"
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "2–4 classification groups"
+              },
+              "explanation": {
+                "description": "Shown after checking",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "groups"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "trace"
+              },
+              "id": {
+                "description": "Stable id (deep link #/id)",
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "theme": {
+                "description": "Per-slide theme override, e.g. one 'daylight' slide in a dark deck for rhythm",
+                "type": "string",
+                "enum": [
+                  "aurora",
+                  "midnight",
+                  "daylight",
+                  "titanium",
+                  "ocean",
+                  "sunset",
+                  "forest",
+                  "paper",
+                  "liquid"
+                ]
+              },
+              "accent": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "blue",
+                      "purple",
+                      "pink",
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "mint",
+                      "teal",
+                      "cyan",
+                      "indigo"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                ],
+                "description": "Accent color: one of blue, purple, pink, red, orange, yellow, green, mint, teal, cyan, indigo or \"#RRGGBB\""
+              },
+              "background": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "aurora",
+                      "mesh",
+                      "spotlight",
+                      "grid",
+                      "dots",
+                      "stars",
+                      "glow",
+                      "plain"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "aurora",
+                          "mesh",
+                          "spotlight",
+                          "grid",
+                          "dots",
+                          "stars",
+                          "glow",
+                          "plain"
+                        ]
+                      },
+                      "image": {
+                        "description": "Full-bleed background photo",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "src": {
+                                "description": "URL, or a path relative to the deck folder (e.g. images/x.png from aurora_add_image)",
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "query": {
+                                "description": "Web search phrase; a matching photo is found automatically at build time",
+                                "type": "string",
+                                "minLength": 2
+                              },
+                              "generate": {
+                                "description": "Prompt for a picture. By default the build lists it as a picture request: make it with your own image tool and add it with aurora_add_image {for: id} (saved as images/gen-<id>.*). An image API is called only when the user sets AURORA_IMAGE_PROVIDER",
+                                "type": "string",
+                                "minLength": 3
+                              },
+                              "transparent": {
+                                "description": "With generate: ask for a transparent background (cut-out parts, objects for explode slides)",
+                                "type": "boolean"
+                              },
+                              "svg": {
+                                "description": "Inline <svg>…</svg> you drew yourself (diagrams, simple illustrations)",
+                                "type": "string",
+                                "minLength": 20
+                              },
+                              "alt": {
+                                "type": "string"
+                              },
+                              "credit": {
+                                "description": "Attribution shown in small print, e.g. 'Ảnh: Jane Doe / Unsplash'",
+                                "type": "string"
+                              },
+                              "fit": {
+                                "type": "string",
+                                "enum": [
+                                  "cover",
+                                  "contain"
+                                ]
+                              },
+                              "position": {
+                                "description": "CSS object-position, e.g. '50% 30%'",
+                                "type": "string"
+                              },
+                              "frame": {
+                                "description": "rounded = soft card, glow = ambient light bleed (Apple TV style), window = macOS window, circle = avatar",
+                                "type": "string",
+                                "enum": [
+                                  "none",
+                                  "rounded",
+                                  "glow",
+                                  "window",
+                                  "circle"
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "dim": {
+                        "description": "Darken a background image (0..0.95, default 0.45)",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 0.95
+                      },
+                      "blur": {
+                        "description": "Blur a background image in px",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      "colors": {
+                        "description": "Custom blob/gradient colors (CSS colors)",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "motion": {
+                        "description": "Slow cinematic motion for photo backdrops (default kenburns)",
+                        "type": "string",
+                        "enum": [
+                          "kenburns",
+                          "none"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Background: auto | aurora | mesh | spotlight | grid | dots | stars | glow | plain or {kind, image, dim, blur, colors, motion}"
+              },
+              "scene": {
+                "description": "Per-slide or per-section scene override. On section slides it applies to that section and subsequent slides until the next section.",
+                "type": "string",
+                "enum": [
+                  "leaves",
+                  "cells",
+                  "dna",
+                  "quantum",
+                  "waves",
+                  "molecules",
+                  "circuit",
+                  "network",
+                  "code",
+                  "orbits",
+                  "geometry",
+                  "ink",
+                  "none"
+                ]
+              },
+              "motion": {
+                "description": "Hero icon gentle motion loop: sway | spin | rays | orbit | ripple | beat | float | flicker | bob | none",
+                "type": "string",
+                "enum": [
+                  "sway",
+                  "spin",
+                  "rays",
+                  "orbit",
+                  "ripple",
+                  "beat",
+                  "float",
+                  "flicker",
+                  "bob",
+                  "none"
+                ]
+              },
+              "transition": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "slide",
+                  "zoom",
+                  "blur",
+                  "cube",
+                  "none"
+                ]
+              },
+              "notes": {
+                "description": "Study notes for this slide (press N). Put depth here, keep the slide itself minimal.",
+                "type": "string"
+              },
+              "morph": {
+                "description": "false disables automatic Magic Move into this slide",
+                "type": "boolean"
+              },
+              "source": {
+                "description": "Where this slide's facts come from (e.g. 'Khóa học · transcript 02:13', 'Mở rộng · arXiv 2210.03629', 'chưa xác minh')",
+                "type": "string"
+              },
+              "eyebrow": {
+                "description": "Small colored label above the title, sentence case (e.g. 'Chương 2: Hoá học')",
+                "type": "string"
+              },
+              "title": {
+                "description": "Title",
+                "type": "string"
+              },
+              "player": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path to a Mira player index.html (built with mira_build), relative to the deck folder or absolute"
+              },
+              "caption": {
+                "description": "Caption under the player, e.g. what to predict",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "player"
             ],
             "additionalProperties": false
           }

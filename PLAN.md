@@ -3,7 +3,42 @@
 MCP server (TypeScript, stdio) that lets AI coding agents (Claude Code, Antigravity, Cursor) build
 Apple-keynote-style animated, interactive HTML slide decks and small-lesson courses for self-study (Vietnamese first).
 
-## Status (2026-10-11): v0.7.1 complete
+## Status (2026-10-12): v0.8.0 complete (Liquid Glass look, practice slides, Mira `trace`, lesson scenes)
+- v0.8.0 look ("Liquid Glass"): tone tokens --glass-hi/--glass-sheen/--glass-lift/--glass-fill and a pointer specular light
+  (--spec, @property --spec-a, LIT surfaces in aurora.js) on cards, compare columns, quiz options, flashcards, summary, srs and the HUD;
+  backdrop drift (--bx/--by from the slide position on `.backdrops`, per-layer --dx/--dy, `translate` so it composes with the
+  keyframed `transform`) and a hue shift per chapter (--bh); section slides render a gradient number above the title and a chapter rail
+  (`.sec-rail`, `has-rail` reserves space); the progress bar gets chapter notches and scrubs (hover tooltip, click to jump).
+- v0.8.0 practice: `order`, `match`, `sort` slides and `cloze` with `input: true` (alternatives `[[shown|alt]]`). Build-time deterministic
+  shuffles (never the solved arrangement); pointer drag with FLIP (stage scale compensated, multi-slot moves per event, pointercancel
+  cleanup, the click that follows a drag is swallowed) plus click, keyboard and touch paths; first attempt per visit emits a `quiz`
+  event (contract v1 unchanged: sequences/pairs/placements as chosenText/answerText, wrong ones first) and counts in quizTotal;
+  "Làm lại"/"Xem đáp án" (hidden when all correct); the sort tray keeps its height so bins never move mid-drag; quizzes gained "Làm lại".
+- v0.8.0 lesson scenes: "lesson scenes" – animated SVG backgrounds and icon motion matching the lesson's subject.
+  - 12 scenes: leaves (sunlight shafts, leaves, motes), cells (floating translucent cells, organelles, bokeh), dna (scrolling double helix), quantum (interference rings, precessing Bloch sphere), waves (layered sine waves), molecules (ball-and-stick structures, hexagonal lattice), circuit (chamfered PCB traces, chip, light pulses), network (seeded nodes, edges, pulses, firing neurons), code (abstract syntax window, scrolling lines, blinking caret), orbits (elliptical orbits, planets, radiant star), geometry (rotating triangle, construction circle, sine wave), ink (ink-wash blooms, self-drawing brush stroke).
+  - Deck field `scene`: one of SCENES | "auto" | "none" (default "auto"). Slide field `scene` in base (section-wide or slide-specific). Course lesson `scene` inherited by decks.
+  - Auto-detection: diacritics-folded whole-word matching across Vietnamese and English keywords from title, subtitle, and section titles.
+  - Intensity modulation: runtime `data-hero` on `.backdrops` sets opacity (1.0 for hero, 0.3 for dense code/table/notebook, 0.55 standard).
+  - Performance: strictly CSS transform/opacity/stroke-dashoffset/offset-distance, static blur on layer wrappers, paused when doc hidden or reduced motion.
+  - Icon motion: hero icons automatically receive subtle motion loops (sway, spin, rays, orbit, ripple, beat, float, flicker, bob) or explicit slide field `motion`.
+  - Photo Ken Burns: slow cinematic drift on photo backdrops (`motion: "kenburns" | "none"`).
+  - Course page: faint preview of each lesson's scene behind course cards.
+  - New CLI command: `aurora scenes [dir] [--theme t]`.
+  - Selftest & E2E: tests for scene presence, data-hero switching, scene none, schema validation, and keyword auto-pick.
+- v0.8.0 trace (Mira, made in a parallel session): new `trace` slide that embeds a Mira player (sister project Mira, `mira_build`) and relays its predictions into the progress pipeline.
+  - Build (src/render.ts `traceTarget`, src/store.ts `copyTracePlayers`): `player` (relative to the deck folder or absolute; backslashes accepted) must exist and carry
+    `<meta name="mira-player">`; it is copied to `<deck>/assets/mira/<ascii slug of its folder>-<6 hex of sha1(absolute path)>.html` (rewritten only when the content differs)
+    and rendered as `<iframe data-src="assets/mira/….html?embed=1" loading="lazy">` in a macOS-style window (`.trace`, `.tr-frame`, `.tr-ratio`, `.tr-cap`; the frame is the
+    largest 16:9 that fits, via container query units). A missing player or a page without the meta tag only warns (`trace slide <n>: player not found / not a Mira player: <path>`)
+    and shows a fallback card. Print and PDF show a static block (title, caption, `Bản tương tác: assets/mira/….html`).
+  - Runtime (runtime/aurora.js): one `message` listener accepts only `{source: "mira", v: 1}` from the contentWindow of a `.trace iframe`. `ready` is answered with `hello` (theme, #RRGGBB accent);
+    `event` with `type: "predict"` goes through the pure validator `miraEventPayload` (marked `// <pure:miraEventPayload>` so scripts/e2e.mjs can run it on its own; also
+    `window.__aurora.miraEventPayload`) into `emitEvent("predict", …)` with slideId `<slide id or trace-N>:mira-stop-<k>` (not while STATIC; the player's own `complete` is ignored);
+    `blur` (Esc in the player) gives the keyboard back to the deck. Trace iframes stay loaded after the slide is left (video iframes are unloaded).
+  - `aurora_progress` lists Mira predictions under `#### Dò code (Mira)`; lint hint for a trace without caption and without a `code`/`predict` slide before it; the audit warns about a
+    missing player; guide: `trace` type, Esc, Mira / Sirius / Orion in the ecosystem lists.
+  - e2e: the baseline checks plus the trace tests (schema, copy, fallbacks, validator cases, progress, lint, guide, versions, and a real headless-Chrome relay check against the preview
+    server; it prints a skip note when no browser is installed).
 - v0.7.1: accept `eyebrow` on `statement` slides as an alias of `kicker` (every other slide type uses `eyebrow`). If both are given, `kicker` wins and a content note is emitted; render treats them identically; guide and catalog document `kicker` with "(alias: eyebrow)"; strict unknown-field validation and typo suggestions preserved.
 - Spaced-repetition review sessions (`srs` slide type, 36 slide types total) produced by sister project [Vega](https://github.com/DuongNAD/vega-mcp) (FSRS memory engine):
   - Apple-style frosted glass card layout: front question/prompt, optional hint reveal (`H`), flip to back (→ / Space / click) with memory hook, origin link, and 1–4 rating row ("Quên / Khó / Nhớ / Dễ" / "Again / Hard / Good / Easy").
