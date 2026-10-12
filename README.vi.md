@@ -50,9 +50,9 @@ flowchart LR
 | [Vega](https://github.com/DuongNAD/vega-mcp) | Động cơ ghi nhớ ngắt quãng (FSRS), tạo phiên ôn tập hàng ngày |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | Quản trị SSD, tìm kiếm tối ưu cho học tập, bảo vệ thư mục khoá học, hook cập nhật chỉ mục sau khi ghi |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | Một manifest duy nhất, đăng ký vào Claude Code / Antigravity / Cursor / Codex, kiểm tra sức khoẻ, drift doctor, cập nhật |
-| Orion | Phòng luyện tập chấm bằng test thật, gợi ý theo thang bậc, đoán rồi chạy, theo dõi các lần thử |
-| Mira | Trình dò mã: ghi lại quá trình chạy Python thật và dựng trình phát tự chứa mà Aurora nhúng bằng slide `trace`; dự đoán của người học chảy vào nhật ký tiến độ của Aurora |
-| Sirius | Vòng lặp thực thi: hạn chót, phân loại ưu tiên, chọn việc hôm nay, đồng hồ phiên học, tổng kết tuần |
+| [Orion](https://github.com/DuongNAD/orion-mcp) | Phòng luyện tập chấm bằng test thật, gợi ý theo thang bậc, đoán rồi chạy, theo dõi các lần thử |
+| [Mira](https://github.com/DuongNAD/mira-mcp) | Trình dò mã: ghi lại quá trình chạy Python thật và dựng trình phát tự chứa mà Aurora nhúng bằng slide `trace`; dự đoán của người học chảy vào nhật ký tiến độ của Aurora |
+| [Sirius](https://github.com/DuongNAD/sirius-mcp) | Vòng lặp thực thi: hạn chót, phân loại ưu tiên, chọn việc hôm nay, đồng hồ phiên học, tổng kết tuần |
 
 ## Aurora + SmartDrive-OS
 

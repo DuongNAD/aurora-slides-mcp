@@ -50,9 +50,9 @@ The canonical, versioned definition with JSON Schema and fixtures lives in Const
 | [Vega](https://github.com/DuongNAD/vega-mcp) | Spaced repetition memory engine (FSRS), review session generator |
 | [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | SSD governance, learning-aware search, protection of course folders, post-write index hook |
 | [Constellation](https://github.com/DuongNAD/constellation-mcp) | One manifest, registration into Claude Code / Antigravity / Cursor / Codex, health checks, drift doctor, updates |
-| Orion | Practice labs checked by real tests, tutoring-ladder hints, predict-then-run, attempt tracking |
-| Mira | Code trace players: records real Python execution traces and builds the self-contained player that Aurora embeds with the `trace` slide; its predictions flow into Aurora's progress log |
-| Sirius | Execution loop: deadlines, triage, today router, session timer, weekly review |
+| [Orion](https://github.com/DuongNAD/orion-mcp) | Practice labs checked by real tests, tutoring-ladder hints, predict-then-run, attempt tracking |
+| [Mira](https://github.com/DuongNAD/mira-mcp) | Code trace players: records real Python execution traces and builds the self-contained player that Aurora embeds with the `trace` slide; its predictions flow into Aurora's progress log |
+| [Sirius](https://github.com/DuongNAD/sirius-mcp) | Execution loop: deadlines, triage, today router, session timer, weekly review |
 
 ## Aurora + SmartDrive-OS
 
