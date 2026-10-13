@@ -43,16 +43,27 @@ flowchart LR
 
 ### Hệ sinh thái
 
-| Dự án | Vai trò |
-|---|---|
-| [Polaris](https://github.com/DuongNAD/polaris-mcp) | Kiến trúc sư khoá học |
-| Aurora Slides (repo này) | Bài học, luyện tập và tiến độ |
-| [Vega](https://github.com/DuongNAD/vega-mcp) | Động cơ ghi nhớ ngắt quãng (FSRS), tạo phiên ôn tập hàng ngày |
-| [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | Quản trị SSD, tìm kiếm tối ưu cho học tập, bảo vệ thư mục khoá học, hook cập nhật chỉ mục sau khi ghi |
-| [Constellation](https://github.com/DuongNAD/constellation-mcp) | Một manifest duy nhất, đăng ký vào Claude Code / Antigravity / Cursor / Codex, kiểm tra sức khoẻ, drift doctor, cập nhật |
-| [Orion](https://github.com/DuongNAD/orion-mcp) | Phòng luyện tập chấm bằng test thật, gợi ý theo thang bậc, đoán rồi chạy, theo dõi các lần thử |
-| [Mira](https://github.com/DuongNAD/mira-mcp) | Trình dò mã: ghi lại quá trình chạy Python thật và dựng trình phát tự chứa mà Aurora nhúng bằng slide `trace`; dự đoán của người học chảy vào nhật ký tiến độ của Aurora |
-| [Sirius](https://github.com/DuongNAD/sirius-mcp) | Vòng lặp thực thi: hạn chót, phân loại ưu tiên, chọn việc hôm nay, đồng hồ phiên học, tổng kết tuần |
+Mọi dự án của DuongNAD:
+
+| Dự án | Vai trò | Kho mã |
+| :--- | :--- | :--- |
+| **Polaris** | Kiến trúc khóa học: nguồn, dữ kiện có vị trí trích, lộ trình, lịch học, Sổ lỗi | [polaris-mcp](https://github.com/DuongNAD/polaris-mcp) |
+| **Aurora Slides** | Bài học kiểu keynote: trắc nghiệm, slide dự đoán và dò code, sự kiện tiến độ | [aurora-slides-mcp](https://github.com/DuongNAD/aurora-slides-mcp) |
+| **Vega** | Bộ nhớ FSRS và hàng đợi ôn tập duy nhất (hộp thư thẻ) | [vega-mcp](https://github.com/DuongNAD/vega-mcp) |
+| **Orion** | Lab thực hành chấm bằng test thật, bậc thang gợi ý, bậc khởi động PRIMM | [orion-mcp](https://github.com/DuongNAD/orion-mcp) |
+| **Mira** | Dò code: trace Python thật, trình phát từng dòng có điểm dừng dự đoán | [mira-mcp](https://github.com/DuongNAD/mira-mcp) |
+| **Rigel** | Gia sư bám tài liệu: trả lời từ tài liệu bài học, có trích dẫn [ref] | [rigel-mcp](https://github.com/DuongNAD/rigel-mcp) |
+| **Sirius** | Vòng thực thi: hạn chót, phân loại việc, hôm nay học gì, bấm giờ, tổng kết tuần | [sirius-mcp](https://github.com/DuongNAD/sirius-mcp) |
+| **Constellation** | Đăng ký MCP, kiểm tra sức khỏe, hợp đồng dữ liệu chung | [constellation-mcp](https://github.com/DuongNAD/constellation-mcp) |
+| **SmartDrive-OS** | Quản trị SSD, chỉ mục và tìm kiếm tài liệu học | [smart-drive-os](https://github.com/DuongNAD/smart-drive-os) |
+
+### Kết nối
+
+- **Polaris**: dàn ý bài học đi vào, `progress.jsonl` đi ra (`aurora-progress-event.v1`).
+- **Mira**: slide `trace` nhúng trình phát của Mira (`mira-embed.v1`); các dự đoán được ghi vào `progress.jsonl`.
+- **Vega**: slide `srs` dựng phiên ôn tập của Vega; sự kiện `card` được gửi ngược về Vega.
+- **Rigel**: ghi `ref` của Rigel (file · slide/trang) vào `source` của slide.
+- **Sirius**: sự kiện tiến độ được tính là bằng chứng học tập.
 
 ## Aurora + SmartDrive-OS
 

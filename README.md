@@ -43,16 +43,27 @@ The canonical, versioned definition with JSON Schema and fixtures lives in Const
 
 ### Ecosystem
 
-| Project | Role |
-|---|---|
-| [Polaris](https://github.com/DuongNAD/polaris-mcp) | Course architect |
-| Aurora Slides (this repo) | Lessons, practice and progress |
-| [Vega](https://github.com/DuongNAD/vega-mcp) | Spaced repetition memory engine (FSRS), review session generator |
-| [SmartDrive-OS](https://github.com/DuongNAD/smart-drive-os) | SSD governance, learning-aware search, protection of course folders, post-write index hook |
-| [Constellation](https://github.com/DuongNAD/constellation-mcp) | One manifest, registration into Claude Code / Antigravity / Cursor / Codex, health checks, drift doctor, updates |
-| [Orion](https://github.com/DuongNAD/orion-mcp) | Practice labs checked by real tests, tutoring-ladder hints, predict-then-run, attempt tracking |
-| [Mira](https://github.com/DuongNAD/mira-mcp) | Code trace players: records real Python execution traces and builds the self-contained player that Aurora embeds with the `trace` slide; its predictions flow into Aurora's progress log |
-| [Sirius](https://github.com/DuongNAD/sirius-mcp) | Execution loop: deadlines, triage, today router, session timer, weekly review |
+All projects by DuongNAD:
+
+| Project | Role | Repository |
+| :--- | :--- | :--- |
+| **Polaris** | Course architect: sources, facts with locators, roadmap, schedule, error log | [polaris-mcp](https://github.com/DuongNAD/polaris-mcp) |
+| **Aurora Slides** | Keynote-style lessons: quizzes, predict and trace slides, progress events | [aurora-slides-mcp](https://github.com/DuongNAD/aurora-slides-mcp) |
+| **Vega** | FSRS memory engine and the single review queue (card inbox) | [vega-mcp](https://github.com/DuongNAD/vega-mcp) |
+| **Orion** | Practice labs with real tests, tutoring ladder and PRIMM warm-up | [orion-mcp](https://github.com/DuongNAD/orion-mcp) |
+| **Mira** | Code-tracing lab: real Python traces, line-by-line players with prediction gates | [mira-mcp](https://github.com/DuongNAD/mira-mcp) |
+| **Rigel** | Grounded tutor: answers from the learner's lesson materials with [ref] citations | [rigel-mcp](https://github.com/DuongNAD/rigel-mcp) |
+| **Sirius** | Execution loop: deadlines, triage, today router, session timer, weekly review | [sirius-mcp](https://github.com/DuongNAD/sirius-mcp) |
+| **Constellation** | MCP registration, health checks and shared contracts | [constellation-mcp](https://github.com/DuongNAD/constellation-mcp) |
+| **SmartDrive-OS** | SSD governance, index and learning search | [smart-drive-os](https://github.com/DuongNAD/smart-drive-os) |
+
+### Connections
+
+- **Polaris**: lesson outlines in, `progress.jsonl` out (`aurora-progress-event.v1`).
+- **Mira**: `trace` slides embed Mira players (`mira-embed.v1`); their predictions join `progress.jsonl`.
+- **Vega**: `srs` slides render Vega review sessions; `card` events go back to Vega.
+- **Rigel**: cite Rigel refs (file · slide/page) in a slide's `source`.
+- **Sirius**: progress events count as study evidence.
 
 ## Aurora + SmartDrive-OS
 
