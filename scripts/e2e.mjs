@@ -1346,6 +1346,188 @@ try {
     dryRun: true,
   });
   ok("sort with total items < 4 is rejected with actionable error", r.isError && /at least 4 items/i.test(textOf(r)));
+
+  // 8. LaTeX repair & Python trace lint
+  // Check 1: Doubled backslashes repair in notebook formula and bullets
+  const LATEX_DIR = join(base, "e2e", "deck_latex_repair");
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "LaTeX Repair Test",
+      slides: [
+        {
+          type: "notebook",
+          title: "Công thức toán",
+          lines: [
+            "= \\\\text{Q} \\\\to (\\\\text{T} \\\\to \\\\text{A})^* \\\\to \\\\text{F}",
+          ],
+        },
+        {
+          type: "bullets",
+          title: "Ý chính",
+          items: [
+            "Ký hiệu $\\\\alpha$ trong biểu thức",
+          ],
+        },
+      ],
+    },
+    dir: LATEX_DIR,
+  });
+  const latexJson = existsSync(join(LATEX_DIR, "deck.json")) ? readFileSync(join(LATEX_DIR, "deck.json"), "utf8") : "";
+  const latexHtml = existsSync(join(LATEX_DIR, "index.html")) ? readFileSync(join(LATEX_DIR, "index.html"), "utf8") : "";
+  ok(
+    "latex repair: build warnings contain doubled backslash",
+    !r.isError && /doubled backslash/i.test(textOf(r)),
+    textOf(r).split("\n").find((l) => /doubled backslash/i.test(l)),
+  );
+  ok(
+    "latex repair: saved deck.json contains \\text{Q} as two backslashes in JSON text and no four",
+    latexJson.includes("\\\\text{Q}") && !latexJson.includes("\\\\\\\\text{Q}"),
+  );
+  ok(
+    "latex repair: built HTML has no KaTeX line-break element",
+    !latexHtml.includes("mspace katex-newline"),
+  );
+
+  const BREAK_DIR = join(base, "e2e", "deck_latex_break");
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "LaTeX Break Test",
+      slides: [
+        {
+          type: "notebook",
+          title: "Công thức",
+          lines: [
+            "= a \\\\ b",
+          ],
+        },
+      ],
+    },
+    dir: BREAK_DIR,
+  });
+  const breakJson = existsSync(join(BREAK_DIR, "deck.json")) ? readFileSync(join(BREAK_DIR, "deck.json"), "utf8") : "";
+  const breakHtml = existsSync(join(BREAK_DIR, "index.html")) ? readFileSync(join(BREAK_DIR, "index.html"), "utf8") : "";
+  ok(
+    "latex repair: a real line break (backslashes followed by a space) is kept and renders as a KaTeX newline",
+    breakJson.includes("= a \\\\\\\\ b") && breakHtml.includes("mspace katex-newline"),
+  );
+
+  // Check 2: Direct assertions on repairTex
+  const esbuild = req("esbuild");
+  const utilTs = readFileSync(join(ROOT, "src", "util.ts"), "utf8");
+  const repairBlock = utilTs.slice(utilTs.indexOf("/* ───────────── LaTeX repair ─────────────"));
+  const repairJs = esbuild.transformSync(repairBlock.replace(/export\s+/g, ""), { loader: "ts" }).code;
+  const { repairTex, repairDeckTex } = new Function(repairJs + "; return { repairTex, repairDeckTex };")();
+
+  ok(
+    "repairTex: leaves legitimate matrix and aligned breaks unchanged",
+    repairTex("\\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}").text === "\\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}" &&
+      repairTex("a \\\\[2pt] b").text === "a \\\\[2pt] b" &&
+      repairTex("1&0\\\\0&1").text === "1&0\\\\0&1",
+  );
+  ok(
+    "repairTex: leaves odd run (3 backslashes) unchanged",
+    repairTex("\\\\\\text{a}").text === "\\\\\\text{a}",
+  );
+  ok(
+    "repairTex: turns quadrupled and doubled backslash into single backslash",
+    repairTex("\\\\\\\\text{a}").text === "\\text{a}" &&
+      repairTex("\\\\text{a}").text === "\\text{a}",
+  );
+  ok(
+    "repairTex: leaves unknown command without brace unchanged",
+    repairTex("a\\\\bc").text === "a\\\\bc",
+  );
+
+  // Check 3: Code slide with code '$x = "\\\\text"' is not touched
+  const codeSlideDeck = {
+    title: "Code slide untouched",
+    slides: [
+      {
+        type: "code",
+        title: "Mã nguồn",
+        code: '$x = "\\\\text"',
+      },
+    ],
+  };
+  const repCode = repairDeckTex(codeSlideDeck);
+  ok(
+    "repairDeckTex: code slide with $x = \"\\\\text\" is not touched",
+    repCode.fixes.length === 0 && codeSlideDeck.slides[0].code === '$x = "\\\\text"',
+  );
+
+  // Check 4: Lint on Python quoted files without/with trace, and predict terminal label
+  const PY_LINT_DIR = join(base, "e2e", "py_lint_deck");
+  mkdirSync(PY_LINT_DIR, { recursive: true });
+  writeFileSync(join(PY_LINT_DIR, "agent.py"), "def solve(problem):\n    return problem * 2\n", "utf8");
+  writeFileSync(join(PY_LINT_DIR, "player.html"), '<!doctype html><meta name="mira-player" content="1">', "utf8");
+
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Python Quoted",
+      slides: [
+        {
+          type: "code",
+          title: "Quoted Python",
+          file: "agent.py",
+          lines: "1-2",
+        },
+      ],
+    },
+    dir: PY_LINT_DIR,
+    dryRun: true,
+  });
+  ok(
+    "lint: code quoting python without trace yields mira_record note with function name",
+    !r.isError && textOf(r).includes("mira_record") && textOf(r).includes("solve"),
+    textOf(r).split("\n").find((l) => l.includes("mira_record")),
+  );
+
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Python Quoted with Trace",
+      slides: [
+        {
+          type: "code",
+          title: "Quoted Python",
+          file: "agent.py",
+          lines: "1-2",
+        },
+        {
+          type: "trace",
+          title: "Trace solve",
+          player: "player.html",
+        },
+      ],
+    },
+    dir: PY_LINT_DIR,
+    dryRun: true,
+  });
+  ok(
+    "lint: adding trace slide removes the mira_record note",
+    !r.isError && !textOf(r).includes("mira_record"),
+  );
+
+  r = await call("aurora_create_deck", {
+    deck: {
+      title: "Terminal Predict",
+      slides: [
+        {
+          type: "predict",
+          title: "Chạy thử lệnh",
+          filename: "terminal",
+          question: "Kết quả là gì?",
+          code: "python agent.py",
+          output: "42",
+          explain: "Chương trình in 42.",
+        },
+      ],
+    },
+    dryRun: true,
+  });
+  ok(
+    "lint: predict slide with filename terminal does not get 'code is typed in' note",
+    !r.isError && !textOf(r).includes("code is typed in"),
+  );
 } catch (e) {
   failed++;
   console.log(`FAIL unexpected: ${e?.stack ?? e}`);

@@ -8,7 +8,7 @@ import "katex/contrib/mhchem";
 import type { HighlighterCore, LanguageRegistration, ThemeRegistration } from "shiki/core";
 import { createHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import { esc } from "./util.js";
+import { esc, repairTex } from "./util.js";
 
 type LangModule = { default: LanguageRegistration[] };
 const LANGS: Record<string, () => Promise<LangModule>> = {
@@ -230,10 +230,11 @@ export function createMath(): { render: (tex: string, display: boolean) => strin
   return {
     render(tex, display) {
       used = true;
+      const clean = repairTex(tex).text;
       try {
-        return katex.renderToString(tex, { displayMode: display, throwOnError: false, output: "html", strict: "ignore" });
+        return katex.renderToString(clean, { displayMode: display, throwOnError: false, output: "html", strict: "ignore" });
       } catch {
-        return `<span class="math-err">${esc(tex)}</span>`;
+        return `<span class="math-err">${esc(clean)}</span>`;
       }
     },
     used: () => used,

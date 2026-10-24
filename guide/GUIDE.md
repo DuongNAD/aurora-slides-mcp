@@ -148,6 +148,8 @@ Inline markup works in every text field:
 - Escape a literal marker with a backslash: `\*`, `\$`, `\[`.
 Formula slides take raw LaTeX without `$`. Notebook lines: `# ` sub-heading, `= ` formula (LaTeX), `! ` must-remember, `@ ` memory anchor (the hook), `{term, def}` definitions.
 
+**Math in JSON**: one backslash per command, typed as two in JSON text (`"\\text"`, `"\\frac"`), never four. Four backslashes make a LaTeX line break (`\\`), which stacks the formula over following lines. Aurora repairs doubled backslashes and reports them in the build notes. Real line breaks in aligned or matrix rows are followed by a space (`\\ `).
+
 ## media
 Icons: any Iconify id `prefix:name`. Good sets: `ph` (Phosphor, use `-duotone`), `solar` (`-bold-duotone`), `lucide`, `tabler`,
 `logos` / `skill-icons` (brands and programming languages), `fluent-emoji` (3D emoji, playful only).
@@ -188,11 +190,13 @@ For explode parts ask for "top-down view, isolated object, transparent backgroun
 Video: YouTube/Vimeo URLs embed when served over http (aurora_preview); from file:// a poster links to the video.
 Mira trace player (`trace` slide): a player is one self-contained `index.html` that Mira builds with its tool `mira_build` from real Python
 (it steps through the code line by line beside a visualisation and stops at prediction gates, where the learner types what will happen).
-`mira_build` prints a ready slide JSON: paste it. Use it after the theory and code slides of an algorithm (loops, recursion, search,
-sorting), for 3-8 stops, give the slide an `id` and say in `caption` what to predict. The build copies the player to
+`mira_build` prints a ready slide JSON: paste it. A trace slide is full-bleed: the player fills the slide, scaled from its 1280px design size,
+and the slide needs no other text. `title` and `caption` feed the outline, the print page, and accessibility rather than being shown on screen.
+Use it for any Python quoted from a file, not only loops and recursion (loops, recursion, search, sorting, parsers, agent loops). Use it after the theory
+and code slides, for 3-8 stops, give the slide an `id` and provide `caption` for print and outline. The build copies the player to
 `assets/mira/<folder>-<6 hex>.html` next to index.html (keep that folder with the deck) and embeds it in an iframe that loads when
 the slide opens and stays loaded, so the learner keeps their place. **Esc inside the player hands the keyboard back to the deck**, so
-→ / ← move through slides again: mention it in the caption. A missing player (or a page without the `mira-player` meta tag) only
+→ / ← move through slides again (mention Esc in notes or caption for print). A missing player (or a page without the `mira-player` meta tag) only
 warns and shows a calm card; print and PDF show the title, the caption and the path of the interactive version.
 Fields and a Vietnamese example: `aurora_guide {"type": "trace"}`. The predictions flow into the progress log (topic "progress").
 
@@ -307,6 +311,7 @@ Teaching rules:
 - Spread active recall: some check (quiz, cloze, flashcards, exercise, order, match, sort) every 5–7 slides.
 - Natural language: write as a good teacher speaks the deck language, not as a translation. For Vietnamese: correct diacritics,
   no mixed-up tones.
+- **Code slides need a trace**: when a deck quotes Python from a file, follow it with a Mira trace slide (mira_record → mira_build) so the learner steps through real execution rather than static text or simulated output.
 
 ## practice
 Hands-on practice interactions test comprehension and active recall with instant grading:
@@ -380,6 +385,9 @@ Before you report a deck as done:
    - "extends beyond the slide" → fewer items or shorter labels.
    - "Cycle labels overlap" → titles ≤ 4 words, text ≤ 10 words, or fewer stages.
    - Broken image → a different query or src.
+   - "A formula could not be parsed" → check LaTeX: one backslash per command, written `\\text` in JSON.
+   - "A notebook formula is taller than its row" → split or shorten the formula so it does not overlap adjacent lines.
+   - "A notebook formula takes N ruled lines" / "shrunk to N%" → split or shorten wide/tall notebook formulas.
 4. Content notes from the build (pedagogy, rhythm, word counts) are advice: follow them unless you have a reason not to.
 5. Tell the learner how to study with it: → / Space next, ← back, N notes, O overview, F fullscreen, T timer on exercises, 1–6 answers quizzes.
 

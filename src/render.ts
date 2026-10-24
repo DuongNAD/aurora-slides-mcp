@@ -1395,7 +1395,7 @@ const layouts: Layouts = {
     return {
       cls: ok ? "" : "no-player",
       html:
-        `<div class="trace">${h.html}<div class="tr-body"><figure class="tr-frame"${A("zoom", h.d)}>` +
+        `<div class="trace">${h.html}<div class="tr-body"><figure class="tr-frame"${A("fade", h.d)}>` +
         `<div class="win-bar"><i></i><i></i><i></i><span class="win-title">${label}</span></div><div class="tr-ratio">${inner}</div></figure>${print}</div>` +
         `<p class="tr-cap"${A("fade", h.d + 300)}>${s.caption ? inl(c, s.caption) : esc(c.t.traceHint)}</p></div>`,
     };

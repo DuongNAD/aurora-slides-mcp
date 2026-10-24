@@ -654,9 +654,9 @@ function renderMolecules(rand: () => number): string {
     `<circle class="mol-atom" cx="36" cy="12" r="17" fill="url(#mol-sh-o)" />` +
     `</g></g></g></g>`;
 
-  // 6. Far water at (980, 120): scale .5, 3px blur
+  // 6. Far water at (1530, 345): scale .5, 3px blur (kept clear of centred titles)
   const molFarWater =
-    `<g transform="translate(980 120)"><g class="mol-float mol-f6"><g transform="scale(0.5)"><g class="mol-rot mol-rot-6 mol-blur-3">` +
+    `<g transform="translate(1530 345)"><g class="mol-float mol-f6"><g transform="scale(0.5)"><g class="mol-rot mol-rot-6 mol-blur-3">` +
     `<line class="mol-bond" x1="0" y1="${wOy}" x2="${wH1x}" y2="${wH1y}" />` +
     `<line class="mol-bond" x1="0" y1="${wOy}" x2="${wH2x}" y2="${wH2y}" />` +
     `<circle class="mol-atom" cx="0" cy="${wOy}" r="22" fill="url(#mol-sh-o)" />` +

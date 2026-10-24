@@ -97,7 +97,8 @@ const PICTURE_RULE =
   "for agents that cannot make images.";
 const DONE_RULE =
   'Done when: the build reports no errors and no "Pictures for you to make", aurora_audit reports no ERROR, and you have looked at the ' +
-  "aurora_screenshot contact sheet. Then tell the user, in their language, where the HTML is (or the aurora_preview link) and how to study with it.";
+  "aurora_screenshot contact sheet. Then tell the user, in their language, where the HTML is (or the aurora_preview link) and how to study with it. " +
+  "Every content note the build prints is either fixed or consciously not applicable.";
 
 const INSTRUCTIONS = `Aurora Slides builds Apple-keynote-style, animated, interactive HTML lessons for self-study from deck JSON.
 
@@ -114,7 +115,8 @@ Rules
 - Teach for memory: theory → memory anchors (palace walk, anchors, analogy, mnemonic) → notebook page → practice (exercises easy → hard) → recall walk → summary.
 - One idea per slide, short lines, varied layouts; the full explanation goes in "notes".
 - Processes, structures and overviews (flowcharts, mind maps, sequence, state, timelines…): a "diagram" slide with Mermaid code.
-- Algorithms the learner should watch run (loops, recursion, search, sorting): a "trace" slide embeds a Mira player (build it with the Mira tool mira_build and paste the slide JSON it prints); its predictions flow into the progress log.
+- Code the learner has (a code slide quoting a file with \`file\` + \`lines\`) and algorithms the learner should watch run (loops, recursion, search, sorting, parsers, agent loops): run the real file with the Mira tools, never describe it from memory: mira_record { file, call } → mira_check → mira_build, then insert the "trace" slide it prints right after the code slide; its predictions flow into the progress log. Terminal output typed in by hand is a simulation: say so in \`source\`, or record it with Mira instead.
+- LaTeX (\`$…$\`, notebook "= " lines, formula slides): one backslash per command, which JSON text writes as two (\\\\text, \\\\frac), never four. A doubled backslash is a line break in LaTeX: Aurora repairs it and says so in the build notes, but write it right.
 - Polaris outlines: follow <subject>/polaris/lessons/<lesson>.outline.md if present and cite sources in \`source\`.
 - ${PICTURE_RULE}
 
@@ -161,8 +163,11 @@ async function startMcp(): Promise<void> {
         if (dryRun) {
           const v = validateDeck(c.value);
           if (!v.ok) return text(`Invalid deck:\n${v.errors.map((e) => `  - ${e}`).join("\n")}`, true);
-          const lint = lintDeck(v.deck!);
-          return text(`Valid deck with ${v.deck!.slides.length} slides.${lint.length ? `\nContent notes:\n${lint.map((l) => `  - ${l}`).join("\n")}` : ""}`);
+          const title = typeof v.deck === "object" && v.deck ? String(v.deck.title ?? "deck") : "deck";
+          const paths = deckPaths(dir, title);
+          const lint = lintDeck(v.deck!, paths.dir);
+          const rep = v.fixes?.length ? `\nRepaired:\n${v.fixes.map((f) => `  - ${f}`).join("\n")}` : "";
+          return text(`Valid deck with ${v.deck!.slides.length} slides.${rep}${lint.length ? `\nContent notes:\n${lint.map((l) => `  - ${l}`).join("\n")}` : ""}`);
         }
         const title = typeof c.value === "object" && c.value ? String((c.value as { title?: unknown }).title ?? "deck") : "deck";
         const p = deckPaths(dir, title);
@@ -523,7 +528,7 @@ async function startMcp(): Promise<void> {
         const v = validateDeck(raw);
         try {
           const r = await auditDeck(p.html);
-          return text(formatAudit(r.slides, r.logs, v.ok ? lintDeck(v.deck!) : v.errors));
+          return text(formatAudit(r.slides, r.logs, v.ok ? lintDeck(v.deck!, p.dir) : v.errors));
         } catch (e) {
           return text(browserError(e), true);
         }
@@ -598,7 +603,7 @@ async function startMcp(): Promise<void> {
               "2. Theory, as one or more sections titled in the content language: short concept slides (statement, split, definition, formula, " +
                 "steps, compare, diagram…). After each block: memory anchors for its key ideas (a palace walk through a place the learner knows " +
                 "for an ordered list; anchors, analogy or mnemonic for separate terms), then a notebook slide with the 4–8 lines worth copying by hand.",
-              "3. Practice section: start practice with predict slides for the code just taught, then exercise slides from easy to hard (time to try alone, hints, worked solution, answer), then quiz, cloze or " +
+              "3. Practice section: start practice with a Mira trace (mira_record → mira_build) for Python the learner has, or predict slides for other code, then exercise slides from easy to hard (time to try alone, hints, worked solution, answer), then quiz, cloze or " +
                 "flashcards, and the recall walk of the palace.",
               "4. Closing: a summary slide with 3–6 takeaways.",
               "",
@@ -847,7 +852,7 @@ async function cli(cmd: string, argv: string[]): Promise<number> {
       const raw = await readDeckFile(p);
       const v = validateDeck(raw);
       const r = await auditDeck(p.html);
-      console.log(formatAudit(r.slides, r.logs, v.ok ? lintDeck(v.deck!) : v.errors));
+      console.log(formatAudit(r.slides, r.logs, v.ok ? lintDeck(v.deck!, p.dir) : v.errors));
       await closeBrowser();
       return r.slides.some((s) => s.issues.some((i) => i.level === "error")) ? 2 : 0;
     }

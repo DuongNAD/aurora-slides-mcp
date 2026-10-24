@@ -1984,19 +1984,24 @@ html[lang^="vi"] .df-term { line-height: 1.14; }
 .vd-frame.live .vd-poster { display: none; }
 .vd-cap { margin-top: 26px; font-size: calc(26px * var(--kt)); color: var(--fg2); text-align: center; max-width: 1200px; }
 
-/* trace: a Mira player in a macOS window (mira-embed.v1). The body takes the room the header and the caption leave;
-   the frame is the largest 16:9 window that fits it (container query units), so a long title shrinks it instead of overflowing. */
-.trace { display: flex; flex-direction: column; align-items: center; height: 100%; min-height: 0; }
-.trace .sl-head { align-self: stretch; }
-.tr-body { flex: 1 1 0; min-height: 0; width: 100%; margin-top: 26px; container-type: size; display: grid; place-items: center; }
+/* trace: a Mira player in full-bleed layout (mira-embed.v1). The player fills the slide, scaled from its 1280px design size. */
+.t-trace .sl-in { padding: 24px 24px 108px; }
+.trace { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; min-height: 0; position: relative; }
+.trace .sl-head {
+  position: absolute; left: 24px; top: 24px; width: 1px; height: 1px; padding: 0; margin: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.trace .sl-head * { width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; }
+.trace .win-bar { display: none; }
+.tr-body { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; margin: 0; display: grid; place-items: center; }
 .trace > .tr-body:first-child { margin-top: 0; }
 .tr-frame {
-  --tr-bar: 54px;
-  width: min(100cqw, calc((100cqh - var(--tr-bar)) * 16 / 9)); border-radius: 24px; overflow: hidden; background: var(--code-bg);
+  width: 100%; height: 100%; border-radius: 22px; overflow: hidden; background: var(--code-bg);
   box-shadow: 0 50px 100px -40px var(--shadow), 0 0 0 1px var(--glass-brd);
 }
-.tr-ratio { position: relative; aspect-ratio: 16 / 9; background: var(--code-bg); }
-.tr-ratio iframe, .tr-ph, .tr-missing { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.tr-ratio { position: relative; width: 100%; height: 100%; background: var(--code-bg); }
+.tr-ratio iframe { position: absolute; left: 0; top: 0; border: 0; display: block; }
+.tr-ph, .tr-missing { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
 .tr-ph, .tr-missing { display: grid; place-content: center; justify-items: center; text-align: center; }
 .tr-ph {
   gap: 24px; color: var(--fg3);
@@ -2014,7 +2019,7 @@ html[lang^="vi"] .df-term { line-height: 1.14; }
 .tr-missing { gap: 14px; padding: 40px 140px; background: var(--code-bg); }
 .tr-missing b { font-size: 32px; font-weight: 650; color: var(--fg); }
 .tr-missing span { max-width: 1100px; font-size: 26px; line-height: 1.5; color: var(--fg2); overflow-wrap: anywhere; text-wrap: pretty; }
-.tr-cap { flex: none; margin-top: 22px; max-width: 1400px; font-size: calc(26px * var(--kt)); line-height: 1.4; color: var(--fg2); text-align: center; text-wrap: pretty; }
+.tr-cap { display: none; }
 .tr-print { display: none; }
 @media print {
   .tr-frame, .tr-cap { display: none !important; }
@@ -2260,7 +2265,7 @@ html.ov .slide > .bd-clone, html.sheet .slide > .bd-clone { display: block; }
 .k-head { font-size: calc(35px * var(--kt)); font-weight: 700; color: var(--ink2); }
 .k-formula { height: calc(var(--rule) * 2); display: flex; align-items: center; justify-content: center; }
 .k-formula .katex-display { margin: 0; }
-.k-formula .katex { font-size: 1.12em; }
+.k-formula .katex { font-size: calc(1.12em * var(--fx, 1)); }
 .k-key .nb-hl {
   font-weight: 650; padding: 0 .14em; margin: 0 -.06em;
   background: linear-gradient(transparent 50%, rgba(255, 214, 10, .62) 50%, rgba(255, 214, 10, .62) 88%, transparent 88%);

@@ -2,6 +2,8 @@
  * Content lint: pedagogy and readability hints an agent can act on.
  * These never block a build; they explain how to make a deck easier to learn from.
  */
+import { readFileSync, statSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
 import { plain } from "./markup.js";
 import { titleOf } from "./render.js";
 import { detectScene, resolveDeckScene } from "./scenes.js";
@@ -74,7 +76,50 @@ export function outline(deck: Deck): OutlineRow[] {
   });
 }
 
-export function lintDeck(deck: Deck): string[] {
+interface PyQuote { slide: number; file: string; lines?: string; symbol?: string }
+
+/** `Class.method` or `function` that encloses a 1-based line of Python source. */
+function pySymbol(src: string, line: number): string | undefined {
+  const rows = src.split(/\r?\n/);
+  for (let i = Math.min(line, rows.length) - 1; i >= 0; i--) {
+    const m = /^(\s*)(?:async\s+)?def\s+(\w+)/.exec(rows[i]!);
+    if (!m) continue;
+    const indent = m[1]!.length;
+    if (indent === 0) return m[2];
+    for (let j = i - 1; j >= 0; j--) {
+      const c = /^(\s*)class\s+(\w+)/.exec(rows[j]!);
+      if (c && c[1]!.length < indent) return `${c[2]}.${m[2]}`;
+    }
+    return m[2];
+  }
+  return undefined;
+}
+
+/** Slides that quote a Python file (code slides, predict slides, and split/exercise `code` objects with a file). */
+function pythonQuotes(deck: Deck, dir?: string): PyQuote[] {
+  const out: PyQuote[] = [];
+  deck.slides.forEach((s, i) => {
+    const spec = (s.type === "code" || s.type === "predict" ? s : (s as { code?: unknown }).code) as
+      | { file?: string; lines?: string; lang?: string }
+      | undefined;
+    if (!spec || typeof spec !== "object" || !spec.file) return;
+    if (!/\.py$/i.test(spec.file) && spec.lang !== "python") return;
+    let symbol: string | undefined;
+    if (dir) {
+      try {
+        const abs = isAbsolute(spec.file) ? spec.file : resolve(dir, spec.file);
+        const first = parseInt((spec.lines ?? "").trim(), 10);
+        if (first > 0 && statSync(abs).size < 1_000_000) symbol = pySymbol(readFileSync(abs, "utf8"), first);
+      } catch {
+        /* unreadable file: the render step already warns about it */
+      }
+    }
+    out.push({ slide: i + 1, file: spec.file, lines: spec.lines, symbol });
+  });
+  return out;
+}
+
+export function lintDeck(deck: Deck, dir?: string): string[] {
   const out: string[] = [];
   const ids = new Map<string, number>();
   const at = (i: number, s: Slide) => `slide ${i + 1} (${s.type})`;
@@ -180,8 +225,11 @@ export function lintDeck(deck: Deck): string[] {
         if (words(s.problem) > 60) out.push(`${where}: problem statement has ${words(s.problem)} words; keep it ≤ 45 or move data into code/table.`);
         break;
       case "predict":
-        if (s.filename && !s.file) {
+        if (s.filename && !s.file && !/^(terminal|console|shell|output|stdout)$/i.test(s.filename)) {
           out.push(`Slide ${i + 1} shows "${s.filename}" but the code is typed in; use "file" + "lines" so the slide quotes the real file verbatim.`);
+        }
+        if (s.command && /\.py\b/.test(s.command) && !deck.slides.some((x) => x.type === "trace")) {
+          out.push(`${where}: the output is typed in by hand, so it is a simulation. Record the real run with Mira (mira_record { file, script: true } → mira_build → "trace" slide) or paste real stdout and say so in "source".`);
         }
         if (words(s.question) > 60) out.push(`${where}: question has ${words(s.question)} words; keep it ≤ 45 or move data into code.`);
         if (words(s.explain) > 80) out.push(`${where}: explanation has ${words(s.explain)} words; keep it concise and focused on the core mechanism.`);
@@ -261,6 +309,22 @@ export function lintDeck(deck: Deck): string[] {
     } else run = 1;
   }
 
+  const pyQ = pythonQuotes(deck, dir);
+  if (pyQ.length && !deck.slides.some((s) => s.type === "trace")) {
+    const list = pyQ
+      .slice(0, 4)
+      .map((q) => `slide ${q.slide}${q.lines ? ` lines ${q.lines}` : ""}${q.symbol ? ` (${q.symbol})` : ""}`)
+      .join("; ");
+    const sym = pyQ.find((q) => q.symbol)?.symbol;
+    const callEx = sym ? `${sym}(<sample input>)` : "function(<sample input>)";
+    out.push(
+      `Python code is quoted (${list}) but nothing runs it. Run the real file with Mira instead of leaving it as static text: ` +
+        `mira_record { file, call: "<expression, e.g. ${callEx}>", focus: ["<function>"] } → ` +
+        `write 3-6 stops → mira_check → mira_build, then insert the trace slide it prints right after the code slide (aurora_guide type "trace"). ` +
+        `The learner predicts real values; output typed in by hand is only a simulation.`,
+    );
+  }
+
   const n = deck.slides.length;
   const srsCount = deck.slides.filter((s) => s.type === "srs").length;
   if (n > 0 && srsCount / n >= 0.8) return out;
@@ -289,7 +353,7 @@ export function lintDeck(deck: Deck): string[] {
   if (n >= 12 && practiceCount < 2)
     out.push(`Only ${practiceCount} practice slide(s): add exercises or predict slides from easy to hard (2-4 per lesson).`);
   const hasCode = deck.slides.some((s) => s.type === "code" || (s as { code?: unknown }).code || (s as { file?: unknown }).file);
-  if (hasCode && !types.has("predict"))
+  if (hasCode && !types.has("predict") && !types.has("trace") && pyQ.length === 0)
     out.push('Turn a code walk-through into a "predict" slide: the learner predicts the output, runs it, then compares (predict-then-run).');
   if (n >= 10 && !deck.slides.some((s) => !!s.source))
     out.push('No slide says where its facts come from: add "source" (e.g. "Khóa học · transcript 02:13", "Mở rộng · <source>").');

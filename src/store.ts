@@ -105,6 +105,7 @@ export async function buildDeck(
 ): Promise<BuildOutcome> {
   const v = validateDeck(raw);
   if (!v.ok || !v.deck) return { ok: false, errors: v.errors, warnings: [], lint: [], paths: p };
+  if (v.fixes?.length) raw = v.raw;
   const ctx = await courseContext(p.dir);
   if (ctx) {
     const r = raw as { theme?: unknown; accent?: unknown };
@@ -114,7 +115,7 @@ export async function buildDeck(
   const result = await renderDeck(v.deck, { dir: p.dir, embed: opts.embed, course: ctx?.nav });
   if (opts.write !== false) {
     await mkdir(p.dir, { recursive: true });
-    if (opts.saveJson !== false) await writeFile(p.json, JSON.stringify(raw, null, 2) + "\n", "utf8");
+    if (opts.saveJson !== false || Boolean(v.fixes?.length)) await writeFile(p.json, JSON.stringify(raw, null, 2) + "\n", "utf8");
     await copyTracePlayers(p.dir, result);
     await writeFile(p.html, result.html, "utf8");
     builds.emit("built", p.dir);
@@ -131,7 +132,7 @@ export async function buildDeck(
       extra.push(`Polaris outline for this lesson: ${outlinePath} — follow it and cite its sources in \`source\`.`);
     }
   }
-  return { ok: true, errors: [], warnings: [...extra, ...result.warnings], lint: lintDeck(v.deck), paths: p, deck: v.deck, result, outline: outline(v.deck) };
+  return { ok: true, errors: [], warnings: [...(v.fixes ?? []), ...extra, ...result.warnings], lint: lintDeck(v.deck, p.dir), paths: p, deck: v.deck, result, outline: outline(v.deck) };
 }
 
 /* ───────────────────────── Courses ───────────────────────── */

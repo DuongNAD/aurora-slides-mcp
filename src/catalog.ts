@@ -115,7 +115,7 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
     },
   },
   code: {
-    use: "macOS-style code window with Xcode-like highlighting. ≤ 18 lines, ≤ 60 columns. `steps` walk through lines with explanations; `output` shows a terminal pane.",
+    use: "macOS-style code window with Xcode-like highlighting. ≤ 18 lines, ≤ 60 columns. `steps` walk through lines with explanations; `output` shows a terminal pane. For Python from a file, follow it with a trace slide built with Mira.",
     example: {
       type: "code",
       eyebrow: "Mô phỏng",
@@ -345,7 +345,7 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
     },
   },
   notebook: {
-    use: "A ruled notebook page with the lines worth copying by hand, revealed one line per → so the learner can write along. Put one after each theory block. Prefix '# ' sub-heading, '= ' formula, '! ' must-remember; {term, def} for definitions.",
+    use: "A ruled notebook page with the lines worth copying by hand, revealed one line per → so the learner can write along. Put one after each theory block. Prefix '# ' sub-heading, '= ' formula, '! ' must-remember; {term, def} for definitions. A formula line is plain LaTeX with single backslashes, written \\\\text in JSON; a tall formula takes more ruled lines automatically.",
     example: {
       type: "notebook",
       title: "Quang hợp: những ý cần nhớ",
@@ -458,7 +458,7 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
     },
   },
   predict: {
-    use: "Predict-then-run: the learner writes a prediction, runs the code in the slide's terminal, then compares; use it for traces, outputs and edge cases of code you just taught.",
+    use: "Predict-then-run: the learner writes a prediction, runs the code in the slide's terminal, then compares. Typed-in output is a simulation; for Python files prefer a Mira trace; use predict for output you cannot trace.",
     example: {
       type: "predict",
       eyebrow: "Dự đoán kết quả",
@@ -535,10 +535,11 @@ export const CATALOG: Record<SlideType, CatalogEntry> = {
   trace: {
     use:
       "Embeds a Mira trace player (sister project Mira): a self-contained player, built with mira_build from real Python, that steps through the code line by line " +
-      "beside a visualisation and stops at prediction gates where the learner types what will happen. Use it after the theory and code slides of an algorithm " +
-      "(loops, recursion, search, sorting), for 3-8 stops; mira_build prints a ready slide JSON, paste it. Give the slide an id: each prediction is relayed to the " +
-      "progress log as a predict event with slideId <id>:mira-stop-<k> (Polaris error log, Vega cards). The player loads when the slide opens and keeps its " +
-      "place; Esc inside it hands the keyboard back to the deck (the caption should say so). The player file is copied to assets/mira/ next to index.html: " +
+      "beside a visualisation and stops at prediction gates where the learner types what will happen. A trace slide is full-bleed: the player fills the slide, scaled from " +
+      "its 1280px design size, so the slide needs no other text. `title` and `caption` feed the outline, the print page, and accessibility rather than being shown on screen. " +
+      "Use it for any Python the deck quotes, not only loops and recursion (loops, recursion, search, sorting, parsers, agent loops), for 3-8 stops; mira_build prints a ready slide JSON, paste it. " +
+      "Give the slide an id: each prediction is relayed to the progress log as a predict event with slideId <id>:mira-stop-<k> (Polaris error log, Vega cards). The player loads when the slide opens and keeps its " +
+      "place; Esc inside it hands the keyboard back to the deck (mention Esc in notes or caption for print). The player file is copied to assets/mira/ next to index.html: " +
       "keep that folder with the deck. A missing or non-Mira player only warns and shows a calm card; printing shows the title, caption and the player's path.",
     example: {
       type: "trace",
@@ -572,6 +573,18 @@ export function showcaseDeck(theme = "aurora"): Record<string, unknown> {
     }
     // The second palace is the recall walk of the first one.
     if (t === "palace" && palaces++ > 0) return { type: "palace", from: "pha-sang", mode: "recall" };
+    if (t === "notebook") {
+      Object.assign(ex, {
+        lines: [
+          "# Khái niệm",
+          { term: "Quang hợp", def: "dùng năng lượng ánh sáng tổng hợp chất hữu cơ từ CO₂ và H₂O" },
+          "= \\begin{aligned} 6\\text{CO}_2 + 6\\text{H}_2\\text{O} &\\to \\text{C}_6\\text{H}_{12}\\text{O}_6 + 6\\text{O}_2 \\\\ 2\\text{H}_2\\text{O} &\\to \\text{O}_2 + 4\\text{H}^+ + 4e^- \\\\ \\text{CO}_2 + \\text{RuBP} &\\to 2\\,\\text{3-PGA} \\end{aligned}",
+          "# Hai pha",
+          "Pha sáng (thylakoid): tạo ATP, NADPH, giải phóng O₂",
+          "! O₂ sinh ra từ nước, không phải từ CO₂",
+        ],
+      });
+    }
     if (t === "cloze") {
       Object.assign(ex, {
         input: true,

@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { DECK_SCENES, ICON_MOTIONS, SCENES, type DeckScene, type IconMotion, type Scene } from "./scenes.js";
+import { repairDeckTex } from "./util.js";
 
 export { DECK_SCENES, ICON_MOTIONS, SCENES, type DeckScene, type IconMotion, type Scene };
 
@@ -869,12 +870,22 @@ export interface ValidationResult {
   ok: boolean;
   deck?: Deck;
   errors: string[];
+  fixes?: string[];
+  raw?: unknown;
 }
 
 /** Agent-friendly error lines like `slides[3] (bullets).items[0]: Invalid input`. */
 export function validateDeck(raw: unknown): ValidationResult {
-  const parsed = DeckSchema.safeParse(raw);
-  if (parsed.success) return { ok: true, deck: parsed.data, errors: [] };
+  const rep = repairDeckTex(raw);
+  const parsed = DeckSchema.safeParse(rep.value);
+  if (parsed.success) {
+    return {
+      ok: true,
+      deck: parsed.data,
+      errors: [],
+      ...(rep.fixes.length > 0 ? { fixes: rep.fixes, raw: rep.value } : {}),
+    };
+  }
   const slides = (raw as { slides?: Array<{ type?: string }> } | null)?.slides;
   const typeAt = (i: unknown): string | undefined =>
     typeof i === "number" && Array.isArray(slides) ? slides[i]?.type : undefined;
@@ -914,7 +925,11 @@ export function validateDeck(raw: unknown): ValidationResult {
     return `${where || "(root)"}: ${msg}`;
   });
   if (issues.length > 25) errors.push(`…and ${issues.length - 25} more issues`);
-  return { ok: false, errors };
+  return {
+    ok: false,
+    errors,
+    ...(rep.fixes.length > 0 ? { fixes: rep.fixes, raw: rep.value } : {}),
+  };
 }
 
 /** Closest candidate by edit distance (typos like "subtitel", "bulets"), or undefined if nothing is near. */

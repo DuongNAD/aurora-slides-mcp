@@ -947,6 +947,7 @@
     const cur = slides[idx];
     if (cur && cur._pl) plRender(cur);
     if (cur && cur.querySelector(".match")) drawMatchCurves(cur.querySelector(".match"));
+    if (cur && cur.dataset.type === "trace") fitTrace(cur);
   }
   addEventListener("resize", scale);
   scale();
@@ -959,7 +960,7 @@
     "h1,h2,h3,p,li,blockquote,figure,table,dl,.card,.cmp-col,.window,.st,.pr-item,.tl-ev,.cy-label,.cy-badge,.qz-opt,.fcard,.hs-img," +
     ".ag-item,.sm-score,.dn-ring,.dn-legend,.chart-svg,.hbars,.fm-main,.vd-frame,.eyebrow,.kicker,.meta,.source,.body,.cz-text,.cz-hint,.ch-legend," +
     ".order,.od-tile,.match,.mt-item,.sort,.st-chip,.st-bin,.st-tray,.cz-blank-wrap,.cz-in";
-  const CLIP_BOXES = ".card-in, .fc-face, .cmp-col, .pr-item, .tb-wrap";
+  const CLIP_BOXES = ".card-in, .fc-face, .cmp-col, .pr-item, .tb-wrap, .nb-lines";
   function overflowing(s) {
     const stage = s.querySelector(".sl-stage");
     const inn = s.querySelector(".sl-in");
@@ -978,16 +979,63 @@
   function animating(s) {
     return s.getAnimations({ subtree: true }).some((a) => isOwn(a) && a.playState === "running");
   }
+  // Notebook formula rows: shrink a formula wider than its line, then give the row a whole number of ruled lines (min 2).
+  function snapFormulas(s) {
+    const rows = s.querySelectorAll(".k-formula");
+    if (!rows.length) return;
+    rows.forEach((li) => {
+      li.style.removeProperty("height");
+      li.style.removeProperty("--fx");
+    });
+    rows.forEach((li) => {
+      const disp = li.querySelector(".katex-display") || li.firstElementChild;
+      const rule = parseFloat(getComputedStyle(li).lineHeight);
+      if (!disp || !(rule > 0) || !li.clientWidth || !disp.offsetWidth) return; // not laid out (hidden slide)
+      const need = disp.scrollWidth;
+      if (need > li.clientWidth + 1) li.style.setProperty("--fx", Math.max(0.5, li.clientWidth / need).toFixed(3));
+      const lines = Math.max(2, Math.ceil((disp.offsetHeight - 1) / rule));
+      li.style.height = lines * rule + "px";
+    });
+  }
+  function fitTrace(s) {
+    if (!s) return;
+    s.querySelectorAll(".tr-ratio").forEach((box) => {
+      const iframe = box.querySelector("iframe");
+      if (!iframe) return;
+      const W = box.clientWidth;
+      const H = box.clientHeight;
+      if (!W || !H) return;
+      let designW = 1280;
+      let k = W / designW;
+      let designH = H / k;
+      if (designH < 600) {
+        k = H / 600;
+        designW = W / k;
+        designH = 600;
+      }
+      iframe.style.width = designW + "px";
+      iframe.style.height = designH + "px";
+      iframe.style.transformOrigin = "0 0";
+      iframe.style.transform = "scale(" + k + ")";
+    });
+  }
   function fitSlide(s) {
-    if (s.dataset.type === "html" || animating(s)) return;
+    if (s.dataset.type === "html") return;
+    if (animating(s)) {
+      fitTrace(s);
+      return;
+    }
     s.style.removeProperty("--kt");
     let kt = 1;
+    snapFormulas(s);
     for (let i = 0; i < 9 && overflowing(s); i++) {
       kt = +(kt - 0.04).toFixed(2);
       s.style.setProperty("--kt", String(kt));
+      snapFormulas(s);
     }
     s.dataset.kt = String(kt);
     if (s && s.querySelector(".match")) drawMatchCurves(s.querySelector(".match"));
+    fitTrace(s);
   }
 
   /* ───────────── Backdrops ───────────── */
@@ -1197,6 +1245,7 @@
     if (next.classList.contains("t-summary")) renderScore(next);
     if (next.querySelector(".match")) drawMatchCurves(next.querySelector(".match"));
     if (next.querySelector(".sort")) requestAnimationFrame(() => lockSortTray(next.querySelector(".sort")));
+    if (next.dataset.type === "trace") fitTrace(next);
     updateHud();
     if (!o.keepHash) writeHash();
     store.set("pos", idx);
@@ -3090,6 +3139,31 @@
     }
     if (s.querySelector(".dg-failed")) issues.push({ level: "error", msg: "A diagram could not be drawn: fix its Mermaid code (the build warnings quote Mermaid's message)." });
     if (s.querySelector(".tr-missing")) issues.push({ level: "warn", msg: "The Mira player of this trace slide is missing or is not a Mira player: build it with mira_build, fix \"player\" and rebuild (the build warnings give the path)." });
+    const mathErr = s.querySelector(".katex-error, .math-err");
+    if (mathErr) {
+      const srcTxt = (mathErr.textContent || "").trim().slice(0, 70);
+      issues.push({ level: "error", msg: "A formula could not be parsed and shows as red source text: " + srcTxt + ". Check the LaTeX: one backslash per command, typed as two in JSON text." });
+    }
+    s.querySelectorAll(".k-formula").forEach((row) => {
+      const disp = row.querySelector(".katex-display") || row.firstElementChild;
+      if (disp && disp.offsetHeight > row.offsetHeight + 2) {
+        issues.push({ level: "error", msg: "A notebook formula is taller than its row and overlaps the lines around it." });
+      }
+      const rule = parseFloat(getComputedStyle(row).lineHeight);
+      if (rule > 0) {
+        const lines = Math.round(row.offsetHeight / rule);
+        if (lines >= 4) {
+          issues.push({ level: "warn", msg: "A notebook formula takes " + lines + " ruled lines; split it or shorten it." });
+        }
+      }
+      const fxVal = row.style.getPropertyValue("--fx");
+      if (fxVal) {
+        const fx = parseFloat(fxVal);
+        if (fx < 0.8) {
+          issues.push({ level: "warn", msg: "A notebook formula was shrunk to " + Math.round(fx * 100) + "% to fit the line; shorten it." });
+        }
+      }
+    });
     const labels = Array.from(s.querySelectorAll(".cy-label, .cy-badge"));
     outer: for (let a = 0; a < labels.length; a++) {
       for (let b = a + 1; b < labels.length; b++) {

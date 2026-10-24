@@ -45,6 +45,50 @@ const SCRIPT = String.raw`(async () => {
       testedSceneNone = true;
       check("slide with scene none renders no scn", curBd && !curBd.querySelector(".scn"));
     }
+    if (s.type === "notebook") {
+      const sl = document.querySelector(".slide.on");
+      const fRows = sl ? Array.from(sl.querySelectorAll(".k-formula")) : [];
+      for (const row of fRows) {
+        if (!row._formulaTested) {
+          const disp = row.querySelector(".katex-display") || row.firstElementChild;
+          if (disp && disp.offsetHeight > 0) {
+            row._formulaTested = true;
+            const rowH = row.getBoundingClientRect().height;
+            const formH = disp.getBoundingClientRect().height;
+            check(
+              "notebook formula row does not clip or overlap",
+              rowH >= formH - 1,
+              "row " + Math.round(rowH) + "px vs formula " + Math.round(formH) + "px",
+            );
+          }
+        }
+      }
+    }
+    if (s.type === "trace") {
+      const sl = document.querySelector(".slide.on");
+      if (sl && !sl._traceTested) {
+        sl._traceTested = true;
+        const stage = sl.querySelector(".sl-stage");
+        const frame = sl.querySelector(".tr-frame");
+        const iframe = sl.querySelector(".tr-ratio iframe");
+        const sc = (stage ? stage.getBoundingClientRect().width : 1920) / 1920;
+        const fRect = frame ? frame.getBoundingClientRect() : { width: 0, height: 0 };
+        const fW = fRect.width / sc;
+        const fH = fRect.height / sc;
+        check(
+          "trace frame fills the slide",
+          fW >= 1700 && fH >= 880,
+          "frame " + Math.round(fW) + "x" + Math.round(fH) + " (stage scale " + sc.toFixed(3) + ")",
+        );
+        let scaleVal = 0;
+        if (iframe) {
+          const tf = iframe.style.transform || "";
+          const m = /scale\(([\d.]+)\)/.exec(tf);
+          if (m) scaleVal = parseFloat(m[1]);
+        }
+        check("trace iframe scaled", scaleVal >= 1.2, "iframe scale: " + scaleVal);
+      }
+    }
     if (s.type === "quiz") {
       const quiz = document.querySelector(".slide.on .quiz");
       const ok = quiz && quiz.querySelector('.qz-opt[data-ok="1"]');
